@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ShipSelectionMenuRenderer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">space_Invaders</a> &gt; <a href="index.source.html" class="el_package">engine.renderer</a> &gt; <span class="el_source">ShipSelectionMenuRenderer.java</span></div><h1>ShipSelectionMenuRenderer.java</h1><pre class="source lang-java linenums">package engine.renderer;
+
+import entity.Ship;
+import screen.Screen;
+
+import java.awt.*;
+
+public class ShipSelectionMenuRenderer {
+
+    private CommonRenderer commonRenderer;
+    private EntityRenderer entityRenderer;
+
+<span class="nc" id="L13">    public ShipSelectionMenuRenderer(CommonRenderer commonRenderer) {</span>
+<span class="nc" id="L14">        this.commonRenderer = commonRenderer;</span>
+<span class="nc" id="L15">        this.entityRenderer = new EntityRenderer(commonRenderer);</span>
+<span class="nc" id="L16">    }</span>
+
+    public void drawShipSelectionMenu(Graphics g, final Screen screen, final Ship[] shipExamples, final int selectedShipIndex, final int playerIndex) {
+<span class="nc" id="L19">        Ship ship = shipExamples[selectedShipIndex];</span>
+<span class="nc" id="L20">        int centerX = ship.getPositionX();</span>
+
+<span class="nc" id="L22">        String screenTitle = &quot;PLAYER &quot; + playerIndex + &quot; : CHOOSE YOUR SHIP&quot;;</span>
+
+        // Ship Type Info
+<span class="nc" id="L25">        String[] shipNames = {&quot;Normal Type&quot;, &quot;Big Shot Type&quot;, &quot;Double Shot Type&quot;, &quot;Speed Type&quot;};</span>
+<span class="nc" id="L26">        String[] shipSpeeds = {&quot;SPEED: NORMAL&quot;, &quot;SPEED: SLOW&quot;, &quot;SPEED: SLOW&quot;, &quot;SPEED: FAST&quot;};</span>
+<span class="nc" id="L27">        String[] shipFireRates = {&quot;FIRE RATE: NORMAL&quot;, &quot;FIRE RATE: NORMAL&quot;, &quot;FIRE RATE: NORMAL&quot;, &quot;FIRE RATE: SLOW&quot;};</span>
+
+<span class="nc" id="L29">        entityRenderer.drawEntity(g, ship, ship.getPositionX() - ship.getWidth() / 2, ship.getPositionY());</span>
+//        for (int i = 0; i &lt; 4; i++) {
+//            // Draw Player Ship
+//            drawManager.drawEntity(ship, ship.getPositionX() - ship.getWidth()/2, ship.getPositionY());
+//        }
+
+        // Draw Selected Player Page Title
+<span class="nc" id="L36">        g.setColor(Color.GREEN);</span>
+<span class="nc" id="L37">        commonRenderer.drawCenteredBigString(g, screen, screenTitle, screen.getHeight() / 4);</span>
+        // Draw Selected Player Ship Type
+<span class="nc" id="L39">        g.setColor(Color.white);</span>
+<span class="nc" id="L40">        commonRenderer.drawCenteredRegularString(g, screen, &quot; &gt; &quot; + shipNames[selectedShipIndex] + &quot; &lt; &quot;, screen.getHeight() / 2 - 40);</span>
+        // Draw Selected Player Ship Info
+<span class="nc" id="L42">        g.setColor(Color.WHITE);</span>
+//        drawCenteredRegularString(shipSpeeds[selectedShipIndex], centerX, screen.getHeight() / 2 + 60);
+//        drawCenteredRegularString(shipFireRates[selectedShipIndex], centerX, screen.getHeight() / 2 + 80);
+<span class="nc" id="L45">        commonRenderer.drawCenteredRegularString(g, screen, shipSpeeds[selectedShipIndex], screen.getHeight() / 2 + 60);</span>
+<span class="nc" id="L46">        commonRenderer.drawCenteredRegularString(g, screen, shipFireRates[selectedShipIndex], screen.getHeight() / 2 + 80);</span>
+
+<span class="nc" id="L48">        g.setColor(Color.GRAY);</span>
+<span class="nc" id="L49">        commonRenderer.drawCenteredRegularString(g, screen, &quot;Press SPACE to Select&quot;, screen.getHeight() - 50);</span>
+<span class="nc" id="L50">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

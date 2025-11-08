@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BasicGameSpace.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">space_Invaders</a> &gt; <a href="index.source.html" class="el_package">animations</a> &gt; <span class="el_source">BasicGameSpace.java</span></div><h1>BasicGameSpace.java</h1><pre class="source lang-java linenums">package animations;
+
+import java.util.Random;
+/*
+* The basic background stars effect during the game
+* */
+public class BasicGameSpace {
+
+    public final Star[] stars;
+<span class="nc" id="L10">    private final Random rand = new Random();</span>
+    private int[][] positions;
+<span class="nc" id="L12">    private int speed = 0;</span>
+    private int numStars;
+
+
+<span class="nc" id="L16">    public BasicGameSpace(int numStars) {</span>
+
+<span class="nc" id="L18">        this.numStars = numStars;</span>
+<span class="nc" id="L19">        this.stars = new Star[this.numStars];</span>
+<span class="nc" id="L20">        this.positions = new int[this.numStars][3];</span>
+
+<span class="nc bnc" id="L22" title="All 2 branches missed.">        for (int i = 0; i &lt; this.numStars; i++) {</span>
+
+<span class="nc bnc" id="L24" title="All 2 branches missed.">            stars[i] = new Star(rand.nextInt(10,448), rand.nextInt(-500, 5), (randomSpeed()) ? 2 : 1);</span>
+<span class="nc" id="L25">            positions[i][0] = stars[i].x;</span>
+<span class="nc" id="L26">            positions[i][1] = stars[i].y;</span>
+<span class="nc" id="L27">            positions[i][2] = stars[i].speed;</span>
+        }
+<span class="nc" id="L29">    }</span>
+
+    // Update star locations
+    public void update() {
+<span class="nc" id="L33">        int i = 0;</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        for (Star star : stars) {</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">            if(this.speed != 3){</span>
+<span class="nc" id="L36">                star.y += star.speed;</span>
+            }
+            else{
+<span class="nc" id="L39">                star.y += 3;</span>
+            }
+<span class="nc" id="L41">            positions[i][1] = star.y;</span>
+
+<span class="nc bnc" id="L43" title="All 2 branches missed.">            if (star.y &gt;= 525) {</span>
+<span class="nc" id="L44">                star.y = 0;</span>
+<span class="nc" id="L45">                positions[i][1] = 0;</span>
+            }
+<span class="nc" id="L47">            i++;</span>
+        }
+<span class="nc" id="L49">    }</span>
+
+    public void setLastLife(boolean status){
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        if(status){</span>
+<span class="nc" id="L53">            this.speed = 3;</span>
+        }
+        else{
+<span class="nc" id="L56">            this.speed = 1;</span>
+        }
+<span class="nc" id="L58">    }</span>
+
+<span class="nc bnc" id="L60" title="All 2 branches missed.">    public boolean isLastLife(){ return this.speed == 3; }</span>
+
+
+
+    public int[][] getStarLocations(){
+<span class="nc" id="L65">        return this.positions;</span>
+    }
+
+    public int getNumStars(){
+<span class="nc" id="L69">        return this.numStars;</span>
+    }
+
+    public boolean randomSpeed(){
+<span class="nc" id="L73">        double r = Math.random();</span>
+
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        return (r &lt; 0.85);</span>
+    }
+
+    // Star format
+    private static class Star {
+        int x, y, speed;
+
+<span class="nc" id="L82">        Star(int x, int y, int speed) {</span>
+<span class="nc" id="L83">            this.x = x;</span>
+<span class="nc" id="L84">            this.y = y;</span>
+<span class="nc" id="L85">            this.speed = speed;</span>
+<span class="nc" id="L86">        }</span>
+
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

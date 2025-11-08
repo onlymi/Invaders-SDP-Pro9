@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Explosion.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">space_Invaders</a> &gt; <a href="index.source.html" class="el_package">animations</a> &gt; <span class="el_source">Explosion.java</span></div><h1>Explosion.java</h1><pre class="source lang-java linenums">package animations;
+
+import java.awt.*;
+import java.util.Random;
+
+public class Explosion {
+
+    private static final int NUM_PARTICLES = 40;
+    private Particle[] particles;
+    private boolean active;
+    private boolean enemy;
+    private int size;
+
+<span class="nc" id="L14">    private static final Random random = new Random();</span>
+
+<span class="nc" id="L16">    public Explosion(double startX, double startY, boolean enemy, boolean finalExplosion) {</span>
+<span class="nc" id="L17">        this.particles = new Particle[NUM_PARTICLES];</span>
+<span class="nc" id="L18">        this.active = true;</span>
+<span class="nc" id="L19">        this.enemy = enemy;</span>
+<span class="nc bnc" id="L20" title="All 2 branches missed.">        if(finalExplosion)</span>
+<span class="nc" id="L21">            this.size = 20;</span>
+        else
+<span class="nc" id="L23">            this.size = 4;</span>
+
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        for (int i = 0; i &lt; NUM_PARTICLES; i++) {</span>
+<span class="nc" id="L26">            double angle = 2 * Math.PI * random.nextDouble();</span>
+<span class="nc" id="L27">            double speed = 2 + random.nextDouble() * 2;</span>
+<span class="nc" id="L28">            double dx = Math.cos(angle) * speed;</span>
+<span class="nc" id="L29">            double dy = Math.sin(angle) * speed;</span>
+
+<span class="nc" id="L31">            Color color = new Color(255, random.nextInt(150), 0, 255);</span>
+<span class="nc" id="L32">            int life = 60;</span>
+
+<span class="nc" id="L34">            particles[i] = new Particle(startX, startY, dx, dy, color, life);</span>
+        }
+<span class="nc" id="L36">    }</span>
+
+    public void update() {
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        if (!active) return;</span>
+
+<span class="nc" id="L41">        boolean anyAlive = false;</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        for (Particle p : particles) {</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">            if (!p.active) continue;</span>
+
+            // update position
+<span class="nc" id="L46">            p.x += p.dx;</span>
+<span class="nc" id="L47">            p.y += p.dy;</span>
+
+            // gravity and damping
+<span class="nc" id="L50">            p.dy += 0.1;</span>
+<span class="nc" id="L51">            p.dx *= 0.98;</span>
+<span class="nc" id="L52">            p.dy *= 0.98;</span>
+
+            // fade color
+<span class="nc" id="L55">            int alpha = (int) (255 * ((double) p.life / 60));</span>
+<span class="nc" id="L56">            alpha = Math.max(alpha, 0);</span>
+<span class="nc" id="L57">            p.color = new Color(p.color.getRed(), p.color.getGreen(), p.color.getBlue(), alpha);</span>
+
+            // decrease life
+<span class="nc" id="L60">            p.life--;</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">            if (p.life &lt;= 0) p.active = false;</span>
+
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            if (p.active) anyAlive = true;</span>
+        }
+
+        // deactivate explosion if all particles are dead
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (!anyAlive) active = false;</span>
+<span class="nc" id="L68">    }</span>
+
+    public Particle[] getParticles() {
+<span class="nc" id="L71">        return particles;</span>
+    }
+
+<span class="nc" id="L74">    public boolean enemy(){return this.enemy;}</span>
+
+    public boolean isActive() {
+<span class="nc" id="L77">        return active;</span>
+    }
+
+<span class="nc" id="L80">    public int getSize(){return this.size;}</span>
+
+    public static class Particle {
+        public double x, y;
+        public double dx, dy;
+        public Color color;
+        public int life;
+        public boolean active;
+
+<span class="nc" id="L89">        public Particle(double x, double y, double dx, double dy, Color color, int life) {</span>
+<span class="nc" id="L90">            this.x = x;</span>
+<span class="nc" id="L91">            this.y = y;</span>
+<span class="nc" id="L92">            this.dx = dx;</span>
+<span class="nc" id="L93">            this.dy = dy;</span>
+<span class="nc" id="L94">            this.color = color;</span>
+<span class="nc" id="L95">            this.life = life;</span>
+<span class="nc" id="L96">            this.active = true;</span>
+<span class="nc" id="L97">        }</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

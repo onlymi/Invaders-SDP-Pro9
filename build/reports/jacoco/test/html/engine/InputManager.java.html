@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InputManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">space_Invaders</a> &gt; <a href="index.source.html" class="el_package">engine</a> &gt; <span class="el_source">InputManager.java</span></div><h1>InputManager.java</h1><pre class="source lang-java linenums">package engine;
+
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.*;
+
+import java.awt.event.MouseEvent;//add this line
+import java.awt.event.MouseListener;//add this line
+import java.awt.event.MouseMotionListener;//add this line
+
+
+
+/**
+ * Manages keyboard input for the provided screen.
+ *
+ * @author &lt;a href=&quot;mailto:RobertoIA1987@gmail.com&quot;&gt;Roberto Izquierdo Amo&lt;/a&gt;
+ *
+ */
+
+public final class InputManager implements KeyListener, MouseListener, MouseMotionListener { // add MouseListener, MouseMotionListener param
+
+
+	/** Number of recognised keys. */
+	private static final int NUM_KEYS = 256;
+	/** Array with the keys marked as pressed or not. */
+	private static boolean[] keys;
+
+    /** Mouse pressed state. */
+    private static  boolean mousePressed; // add this line
+
+	/** Singleton instance of the class. */
+	private static InputManager instance;
+    /** Last character typed. */
+    private static char lastCharTyped;
+    /** Flag to check if a character was typed. */
+    private static boolean charTyped;
+
+
+    // add three variable
+
+    private static int mouseX;
+    private static int mouseY;
+    private static boolean mouseClicked;
+
+	/**
+     *  Declare variables to save and return input keys
+     */
+<span class="nc" id="L48">    private int lastPressedKey = -1;</span>
+    private static final String KEY_CONFIG_FILE = &quot;game_data/keyconfig.csv&quot;;
+
+    protected static int[] player1Keys;
+    protected static int[] player2Keys;
+
+    public void setPlayer1Keys(int[] newKeys) {
+<span class="nc" id="L55">        player1Keys = newKeys.clone();</span>
+<span class="nc" id="L56">    }</span>
+    public int[] getPlayer1Keys() {
+<span class="nc" id="L58">        return player1Keys.clone();</span>
+    }
+
+    public void setPlayer2Keys(int[] newKeys) {
+<span class="nc" id="L62">        player2Keys = newKeys.clone();</span>
+<span class="nc" id="L63">    }</span>
+    public int[] getPlayer2Keys() {
+<span class="nc" id="L65">        return player2Keys.clone();</span>
+    }
+
+    /**
+	 * Private constructor.
+	 */
+<span class="nc" id="L71">	private InputManager() {</span>
+<span class="nc" id="L72">		keys = new boolean[NUM_KEYS];</span>
+<span class="nc" id="L73">        lastCharTyped = '\0';</span>
+<span class="nc" id="L74">        charTyped = false;</span>
+<span class="nc" id="L75">	}</span>
+
+	/**
+	 * Returns shared instance of InputManager.
+	 *
+	 * @return Shared instance of InputManager.
+	 */
+	public static InputManager getInstance() {
+<span class="nc bnc" id="L83" title="All 2 branches missed.">		if (instance == null)</span>
+<span class="nc" id="L84">			instance = new InputManager();</span>
+<span class="nc" id="L85">		return instance;</span>
+	}
+    /**
+     * Returns the last character typed and resets the flag.
+     *
+     * @return Last character typed, or '\0' if none.
+     */
+    public char getLastCharTyped() {
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        if (charTyped) {</span>
+<span class="nc" id="L94">            charTyped = false;</span>
+<span class="nc" id="L95">            return lastCharTyped;</span>
+        }
+<span class="nc" id="L97">        return '\0';</span>
+    }
+
+
+    /**
+	 * Returns true if the provided key is currently pressed.
+	 *
+	 * @param keyCode
+	 *            Key number to check.
+	 * @return Key state.
+	 */
+	public boolean isKeyDown(final int keyCode) {
+<span class="nc" id="L109">		return keys[keyCode];</span>
+	}
+
+    // === PLAYER 1 CONTROLS (Existing functionality) ===
+    // Player 1 uses WASD + Spacebar configuration
+
+    /**
+     * Checks if Player 1's move left key (player1Keys[0]) is pressed.
+     *
+     * @return True if Player 1 is moving left
+     */
+
+    public boolean isP1LeftPressed() {
+<span class="nc" id="L122">        return isKeyDown(player1Keys[0]);</span>
+    }
+
+    /**
+     * Checks if Player 1's move right key (player1Keys[1]) is pressed.
+     *
+     * @return True if Player 1 is moving right
+     */
+
+    public boolean isP1RightPressed() {
+<span class="nc" id="L132">        return isKeyDown(player1Keys[1]);</span>
+    }
+
+    /**
+     * Checks if Player 1's shoot key (player1keys[2]) is pressed.
+     *
+     * @return True if Player 1 is shooting
+     */
+
+    public boolean isP1ShootPressed() {
+<span class="nc" id="L142">        return isKeyDown(player1Keys[2]);</span>
+    }
+
+
+    // ==================== PLAYER 2 CONTROLS ====================
+    // Player 2 uses Arrow Keys + Enter configuration
+    // Added for two-player mode implementation
+
+    /**
+     * Checks if Player 2's move left key (player2keys[0] is pressed.
+     *
+     * @return True if Player 2 is moving left
+     */
+
+    public boolean isP2LeftPressed() {
+<span class="nc" id="L157">        return isKeyDown(player2Keys[0]);</span>
+    }
+
+    /**
+     * Checks if Player 2's move right key (player2keys[1]) is pressed.
+     *
+     * @return True if Player 2 is moving right
+     */
+
+    public boolean isP2RightPressed() {
+<span class="nc" id="L167">        return isKeyDown(player2Keys[1]);</span>
+    }
+
+    /**
+     * Checks if Player 2's shoot key (player2Keys[2]) is pressed.
+     *
+     * @return True if Player 2 is shooting
+     */
+    public boolean isP2ShootPressed() {
+<span class="nc" id="L176">        return isKeyDown(player2Keys[2]);</span>
+    }
+
+	/**
+	 * Changes the state of the key to pressed.
+	 *
+	 * @param key
+	 *            Key pressed.
+	 */
+	@Override
+	public void keyPressed(final KeyEvent key) {
+<span class="nc bnc" id="L187" title="All 4 branches missed.">		if (key.getKeyCode() &gt;= 0 &amp;&amp; key.getKeyCode() &lt; NUM_KEYS) {</span>
+<span class="nc" id="L188">            keys[key.getKeyCode()] = true;</span>
+<span class="nc" id="L189">            lastPressedKey = key.getKeyCode();</span>
+        }
+<span class="nc" id="L191">	}</span>
+
+	/**
+	 * Changes the state of the key to not pressed.
+	 *
+	 * @param key
+	 *            Key released.
+	 */
+	@Override
+	public void keyReleased(final KeyEvent key) {
+<span class="nc bnc" id="L201" title="All 4 branches missed.">		if (key.getKeyCode() &gt;= 0 &amp;&amp; key.getKeyCode() &lt; NUM_KEYS)</span>
+<span class="nc" id="L202">			keys[key.getKeyCode()] = false;</span>
+<span class="nc" id="L203">	}</span>
+
+	/**
+	 * Does nothing.
+	 *
+	 * @param key
+	 *            Key typed.
+	 */
+	@Override
+	public void keyTyped(final KeyEvent key) {
+<span class="nc" id="L213">        lastCharTyped = key.getKeyChar();</span>
+<span class="nc" id="L214">        charTyped = true;</span>
+<span class="nc" id="L215">	}</span>
+    // Save and return the last pressed key
+    public int getLastPressedKey() {
+<span class="nc" id="L218">        int temp = lastPressedKey;</span>
+<span class="nc" id="L219">        lastPressedKey = -1;</span>
+<span class="nc" id="L220">        return temp;</span>
+    }
+
+    /**
+     * Clears any pending key or character input.
+     * (Prevents unintended key carry-over between screens)
+     */
+    public void clearLastKey() {
+<span class="nc" id="L228">        lastCharTyped = '\0' ;</span>
+<span class="nc" id="L229">        charTyped = false ;</span>
+<span class="nc" id="L230">    }</span>
+    // Create and return a project path/res/keyconfig.csv file object
+    private File getKeyConfigFile() {
+<span class="nc" id="L233">        String projectPath = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="nc" id="L234">        String filePath = projectPath + File.separator + KEY_CONFIG_FILE;</span>
+
+<span class="nc" id="L236">        File file = new File(filePath);</span>
+<span class="nc" id="L237">        File folder = file.getParentFile(); // &quot;game_data&quot; 폴더</span>
+<span class="nc bnc" id="L238" title="All 4 branches missed.">        if (folder != null &amp;&amp; !folder.exists()) {</span>
+<span class="nc" id="L239">            folder.mkdirs(); // &quot;game_data&quot; 폴더가 없으면 생성</span>
+        }
+
+<span class="nc" id="L242">        return file;</span>
+    }
+    // write a key code in a keyconfig.csv file
+    public void saveKeyConfig() {
+        try {
+<span class="nc" id="L247">            File file = getKeyConfigFile();</span>
+<span class="nc" id="L248">            File folder = file.getParentFile();</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">            if (!folder.exists()) folder.mkdirs();</span>
+
+<span class="nc" id="L251">            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {</span>
+<span class="nc" id="L252">                writer.write(player1Keys[0] + &quot;,&quot; + player1Keys[1] + &quot;,&quot; + player1Keys[2]);</span>
+<span class="nc" id="L253">                writer.newLine();</span>
+<span class="nc" id="L254">                writer.write(player2Keys[0] + &quot;,&quot; + player2Keys[1] + &quot;,&quot; + player2Keys[2]);</span>
+            }
+<span class="nc" id="L256">        } catch (IOException e) {</span>
+<span class="nc" id="L257">            e.printStackTrace();</span>
+<span class="nc" id="L258">        }</span>
+<span class="nc" id="L259">    }</span>
+    // Import a file and change the saved input key code
+    public void loadKeyConfig() {
+<span class="nc" id="L262">        File file = getKeyConfigFile();</span>
+
+<span class="nc bnc" id="L264" title="All 2 branches missed.">        if (!file.exists()) {</span>
+<span class="nc" id="L265">            return;</span>
+        }
+
+<span class="nc" id="L268">        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {</span>
+<span class="nc" id="L269">            String line1 = reader.readLine();</span>
+<span class="nc" id="L270">            String line2 = reader.readLine();</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">            if (line1 != null) {</span>
+<span class="nc" id="L272">                String[] parts = line1.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">                for (int i = 0; i &lt; 3; i++) player1Keys[i] = Integer.parseInt(parts[i]);</span>
+            }
+<span class="nc bnc" id="L275" title="All 2 branches missed.">            if (line2 != null) {</span>
+<span class="nc" id="L276">                String[] parts = line2.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">                for (int i = 0; i &lt; 3; i++) player2Keys[i] = Integer.parseInt(parts[i]);</span>
+            }
+
+<span class="nc" id="L280">        } catch (IOException e) {</span>
+<span class="nc" id="L281">            e.printStackTrace();</span>
+<span class="nc" id="L282">        }</span>
+<span class="nc" id="L283">    }</span>
+    /**
+     * After setting the default, import the saved key settings from the file and cover the default values
+     */
+    static {
+<span class="nc" id="L288">        instance = new InputManager();</span>
+<span class="nc" id="L289">        player1Keys = new int[] {KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_SPACE};</span>
+<span class="nc" id="L290">        player2Keys = new int[] {KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_ENTER};</span>
+
+<span class="nc" id="L292">        instance.loadKeyConfig();</span>
+<span class="nc" id="L293">    }</span>
+
+    /**
+     * Resets all key states to not pressed.
+     */
+    public static void resetKeys() {
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        for (int i = 0; i &lt; NUM_KEYS; i++) {</span>
+<span class="nc" id="L300">            keys[i] = false;</span>
+        }
+<span class="nc" id="L302">    }</span>
+
+
+<span class="nc" id="L305">    public int getMouseX() { return mouseX; } // add this function</span>
+
+<span class="nc" id="L307">    public int getMouseY() { return mouseY; } // add this function</span>
+
+    public boolean isMouseClicked() { // add this function
+<span class="nc bnc" id="L310" title="All 2 branches missed.">        if (mouseClicked) {</span>
+<span class="nc" id="L311">            mouseClicked = false;</span>
+<span class="nc" id="L312">            return true;</span>
+        }
+<span class="nc" id="L314">        return false;</span>
+    }
+
+    @Override
+    public void mouseClicked(final MouseEvent e) { // add this function
+        // Can be left empty or used if needed
+<span class="nc" id="L320">    }</span>
+
+    @Override
+    public void mousePressed(final MouseEvent e) { // add this function
+<span class="nc" id="L324">        mousePressed = true;</span>
+<span class="nc" id="L325">        mouseX = e.getX();</span>
+<span class="nc" id="L326">        mouseY = e.getY();</span>
+<span class="nc" id="L327">    }</span>
+
+    @Override
+    public void mouseReleased(final MouseEvent e) { // add this function
+<span class="nc" id="L331">        mousePressed = false;</span>
+<span class="nc" id="L332">        mouseX = e.getX();</span>
+<span class="nc" id="L333">        mouseY = e.getY();</span>
+<span class="nc" id="L334">        mouseClicked = true;</span>
+<span class="nc" id="L335">    }</span>
+
+    @Override
+    public void mouseEntered(final MouseEvent e) { // add this function
+
+<span class="nc" id="L340">    }</span>
+
+    @Override
+    public void mouseExited(final MouseEvent e) { // add this function
+
+<span class="nc" id="L345">    }</span>
+
+	/** Added mouse move/drag event to update mouse position right now */
+	@Override
+	public void mouseMoved(final MouseEvent e){
+<span class="nc" id="L350">		mouseX = e.getX();</span>
+<span class="nc" id="L351">		mouseY = e.getY();</span>
+<span class="nc" id="L352">	}</span>
+	@Override
+	public void mouseDragged(final MouseEvent e){
+<span class="nc" id="L355">		mouseX = e.getX();</span>
+<span class="nc" id="L356">		mouseY = e.getY();</span>
+<span class="nc" id="L357">	}</span>
+
+	public boolean isMousePressed(){
+<span class="nc" id="L360">		return mousePressed;</span>
+	}
+
+    public String getKeyString(int keyCode) {
+<span class="nc bnc" id="L364" title="All 22 branches missed.">        switch (keyCode) {</span>
+<span class="nc" id="L365">            case KeyEvent.VK_LEFT: return &quot;LEFT&quot;;</span>
+<span class="nc" id="L366">            case KeyEvent.VK_RIGHT: return &quot;RIGHT&quot;;</span>
+<span class="nc" id="L367">            case KeyEvent.VK_UP: return &quot;UP&quot;;</span>
+<span class="nc" id="L368">            case KeyEvent.VK_DOWN: return &quot;DOWN&quot;;</span>
+<span class="nc" id="L369">            case KeyEvent.VK_SPACE: return &quot;SPACE&quot;;</span>
+<span class="nc" id="L370">            case KeyEvent.VK_ENTER: return &quot;ENTER&quot;;</span>
+<span class="nc" id="L371">            case KeyEvent.VK_BACK_SPACE: return &quot;BACK_SPACE&quot;;</span>
+<span class="nc" id="L372">            case KeyEvent.VK_TAB: return &quot;TAB&quot;;</span>
+<span class="nc" id="L373">            case KeyEvent.VK_CANCEL: return &quot;CANCEL&quot;;</span>
+<span class="nc" id="L374">            case KeyEvent.VK_F1: return &quot;F1&quot;;</span>
+<span class="nc" id="L375">            case KeyEvent.VK_F2: return &quot;F2&quot;;</span>
+<span class="nc" id="L376">            case KeyEvent.VK_F3: return &quot;F3&quot;;</span>
+<span class="nc" id="L377">            case KeyEvent.VK_F4: return &quot;F4&quot;;</span>
+<span class="nc" id="L378">            case KeyEvent.VK_F5: return &quot;F5&quot;;</span>
+<span class="nc" id="L379">            case KeyEvent.VK_F6: return &quot;F6&quot;;</span>
+<span class="nc" id="L380">            case KeyEvent.VK_F7: return &quot;F7&quot;;</span>
+<span class="nc" id="L381">            case KeyEvent.VK_F8: return &quot;F8&quot;;</span>
+<span class="nc" id="L382">            case KeyEvent.VK_F9: return &quot;F9&quot;;</span>
+<span class="nc" id="L383">            case KeyEvent.VK_F10: return &quot;F10&quot;;</span>
+<span class="nc" id="L384">            case KeyEvent.VK_F11: return &quot;F11&quot;;</span>
+<span class="nc" id="L385">            case KeyEvent.VK_F12: return &quot;F12&quot;;</span>
+<span class="nc" id="L386">            default: return KeyEvent.getKeyText(keyCode).toUpperCase();</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

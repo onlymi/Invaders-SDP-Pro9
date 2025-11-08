@@ -1,95 +1,95 @@
-[INFO|12:21:30]: Started loading resources. 
-[FINE|12:21:30]: Sprite Ship1 loaded. 
-[FINE|12:21:30]: Sprite Ship2 loaded. 
-[FINE|12:21:30]: Sprite Ship3 loaded. 
-[FINE|12:21:30]: Sprite Ship4 loaded. 
-[FINE|12:21:30]: Sprite ShipDestroyed1 loaded. 
-[FINE|12:21:30]: Sprite ShipDestroyed2 loaded. 
-[FINE|12:21:30]: Sprite ShipDestroyed3 loaded. 
-[FINE|12:21:30]: Sprite ShipDestroyed4 loaded. 
-[FINE|12:21:30]: Sprite Bullet loaded. 
-[FINE|12:21:30]: Sprite EnemyBullet loaded. 
-[FINE|12:21:30]: Sprite EnemyShipA1 loaded. 
-[FINE|12:21:30]: Sprite EnemyShipA2 loaded. 
-[FINE|12:21:30]: Sprite EnemyShipB1 loaded. 
-[FINE|12:21:30]: Sprite EnemyShipB2 loaded. 
-[FINE|12:21:30]: Sprite EnemyShipC1 loaded. 
-[FINE|12:21:30]: Sprite EnemyShipC2 loaded. 
-[FINE|12:21:30]: Sprite EnemyShipSpecial loaded. 
-[FINE|12:21:30]: Sprite BossEnemy1 loaded. 
-[FINE|12:21:30]: Sprite BossEnemy2 loaded. 
-[FINE|12:21:30]: Sprite BossEnemy3 loaded. 
-[FINE|12:21:30]: Sprite Explosion loaded. 
-[FINE|12:21:30]: Sprite Heart loaded. 
-[FINE|12:21:30]: Sprite ItemScore loaded. 
-[FINE|12:21:30]: Sprite ItemCoin loaded. 
-[FINE|12:21:30]: Sprite ItemHeal loaded. 
-[FINE|12:21:30]: Sprite ItemTripleShot loaded. 
-[FINE|12:21:30]: Sprite ItemScoreBooster loaded. 
-[FINE|12:21:30]: Sprite ItemBulletSpeedUp loaded. 
-[INFO|12:21:30]: Finished loading the sprites. 
-[INFO|12:21:30]: Finished loading the fonts. 
-[INFO|12:21:30]: Finished loading the sounds. 
-[INFO|12:21:30]: Started loading resources. 
-[INFO|12:21:30]: Starting 448x520 title screen at 60 fps. 
-[INFO|12:21:33]: Closing title screen. 
-[INFO|12:21:33]: Starting 448x520 play screen at 60 fps. 
-[INFO|12:21:35]: Closing play screen. 
-[INFO|12:21:39]: Closing first player ship selection screen. 
-[INFO|12:21:39]: Starting 448x520 game screen at 60 fps. 
-[INFO|12:21:39]: [GameState] Player 0: All effects cleared. 
-[INFO|12:21:39]: [GameState] Player 1: All effects cleared. 
-[INFO|12:21:39]: Initializing 6x4 ship formation in (20,100) 
-[INFO|12:21:39]: Destroyed ship in (0,0) 
-[INFO|12:21:39]: Destroyed ship in (1,0) 
-[INFO|12:21:39]: Destroyed ship in (4,0) 
-[INFO|12:21:39]: Destroyed ship in (5,0) 
-[INFO|12:21:39]: Destroyed ship in (0,1) 
-[INFO|12:21:39]: Destroyed ship in (5,1) 
-[INFO|12:21:39]: Destroyed ship in (2,2) 
-[INFO|12:21:39]: Destroyed ship in (3,2) 
-[INFO|12:21:39]: Destroyed ship in (2,3) 
-[INFO|12:21:39]: Destroyed ship in (3,3) 
-[INFO|12:21:39]: Removed enemy 0 from column 0 
-[INFO|12:21:39]: Removed enemy 1 from column 0 
-[INFO|12:21:39]: Removed enemy 0 from column 1 
-[INFO|12:21:39]: Removed enemy 2 from column 2 
-[INFO|12:21:39]: Removed enemy 3 from column 2 
-[INFO|12:21:39]: Removed enemy 2 from column 3 
-[INFO|12:21:39]: Removed enemy 3 from column 3 
-[INFO|12:21:39]: Removed enemy 0 from column 4 
-[INFO|12:21:39]: Removed enemy 0 from column 5 
-[INFO|12:21:39]: Removed enemy 1 from column 5 
-[INFO|12:21:45]: [Ship] Shooting :MOVE_FAST 
-[INFO|12:21:46]: [Ship] Shooting :MOVE_FAST 
-[INFO|12:21:47]: Enemy: true 
-[INFO|12:21:47]: final: false 
-[INFO|12:21:47]: [ItemManager]: DropRoll 59.3 
-[INFO|12:21:47]: [ItemManager]: Tier=NONE (pity=1) 
-[INFO|12:21:47]: Destroyed ship in (4,0) 
-[INFO|12:21:47]: Hit on enemy ship. 
-[WARNING|12:21:47]: Sound not found in AssetManager: sound/achievement.wav 
-[WARNING|12:21:47]: Sound not found in AssetManager: sound/achievement.wav 
-[INFO|12:21:47]: Achievement unlocked: First Blood - Defeat your first enemy. [Unlocked] 
-[INFO|12:21:47]: [Ship] Shooting :MOVE_FAST 
-[INFO|12:21:48]: Removed enemy 0 from column 4 
-[INFO|12:21:48]: Enemy: true 
-[INFO|12:21:48]: final: false 
-[INFO|12:21:48]: [ItemManager]: DropRoll 46.3 
-[INFO|12:21:48]: [ItemManager]: Tier=NONE (pity=2) 
-[INFO|12:21:48]: Destroyed ship in (4,1) 
-[INFO|12:21:48]: Hit on enemy ship. 
-[INFO|12:21:48]: [Ship] Shooting :MOVE_FAST 
-[INFO|12:21:49]: Removed enemy 1 from column 4 
-[INFO|12:21:49]: Enemy: true 
-[INFO|12:21:49]: final: false 
-[INFO|12:21:49]: [ItemManager]: DropRoll 51.9 
-[INFO|12:21:49]: [ItemManager]: Tier=NONE (pity=3) 
-[INFO|12:21:49]: Destroyed ship in (4,0) 
-[INFO|12:21:49]: Shooters list reduced to 5 members. 
-[INFO|12:21:49]: Hit on enemy ship. 
-[INFO|12:21:50]: Removed enemy 0 from column 4 
-[INFO|12:21:50]: Removed column 4 
-[INFO|12:21:55]: Enemy: false 
-[INFO|12:21:55]: final: false 
-[INFO|12:21:55]: Hit on player 1, team lives now: 2 
+[INFO|1:55:02]: Started loading resources. 
+[FINE|1:55:02]: Sprite Ship1 loaded. 
+[FINE|1:55:02]: Sprite Ship2 loaded. 
+[FINE|1:55:02]: Sprite Ship3 loaded. 
+[FINE|1:55:02]: Sprite Ship4 loaded. 
+[FINE|1:55:02]: Sprite ShipDestroyed1 loaded. 
+[FINE|1:55:02]: Sprite ShipDestroyed2 loaded. 
+[FINE|1:55:02]: Sprite ShipDestroyed3 loaded. 
+[FINE|1:55:02]: Sprite ShipDestroyed4 loaded. 
+[FINE|1:55:02]: Sprite Bullet loaded. 
+[FINE|1:55:02]: Sprite EnemyBullet loaded. 
+[FINE|1:55:02]: Sprite EnemyShipA1 loaded. 
+[FINE|1:55:02]: Sprite EnemyShipA2 loaded. 
+[FINE|1:55:02]: Sprite EnemyShipB1 loaded. 
+[FINE|1:55:02]: Sprite EnemyShipB2 loaded. 
+[FINE|1:55:02]: Sprite EnemyShipC1 loaded. 
+[FINE|1:55:02]: Sprite EnemyShipC2 loaded. 
+[FINE|1:55:02]: Sprite EnemyShipSpecial loaded. 
+[FINE|1:55:02]: Sprite BossEnemy1 loaded. 
+[FINE|1:55:02]: Sprite BossEnemy2 loaded. 
+[FINE|1:55:02]: Sprite BossEnemy3 loaded. 
+[FINE|1:55:02]: Sprite Explosion loaded. 
+[FINE|1:55:02]: Sprite Heart loaded. 
+[FINE|1:55:02]: Sprite ItemScore loaded. 
+[FINE|1:55:02]: Sprite ItemCoin loaded. 
+[FINE|1:55:02]: Sprite ItemHeal loaded. 
+[FINE|1:55:02]: Sprite ItemTripleShot loaded. 
+[FINE|1:55:02]: Sprite ItemScoreBooster loaded. 
+[FINE|1:55:02]: Sprite ItemBulletSpeedUp loaded. 
+[INFO|1:55:02]: Finished loading the sprites. 
+[INFO|1:55:02]: Finished loading the fonts. 
+[INFO|1:55:02]: Finished loading the sounds. 
+[INFO|1:55:02]: Started loading resources. 
+[INFO|1:55:02]: Starting 448x520 title screen at 60 fps. 
+[INFO|1:55:06]: Closing title screen. 
+[INFO|1:55:06]: Starting 448x520 play screen at 60 fps. 
+[INFO|1:55:07]: Closing play screen. 
+[INFO|1:55:08]: Closing first player ship selection screen. 
+[INFO|1:55:08]: Starting 448x520 game screen at 60 fps. 
+[INFO|1:55:08]: [GameState] Player 0: All effects cleared. 
+[INFO|1:55:08]: [GameState] Player 1: All effects cleared. 
+[INFO|1:55:08]: Initializing 6x4 ship formation in (20,100) 
+[INFO|1:55:08]: Destroyed ship in (0,0) 
+[INFO|1:55:08]: Destroyed ship in (1,0) 
+[INFO|1:55:08]: Destroyed ship in (4,0) 
+[INFO|1:55:08]: Destroyed ship in (5,0) 
+[INFO|1:55:08]: Destroyed ship in (0,1) 
+[INFO|1:55:08]: Destroyed ship in (5,1) 
+[INFO|1:55:08]: Destroyed ship in (2,2) 
+[INFO|1:55:08]: Destroyed ship in (3,2) 
+[INFO|1:55:08]: Destroyed ship in (2,3) 
+[INFO|1:55:08]: Destroyed ship in (3,3) 
+[INFO|1:55:08]: Removed enemy 0 from column 0 
+[INFO|1:55:08]: Removed enemy 1 from column 0 
+[INFO|1:55:08]: Removed enemy 0 from column 1 
+[INFO|1:55:08]: Removed enemy 2 from column 2 
+[INFO|1:55:08]: Removed enemy 3 from column 2 
+[INFO|1:55:08]: Removed enemy 2 from column 3 
+[INFO|1:55:08]: Removed enemy 3 from column 3 
+[INFO|1:55:08]: Removed enemy 0 from column 4 
+[INFO|1:55:08]: Removed enemy 0 from column 5 
+[INFO|1:55:08]: Removed enemy 1 from column 5 
+[INFO|1:55:15]: [Ship] Shooting :NORMAL 
+[INFO|1:55:16]: Enemy: true 
+[INFO|1:55:16]: final: false 
+[INFO|1:55:16]: [ItemManager]: DropRoll 27.9 
+[INFO|1:55:16]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|1:55:16]: Destroyed ship in (3,1) 
+[INFO|1:55:16]: Hit on enemy ship. 
+[WARNING|1:55:16]: Sound not found in AssetManager: sound/achievement.wav 
+[WARNING|1:55:16]: Sound not found in AssetManager: sound/achievement.wav 
+[INFO|1:55:16]: Achievement unlocked: First Blood - Defeat your first enemy. [Unlocked] 
+[INFO|1:55:16]: Removed enemy 1 from column 3 
+[INFO|1:55:16]: [Ship] Shooting :NORMAL 
+[INFO|1:55:17]: Enemy: true 
+[INFO|1:55:17]: final: false 
+[INFO|1:55:17]: [ItemManager]: DropRoll 21.4 
+[INFO|1:55:17]: [ItemManager]: Tier=NONE (pity=2) 
+[INFO|1:55:17]: Destroyed ship in (3,0) 
+[INFO|1:55:17]: Shooters list reduced to 5 members. 
+[INFO|1:55:17]: Hit on enemy ship. 
+[INFO|1:55:18]: [Ship] Shooting :NORMAL 
+[INFO|1:55:18]: Removed enemy 0 from column 3 
+[INFO|1:55:18]: Removed column 3 
+[INFO|1:55:20]: [Ship] Shooting :NORMAL 
+[INFO|1:55:21]: Enemy: true 
+[INFO|1:55:21]: final: false 
+[INFO|1:55:21]: [ItemManager]: DropRoll 15.4 
+[INFO|1:55:21]: [ItemManager]: Tier=NONE (pity=3) 
+[INFO|1:55:21]: Destroyed ship in (2,1) 
+[INFO|1:55:21]: Hit on enemy ship. 
+[INFO|1:55:21]: Removed enemy 1 from column 2 
+[INFO|1:55:22]: Enemy: false 
+[INFO|1:55:22]: final: false 
+[INFO|1:55:22]: Hit on player 1, team lives now: 2 

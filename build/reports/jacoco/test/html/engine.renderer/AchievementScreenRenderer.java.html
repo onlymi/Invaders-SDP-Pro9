@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AchievementScreenRenderer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">space_Invaders</a> &gt; <a href="index.source.html" class="el_package">engine.renderer</a> &gt; <span class="el_source">AchievementScreenRenderer.java</span></div><h1>AchievementScreenRenderer.java</h1><pre class="source lang-java linenums">package engine.renderer;
+
+import engine.gameplay.achievement.Achievement;
+import screen.Screen;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class AchievementScreenRenderer {
+
+    private CommonRenderer commonRenderer;
+
+<span class="nc" id="L14">    public AchievementScreenRenderer(CommonRenderer commonRenderer) {</span>
+<span class="nc" id="L15">        this.commonRenderer = commonRenderer;</span>
+<span class="nc" id="L16">    }</span>
+
+    /**
+     * Draws high scores.
+     *
+     * @param screen
+     *                   Screen to draw on.
+     * @param completer
+     *                   List of completer
+     */
+    public void drawAchievementMenu(Graphics g, final Screen screen, Achievement achievement, List&lt;String&gt; completer) {
+<span class="nc" id="L27">        String achievementsTitle = &quot;Achievements&quot;;</span>
+<span class="nc" id="L28">        String instructionsString = &quot;Press ESC to return&quot;;</span>
+<span class="nc" id="L29">        String playerModeString = &quot;              1P                                      2P              &quot;;</span>
+<span class="nc" id="L30">        String prevNextString = &quot;PREV                                                              NEXT&quot;;</span>
+<span class="nc" id="L31">        String achievementName = achievement.getName();</span>
+<span class="nc" id="L32">        String descriptionString = achievement.getDescription();</span>
+
+<span class="nc" id="L34">        g.setFont(commonRenderer.getFontRegular());</span>
+        // Draw the title, achievement name, and description
+<span class="nc" id="L36">        g.setColor(Color.GREEN);</span>
+<span class="nc" id="L37">        commonRenderer.drawCenteredBigString(g, screen, achievementsTitle, screen.getHeight() / 10);</span>
+<span class="nc" id="L38">        commonRenderer.drawCenteredRegularString(g, screen, achievementName, screen.getHeight() / 7);</span>
+<span class="nc" id="L39">        g.setColor(Color.GRAY);</span>
+<span class="nc" id="L40">        commonRenderer.drawCenteredRegularString(g, screen, descriptionString, screen.getHeight() / 5);</span>
+<span class="nc" id="L41">        g.setColor(Color.GREEN);</span>
+<span class="nc" id="L42">        commonRenderer.drawCenteredRegularString(g, screen, playerModeString, screen.getHeight() / 4);</span>
+<span class="nc" id="L43">        g.setColor(Color.GRAY);</span>
+<span class="nc" id="L44">        commonRenderer.drawCenteredRegularString(g, screen, instructionsString, (int)(screen.getHeight() * 0.9));</span>
+
+        // Starting Y position for player names
+<span class="nc" id="L47">        int startY = (int) (screen.getHeight() * 0.3);</span>
+<span class="nc" id="L48">        int lineHeight = 25;</span>
+
+        // X positions for the 1P and 2P columns
+<span class="nc" id="L51">        int leftX = screen.getWidth() / 4;      // 1P column</span>
+<span class="nc" id="L52">        int rightX = screen.getWidth() * 2 / 3; // 2P column</span>
+
+<span class="nc" id="L54">        List&lt;String&gt; team1 = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L55">        List&lt;String&gt; team2 = new ArrayList&lt;&gt;();</span>
+
+        // Separate completer into 1P and 2P teams based on the mode prefix
+<span class="nc bnc" id="L58" title="All 4 branches missed.">        if (completer != null &amp;&amp; !completer.isEmpty()) {</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">            for (String entry : completer) {</span>
+<span class="nc" id="L60">                String[] parts = entry.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                if (parts.length == 2) {</span>
+<span class="nc" id="L62">                    String modeString = parts[0].trim(); // e.g., &quot;2P&quot;</span>
+<span class="nc" id="L63">                    String numericPart = modeString.replaceAll(&quot;[^0-9]&quot;, &quot;&quot;); // Extract numeric part: &quot;2&quot;</span>
+<span class="nc" id="L64">                    int mode = Integer.parseInt(numericPart);</span>
+<span class="nc" id="L65">                    String name = parts[1].trim();</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">                    if (mode == 1) {</span>
+<span class="nc" id="L67">                        team1.add(name);</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">                    } else if (mode == 2) {</span>
+<span class="nc" id="L69">                        team2.add(name);</span>
+                    }
+                }
+<span class="nc" id="L72">            }</span>
+
+            // Draw names in each column, up to the max number of lines
+<span class="nc" id="L75">            int maxLines = Math.max(team1.size(), team2.size());</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            for (int i = 0; i &lt; maxLines; i++) {</span>
+<span class="nc" id="L77">                int y = startY + i * lineHeight;</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                if (i &lt; team1.size()) {</span>
+<span class="nc" id="L79">                    g.setColor(Color.WHITE);</span>
+<span class="nc" id="L80">                    g.drawString(team1.get(i), leftX, y);</span>
+                }
+<span class="nc bnc" id="L82" title="All 2 branches missed.">                if (i &lt; team2.size()) {</span>
+<span class="nc" id="L83">                    g.setColor(Color.WHITE);</span>
+<span class="nc" id="L84">                    g.drawString(team2.get(i), rightX, y);</span>
+                }
+            }
+
+<span class="nc" id="L88">        } else {</span>
+            // Display placeholder text if no achievers were found
+<span class="nc" id="L90">            g.setColor(Color.GREEN);</span>
+<span class="nc" id="L91">            commonRenderer.drawCenteredBigString(g, screen, &quot;No achievers found.&quot;, (int) (screen.getHeight() * 0.5));</span>
+        }
+
+        // Draw prev/next navigation buttons at the bottom
+<span class="nc" id="L95">        g.setColor(Color.GREEN);</span>
+<span class="nc" id="L96">        commonRenderer.drawCenteredRegularString(g, screen, prevNextString, (int) (screen.getHeight() * 0.8));</span>
+
+        // Draw back button in the top-left corner
+<span class="nc" id="L99">        commonRenderer.drawBackButton(g, screen, false);</span>
+<span class="nc" id="L100">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

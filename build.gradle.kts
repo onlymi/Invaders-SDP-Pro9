@@ -1,16 +1,8 @@
 
 plugins {
     id("java")
+    id("jacoco")
 }
-
-//sourceSets {
-//    main {
-//        resources {
-//            srcDirs("src/main/resources")
-//            exclude("game_data/**")
-//        }
-//    }
-//}
 
 group = "com.teampro9"
 version = "1.0-SNAPSHOT"
@@ -41,4 +33,16 @@ tasks.test {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.required.set(true)
+    }
 }
