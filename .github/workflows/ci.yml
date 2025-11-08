@@ -1,8 +1,12 @@
 
 name: Java CI with Gradle
 
-# when
 on: [push, pull_request]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build-and-test:
@@ -21,11 +25,27 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build, test and generate coverage report
+      - name: Build, test, and generate coverage report
         run: ./gradlew test jacocoTestReport
 
-      - name: Upload JaCoCo report
-        uses: actions/upload-artifact@v4
+      - name: Upload JaCoCo report for Pages
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: jacoco-report
           path: build/reports/jacoco/test/html
+
+  deploy-pages:
+    needs: build-and-test
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
