@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Entity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">space_Invaders</a> &gt; <a href="index.source.html" class="el_package">entity</a> &gt; <span class="el_source">Entity.java</span></div><h1>Entity.java</h1><pre class="source lang-java linenums">package entity;
+
+import java.awt.*;
+import java.util.Map;
+
+import engine.AssetManager.SpriteType;
+
+/**
+ * Implements a generic game entity.
+ *
+ * @author &lt;a href=&quot;mailto:RobertoIA1987@gmail.com&quot;&gt;Roberto Izquierdo Amo&lt;/a&gt;
+ *
+ */
+public class Entity {
+
+    /** Position in the x-axis of the upper left corner of the entity. */
+    protected int positionX;
+    /** Position in the y-axis of the upper left corner of the entity. */
+    protected int positionY;
+    /** Width of the entity. */
+    protected int width;
+    /** Height of the entity. */
+    protected int height;
+    /** Color of the entity. */
+    private Color color;
+    /** Sprite type assigned to the entity. */
+    protected SpriteType spriteType;
+
+    // 2P mode: adding team for multiplayer
+<span class="fc" id="L30">    public enum Team {</span>
+<span class="fc" id="L31">        PLAYER1, PLAYER2, ENEMY, NEUTRAL</span>
+    }
+
+    // every entity knows their team - possibility for friendly-fire?
+<span class="fc" id="L35">    protected Team team = Team.NEUTRAL;</span>
+
+    /**
+     * Constructor, establishes the entity's generic properties.
+     *
+     * @param positionX
+     *                  Initial position of the entity in the X axis.
+     * @param positionY
+     *                  Initial position of the entity in the Y axis.
+     * @param width
+     *                  Width of the entity.
+     * @param height
+     *                  Height of the entity.
+     * @param color
+     *                  Color of the entity.
+     */
+    public Entity(final int positionX, final int positionY, final int width,
+<span class="fc" id="L52">                  final int height, final Color color) {</span>
+<span class="fc" id="L53">        this.positionX = positionX;</span>
+<span class="fc" id="L54">        this.positionY = positionY;</span>
+<span class="fc" id="L55">        this.width = width;</span>
+<span class="fc" id="L56">        this.height = height;</span>
+<span class="fc" id="L57">        this.color = color;</span>
+<span class="fc" id="L58">    }</span>
+
+    /**
+     * Getter for the color of the entity.
+     *
+     * @return Color of the entity, used when drawing it.
+     */
+    public final Color getColor() {
+<span class="nc" id="L66">        return color;</span>
+    }
+
+    public final void changeColor(Color color) {
+<span class="nc" id="L70">        this.color = color;</span>
+<span class="nc" id="L71">    }</span>
+
+    /**
+     * Getter for the X axis position of the entity.
+     *
+     * @return Position of the entity in the X axis.
+     */
+    public final int getPositionX() {
+<span class="nc" id="L79">        return this.positionX;</span>
+    }
+
+    /**
+     * Getter for the Y axis position of the entity.
+     *
+     * @return Position of the entity in the Y axis.
+     */
+    public final int getPositionY() {
+<span class="nc" id="L88">        return this.positionY;</span>
+    }
+
+    /**
+     * Setter for the X axis position of the entity.
+     *
+     * @param positionX
+     *                  New position of the entity in the X axis.
+     */
+    public final void setPositionX(final int positionX) {
+<span class="nc" id="L98">        this.positionX = positionX;</span>
+<span class="nc" id="L99">    }</span>
+
+    /**
+     * Setter for the Y axis position of the entity.
+     *
+     * @param positionY
+     *                  New position of the entity in the Y axis.
+     */
+    public final void setPositionY(final int positionY) {
+<span class="nc" id="L108">        this.positionY = positionY;</span>
+<span class="nc" id="L109">    }</span>
+
+    /**
+     * Getter for the sprite that the entity will be drawn as.
+     *
+     * @return Sprite corresponding to the entity.
+     */
+    public final SpriteType getSpriteType() {
+<span class="nc" id="L117">        return this.spriteType;</span>
+    }
+
+    /**
+     * Getter for the width of the image associated to the entity.
+     *
+     * @return Width of the entity.
+     */
+    public final int getWidth() {
+<span class="nc" id="L126">        return this.width;</span>
+    }
+
+    /**
+     * Getter for the height of the image associated to the entity.
+     *
+     * @return Height of the entity.
+     */
+    public final int getHeight() {
+<span class="nc" id="L135">        return this.height;</span>
+    }
+
+    // 2P mode: adding getters for Team
+    // TODO: add team-based canHit() later - friendly fire?
+    public Team getTeam() {
+<span class="nc" id="L141">        return team;</span>
+    }
+
+    public void setTeam(Team t) {
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">        this.team = (t == null ? Team.NEUTRAL : t);</span>
+<span class="fc" id="L146">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

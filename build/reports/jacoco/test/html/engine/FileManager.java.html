@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">space_Invaders</a> &gt; <a href="index.source.html" class="el_package">engine</a> &gt; <span class="el_source">FileManager.java</span></div><h1>FileManager.java</h1><pre class="source lang-java linenums">package engine;
+
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import engine.AssetManager.SpriteType;
+import engine.gameplay.achievement.Achievement;
+
+/**
+ * Manages files used in the application.
+ *
+ * @author &lt;a href=&quot;mailto:RobertoIA1987@gmail.com&quot;&gt;Roberto Izquierdo Amo&lt;/a&gt;
+ *
+ */
+public final class FileManager {
+    /**
+     * Singleton instance of the class.
+     */
+    private static FileManager instance;
+    /**
+     * Application logger.
+     */
+    private static Logger LOGGER;
+
+    /**
+     * private constructor.
+     */
+<span class="nc" id="L35">    private FileManager() {</span>
+<span class="nc" id="L36">        LOGGER = Core.getLogger();</span>
+<span class="nc" id="L37">    }</span>
+
+    /**
+     * Returns shared instance of FileManager.
+     *
+     * @return Shared instance of FileManager.
+     */
+    public static FileManager getInstance() {
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (instance == null)</span>
+<span class="nc" id="L46">            instance = new FileManager();</span>
+<span class="nc" id="L47">        return instance;</span>
+    }
+
+    /**
+     * Returns the application default scores if there is no user high scores file.
+     *
+     * @return Default high scores.
+     *             In case of loading problems.
+     */
+    private List&lt;Score&gt; loadDefaultHighScores(String mode) {
+<span class="nc" id="L57">        List&lt;Score&gt; highScores = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L58">        int list_size = 7;</span>
+        Score highScore;
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        for (int i = 0; i &lt; list_size; i++) {</span>
+<span class="nc" id="L61">            highScore = new Score(&quot;ERR&quot;, 0, mode);</span>
+<span class="nc" id="L62">            highScores.add(highScore);</span>
+        }
+
+<span class="nc" id="L65">        return highScores;</span>
+    }
+
+    /**
+     * Loads high scores from file, and returns a sorted list of pairs score -
+     * value.
+     * @param mode
+     *      get game mode 1P/2P.
+     * @return Sorted list of scores - players.
+     * @throws IOException
+     *             In case of loading problems.
+     */
+    public List&lt;Score&gt; loadHighScores(String mode) throws IOException {
+<span class="nc" id="L78">        List&lt;Score&gt; highScores = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L79">        InputStream inputStream = null;</span>
+<span class="nc" id="L80">        BufferedReader bufferedReader = null;</span>
+
+        try {
+<span class="nc" id="L83">            String scoresPath = getFilePath(&quot;game_data/&quot;+mode+&quot;_scores.csv&quot;);</span>
+
+<span class="nc" id="L85">            File scoresFile = new File(scoresPath);</span>
+<span class="nc" id="L86">            inputStream = new FileInputStream(scoresFile);</span>
+<span class="nc" id="L87">            bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));</span>
+<span class="nc" id="L88">            LOGGER.info(&quot;Loading user high scores.&quot;);</span>
+            // except first line
+<span class="nc" id="L90">            bufferedReader.readLine();</span>
+            String input;
+<span class="nc bnc" id="L92" title="All 2 branches missed.">            while ((input = bufferedReader.readLine()) != null) {</span>
+<span class="nc" id="L93">                String[] pair = input.split(&quot;,&quot;);</span>
+<span class="nc" id="L94">                String name = pair[0], score = pair[1];</span>
+<span class="nc" id="L95">                Score highScore = new Score(name, Integer.parseInt(score), mode);</span>
+<span class="nc" id="L96">                highScores.add(highScore);</span>
+<span class="nc" id="L97">            }</span>
+<span class="nc" id="L98">        } catch (FileNotFoundException e) {</span>
+            // loads default if there's no user scores.
+<span class="nc" id="L100">            LOGGER.info(&quot;Loading default high scores.&quot;);</span>
+<span class="nc" id="L101">            highScores = loadDefaultHighScores(mode);</span>
+        } finally {
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            if (bufferedReader != null)</span>
+<span class="nc" id="L104">                bufferedReader.close();</span>
+        }
+
+<span class="nc" id="L107">        Collections.sort(highScores);</span>
+<span class="nc" id="L108">        return highScores;</span>
+    }
+
+    /**
+     * Saves user high scores to disk.
+     *
+     * @param highScores
+     *            High scores to save.
+     * @param mode
+     *            get game mode 1P/2P.
+     *
+     * @throws IOException
+     *             In case of loading problems.
+     */
+    public void saveHighScores(final List&lt;Score&gt; highScores, String mode) throws IOException {
+<span class="nc" id="L123">        OutputStream outputStream = null;</span>
+<span class="nc" id="L124">        BufferedWriter bufferedWriter = null;</span>
+
+        try {
+<span class="nc" id="L127">            String scoresPath = getFilePath(&quot;game_data/&quot;+mode+&quot;_scores.csv&quot;);</span>
+
+<span class="nc" id="L129">            File scoresFile = new File(scoresPath);</span>
+
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            if (!scoresFile.exists())</span>
+<span class="nc" id="L132">                scoresFile.createNewFile();</span>
+
+<span class="nc" id="L134">            outputStream = new FileOutputStream(scoresFile);</span>
+<span class="nc" id="L135">            bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));</span>
+
+<span class="nc" id="L137">            LOGGER.info(&quot;Saving user high scores.&quot;);</span>
+<span class="nc" id="L138">            bufferedWriter.write(&quot;player,score&quot;);</span>
+<span class="nc" id="L139">            bufferedWriter.newLine();</span>
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">            for(Score score : highScores) {</span>
+<span class="nc" id="L142">                bufferedWriter.write(score.getName() + &quot;,&quot; + score.getScore());</span>
+<span class="nc" id="L143">                bufferedWriter.newLine();</span>
+<span class="nc" id="L144">            }</span>
+
+        } finally {
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            if (bufferedWriter != null)</span>
+<span class="nc" id="L148">                bufferedWriter.close();</span>
+        }
+<span class="nc" id="L150">    }</span>
+
+    /**
+     * Returns the filepath
+     *
+     * @param fileName
+     *      file to get path
+     * @return full file path
+     * @throws IOException
+     *      In case of loading problems
+     * */
+    private static String getFilePath(String fileName) throws IOException {
+<span class="nc" id="L162">        String rootDir = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="nc" id="L163">        String filePath = rootDir + File.separator + fileName;</span>
+
+<span class="nc" id="L165">        File file = new File(filePath);</span>
+<span class="nc" id="L166">        File parentDir = file.getParentFile();</span>
+<span class="nc bnc" id="L167" title="All 4 branches missed.">        if (parentDir != null &amp;&amp; !parentDir.exists()) {</span>
+<span class="nc" id="L168">            parentDir.mkdirs();</span>
+        }
+
+<span class="nc" id="L171">        return filePath;</span>
+    }
+
+    /**
+     * Search Achievement list of user
+     *
+     * @param userName user's name to search.
+     * @throws IOException In case of loading problems.
+     */
+    public List&lt;Boolean&gt; searchAchievementsByName(String userName) throws IOException {
+<span class="nc" id="L181">        List&lt;Boolean&gt; achievementList = new ArrayList&lt;&gt;();</span>
+
+        try {
+<span class="nc" id="L184">            String achievementPath = getFilePath(&quot;game_data/achievement.csv&quot;);</span>
+
+<span class="nc" id="L186">            try (BufferedReader bReader = new BufferedReader(</span>
+                    new InputStreamReader(new FileInputStream(achievementPath), StandardCharsets.UTF_8))) {
+
+<span class="nc" id="L189">                bReader.readLine(); // Skip header</span>
+                String line;
+<span class="nc" id="L191">                boolean found = false;</span>
+
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                while ((line = bReader.readLine()) != null) {</span>
+<span class="nc" id="L194">                    String[] playRecord = line.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">                    if (playRecord.length &lt; 3) continue; // Minimum fields: mode, userName, at least 1 achievement</span>
+
+<span class="nc" id="L197">                    String mode = playRecord[0].trim(); // Mode: &quot;1&quot; or &quot;2&quot;</span>
+<span class="nc" id="L198">                    String name = playRecord[1].trim();</span>
+
+<span class="nc bnc" id="L200" title="All 2 branches missed.">                    if (name.equals(userName)) {</span>
+<span class="nc" id="L201">                        found = true;</span>
+<span class="nc" id="L202">                        LOGGER.info(&quot;Loading user achievements.&quot;);</span>
+                        // Achievements start from index 2
+<span class="nc bnc" id="L204" title="All 2 branches missed.">                        for (int i = 2; i &lt; playRecord.length; i++) {</span>
+<span class="nc" id="L205">                            achievementList.add(playRecord[i].equals(&quot;1&quot;));</span>
+                        }
+<span class="nc" id="L207">                        break;</span>
+                    }
+<span class="nc" id="L209">                }</span>
+
+<span class="nc bnc" id="L211" title="All 2 branches missed.">                if (!found) {</span>
+<span class="nc" id="L212">                    LOGGER.info(&quot;Loading default achievements.&quot;);</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">                    for (int i = 0; i &lt; 5; i++) { // Default to 5 achievements, all set to false</span>
+<span class="nc" id="L214">                        achievementList.add(false);</span>
+                    }
+                }
+            }
+
+<span class="nc" id="L219">        } catch (FileNotFoundException e) {</span>
+<span class="nc" id="L220">            LOGGER.info(&quot;Achievement file not found, loading default achievements.&quot;);</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">            for (int i = 0; i &lt; 5; i++) {</span>
+<span class="nc" id="L222">                achievementList.add(false);</span>
+            }
+<span class="nc" id="L224">        }</span>
+
+<span class="nc" id="L226">        return achievementList;</span>
+    }
+
+
+    /**
+     * Unlocks achievements for a specific user.
+     *
+     * @param userName             The name of the user.
+     * @param unlockedAchievement  A list of booleans representing which achievements have been unlocked.
+     */
+    public void unlockAchievement(String userName, List&lt;Boolean&gt; unlockedAchievement, String mode) {
+<span class="nc" id="L237">        List&lt;String[]&gt; records = new ArrayList&lt;&gt;();</span>
+
+        // Extract only numeric part from mode string (e.g., &quot;1P&quot; → &quot;1&quot;, &quot;2P&quot; → &quot;2&quot;)
+<span class="nc" id="L240">        String numericMode = mode.replaceAll(&quot;[^0-9]&quot;, &quot;&quot;);</span>
+
+        try {
+<span class="nc" id="L243">            String achievementPath = getFilePath(&quot;game_data/achievement.csv&quot;);</span>
+
+<span class="nc" id="L245">            try (BufferedReader bReader = new BufferedReader(</span>
+                    new InputStreamReader(new FileInputStream(achievementPath), StandardCharsets.UTF_8))) {
+
+                String line;
+<span class="nc" id="L249">                boolean found = false;</span>
+
+<span class="nc bnc" id="L251" title="All 2 branches missed.">                while ((line = bReader.readLine()) != null) {</span>
+<span class="nc" id="L252">                    String[] playRecord = line.split(&quot;,&quot;);</span>
+
+                    // Skip invalid or incomplete lines
+<span class="nc bnc" id="L255" title="All 2 branches missed.">                    if (playRecord.length &lt; 3) {</span>
+<span class="nc" id="L256">                        records.add(playRecord);</span>
+<span class="nc" id="L257">                        continue;</span>
+                    }
+
+<span class="nc" id="L260">                    String currentMode = playRecord[0].trim();</span>
+<span class="nc" id="L261">                    String name = playRecord[1].trim();</span>
+
+                    // Match both username and mode to consider it the same record
+<span class="nc bnc" id="L264" title="All 4 branches missed.">                    if (name.equals(userName) &amp;&amp; currentMode.equals(numericMode)) {</span>
+<span class="nc" id="L265">                        found = true;</span>
+<span class="nc" id="L266">                        Logger.getLogger(getClass().getName()).info(&quot;Achievement has been updated.&quot;);</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">                        for (int i = 2; i &lt; playRecord.length; i++) {</span>
+<span class="nc bnc" id="L268" title="All 4 branches missed.">                            if (playRecord[i].equals(&quot;0&quot;) &amp;&amp; unlockedAchievement.get(i - 2)) {</span>
+<span class="nc" id="L269">                                playRecord[i] = &quot;1&quot;;</span>
+                            }
+                        }
+                    }
+
+<span class="nc" id="L274">                    records.add(playRecord);</span>
+<span class="nc" id="L275">                }</span>
+
+                // If no existing record found, create a new one
+<span class="nc bnc" id="L278" title="All 2 branches missed.">                if (!found) {</span>
+<span class="nc" id="L279">                    Logger.getLogger(getClass().getName()).info(&quot;User not found, creating new record.&quot;);</span>
+<span class="nc" id="L280">                    String[] newRecord = new String[unlockedAchievement.size() + 2];</span>
+<span class="nc" id="L281">                    newRecord[0] = numericMode; // Store numeric mode only</span>
+<span class="nc" id="L282">                    newRecord[1] = userName;</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">                    for (int i = 0; i &lt; unlockedAchievement.size(); i++) {</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">                        newRecord[i + 2] = unlockedAchievement.get(i) ? &quot;1&quot; : &quot;0&quot;;</span>
+                    }
+<span class="nc" id="L286">                    records.add(newRecord);</span>
+                }
+            }
+
+            // Write the updated records back to the CSV file
+<span class="nc" id="L291">            try (BufferedWriter bWriter = new BufferedWriter(</span>
+                    new OutputStreamWriter(new FileOutputStream(achievementPath), StandardCharsets.UTF_8))) {
+<span class="nc bnc" id="L293" title="All 2 branches missed.">                for (String[] record : records) {</span>
+<span class="nc" id="L294">                    bWriter.write(String.join(&quot;,&quot;, record));</span>
+<span class="nc" id="L295">                    bWriter.newLine();</span>
+<span class="nc" id="L296">                }</span>
+            }
+
+<span class="nc" id="L299">        } catch (IOException e) {</span>
+<span class="nc" id="L300">            Logger.getLogger(getClass().getName()).info(&quot;No achievements to save or error occurred.&quot;);</span>
+<span class="nc" id="L301">        }</span>
+<span class="nc" id="L302">    }</span>
+
+    /**
+     * Returns a list of users who have completed a specific achievement.
+     *
+     * @param achievement The achievement to check.
+     * @return A list of strings in the format &quot;mode:username&quot; for those who have completed the achievement.
+     *
+     * [2025-10-09] Added in commit: feat: add method to retrieve achievement completer
+     */
+    public List&lt;String&gt; getAchievementCompleter(Achievement achievement) {
+<span class="nc" id="L313">        List&lt;String&gt; completer = new ArrayList&lt;&gt;();</span>
+        try {
+<span class="nc" id="L315">            String achievementPath = getFilePath(&quot;game_data/achievement.csv&quot;);</span>
+
+<span class="nc" id="L317">            try (BufferedReader bReader = new BufferedReader(</span>
+                    new InputStreamReader(new FileInputStream(achievementPath), StandardCharsets.UTF_8))) {
+
+                String line;
+<span class="nc" id="L321">                String[] header = bReader.readLine().split(&quot;,&quot;);</span>
+<span class="nc" id="L322">                int idx = -1;</span>
+
+                // Find the column index of the given achievement name
+<span class="nc bnc" id="L325" title="All 2 branches missed.">                for (int i = 2; i &lt; header.length; i++) { // Achievements start from column index 2</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">                    if (header[i].trim().equalsIgnoreCase(achievement.getName().trim())) {</span>
+<span class="nc" id="L327">                        idx = i;</span>
+<span class="nc" id="L328">                        break;</span>
+                    }
+                }
+
+<span class="nc bnc" id="L332" title="All 2 branches missed.">                if (idx == -1) {</span>
+<span class="nc" id="L333">                    LOGGER.warning(&quot;Achievement not found: &quot; + achievement.getName());</span>
+<span class="nc" id="L334">                    return completer;</span>
+                }
+
+                // Parse each line in the file
+<span class="nc bnc" id="L338" title="All 2 branches missed.">                while ((line = bReader.readLine()) != null) {</span>
+<span class="nc" id="L339">                    String[] tokens = line.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">                    if (tokens.length &lt;= idx) continue;</span>
+
+<span class="nc" id="L342">                    String mode = tokens[0].trim();</span>
+<span class="nc" id="L343">                    String playerName = tokens[1].trim();</span>
+<span class="nc" id="L344">                    String value = tokens[idx].trim();</span>
+
+<span class="nc bnc" id="L346" title="All 2 branches missed.">                    if (value.equals(&quot;1&quot;)) {</span>
+<span class="nc" id="L347">                        completer.add(mode + &quot;:&quot; + playerName);</span>
+                    }
+<span class="nc" id="L349">                }</span>
+
+<span class="nc" id="L351">            }</span>
+
+<span class="nc" id="L353">        } catch (IOException e) {</span>
+<span class="nc" id="L354">            LOGGER.warning(&quot;Error reading achievement file. Returning default users...&quot;);</span>
+<span class="nc" id="L355">            completer.add(&quot;1:ABC&quot;);</span>
+<span class="nc" id="L356">            completer.add(&quot;2:DEF&quot;);</span>
+<span class="nc" id="L357">        }</span>
+
+<span class="nc" id="L359">        return completer;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

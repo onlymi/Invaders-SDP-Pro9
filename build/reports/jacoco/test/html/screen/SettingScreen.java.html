@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SettingScreen.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">space_Invaders</a> &gt; <a href="index.source.html" class="el_package">screen</a> &gt; <span class="el_source">SettingScreen.java</span></div><h1>SettingScreen.java</h1><pre class="source lang-java linenums">package screen;
+
+import engine.utils.Cooldown;
+import engine.Core;
+import engine.SoundManager;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+
+public class SettingScreen extends Screen {
+    private static final int volumeMenu = 0;
+    private static final int firstplayerMenu = 1;
+    private static final int secondplayerMenu= 2;
+    private static final int back = -1;
+<span class="nc" id="L15">    private final String[] menuItem = {&quot;Volume&quot;, &quot;1P Keyset&quot;, &quot;2P Keyset&quot;};</span>
+    private int selectMenuItem;
+    private Cooldown inputCooldown;
+    private int volumelevel;
+<span class="nc" id="L19">    private boolean draggingVolume = false;</span>
+<span class="nc" id="L20">    private int selectedSection = 0;</span>
+<span class="nc" id="L21">    private int selectedKeyIndex = 0;</span>
+<span class="nc" id="L22">    private String[] keyItems = {&quot;MOVE LEFT&quot;, &quot;MOVE RIGHT&quot;, &quot;ATTACK&quot;};</span>
+<span class="nc" id="L23">    private boolean[] keySelected = {false, false, false};</span>
+<span class="nc" id="L24">    private boolean waitingForNewKey = false;</span>
+    private int[] player1Keys;
+    private int[] player2Keys;
+
+    /**
+     * Constructor, establishes the properties of the screen.
+     *
+     * @param width  Screen width.
+     * @param height Screen height.
+     * @param fps    Frames per second, frame rate at which the game is run.
+     */
+    public SettingScreen(final int width, final int height, final int fps) {
+<span class="nc" id="L36">        super(width, height, fps);</span>
+
+<span class="nc" id="L38">        this.returnCode = 1;</span>
+        // Import key arrangement and save it to field
+<span class="nc" id="L40">        this.player1Keys = Core.getInputManager().getPlayer1Keys();</span>
+<span class="nc" id="L41">        this.player2Keys = Core.getInputManager().getPlayer2Keys();</span>
+        
+        // Start menu music loop when the settings screen is created
+<span class="nc" id="L44">        SoundManager.playLoop(&quot;title_sound&quot;);</span>
+<span class="nc" id="L45">    }</span>
+
+    private void setVolumeFromX(java.awt.Rectangle barBox, int mouseX) {
+<span class="nc" id="L48">        double ratio = (double)(mouseX - barBox.x) / (double)barBox.width;</span>
+<span class="nc" id="L49">        ratio = Math.max(0.0, Math.min(1.0, ratio));</span>
+<span class="nc" id="L50">        this.volumelevel = (int)Math.round(ratio * 100.0);</span>
+<span class="nc" id="L51">        Core.setVolumeLevel(this.volumelevel);</span>
+        // Update volume of currently playing sounds
+<span class="nc" id="L53">        SoundManager.updateVolume();</span>
+<span class="nc" id="L54">    }</span>
+
+    /**
+     * Starts the action.
+     *
+     * @return Next screen code.
+     */
+    public final void initialize(){
+<span class="nc" id="L62">        super.initialize();</span>
+<span class="nc" id="L63">        this.inputCooldown = Core.getCooldown(200);</span>
+<span class="nc" id="L64">        this.inputCooldown.reset();</span>
+<span class="nc" id="L65">        this.selectMenuItem = volumeMenu;</span>
+<span class="nc" id="L66">        this.volumelevel = Core.getVolumeLevel();</span>
+<span class="nc" id="L67">    }</span>
+    public final int run(){
+<span class="nc" id="L69">        super.run();</span>
+        // Stop menu music when leaving the settings screen
+<span class="nc" id="L71">        SoundManager.stopAllMusic();</span>
+
+<span class="nc" id="L73">        return this.returnCode;</span>
+    }
+
+    /**
+     * Updates the elements on screen and checks for events.
+     */
+    protected final void update() {
+<span class="nc" id="L80">        super.update();</span>
+
+<span class="nc bnc" id="L82" title="All 6 branches missed.">        if(inputManager.isKeyDown(KeyEvent.VK_UP)&amp;&amp;this.inputCooldown.checkFinished() &amp;&amp; this.selectedSection == 0) {</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">            if(this.selectMenuItem == back) {</span>
+<span class="nc" id="L84">                this.selectMenuItem = menuItem.length - 1;</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">            } else if(this.selectMenuItem == 0){</span>
+<span class="nc" id="L86">                this.selectMenuItem = back;</span>
+            } else {
+<span class="nc" id="L88">                this.selectMenuItem --;</span>
+            }
+<span class="nc" id="L90">            this.inputCooldown.reset();</span>
+        }
+
+<span class="nc bnc" id="L93" title="All 6 branches missed.">        if (inputManager.isKeyDown(KeyEvent.VK_DOWN) &amp;&amp; this.inputCooldown.checkFinished() &amp;&amp; this.selectedSection == 0) {</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">            if (this.selectMenuItem == back){</span>
+<span class="nc" id="L95">                this.selectMenuItem = 0;</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            } else if (this.selectMenuItem == this.menuItem.length - 1) {</span>
+<span class="nc" id="L97">                this.selectMenuItem = back;</span>
+            } else {
+<span class="nc" id="L99">                this.selectMenuItem ++;</span>
+            }
+<span class="nc" id="L101">            this.inputCooldown.reset();</span>
+        }
+
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (this.selectMenuItem == volumeMenu) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">             if(this.inputCooldown.checkFinished()) {</span>
+<span class="nc bnc" id="L106" title="All 4 branches missed.">                 if (inputManager.isKeyDown(KeyEvent.VK_LEFT) &amp;&amp; volumelevel &gt; 0) {</span>
+<span class="nc" id="L107">                     this.volumelevel--;</span>
+<span class="nc" id="L108">                     Core.setVolumeLevel(this.volumelevel);</span>
+<span class="nc" id="L109">                     SoundManager.updateVolume();</span>
+<span class="nc" id="L110">                     this.inputCooldown.reset();</span>
+                 }
+<span class="nc bnc" id="L112" title="All 4 branches missed.">                 if (inputManager.isKeyDown(KeyEvent.VK_RIGHT) &amp;&amp; volumelevel &lt; 100) {</span>
+<span class="nc" id="L113">                     this.volumelevel++;</span>
+<span class="nc" id="L114">                     Core.setVolumeLevel(this.volumelevel);</span>
+<span class="nc" id="L115">                     SoundManager.updateVolume();</span>
+<span class="nc" id="L116">                     this.inputCooldown.reset();</span>
+                 }
+             }
+        }
+        // Change key settings
+<span class="nc bnc" id="L121" title="All 4 branches missed.">        else if (this.selectMenuItem == firstplayerMenu || this.selectMenuItem == secondplayerMenu) {</span>
+<span class="nc bnc" id="L122" title="All 8 branches missed.">            if (inputManager.isKeyDown(KeyEvent.VK_RIGHT) &amp;&amp; this.inputCooldown.checkFinished() &amp;&amp; !waitingForNewKey &amp;&amp; selectedSection == 0) {</span>
+<span class="nc" id="L123">                this.selectedSection= 1;</span>
+<span class="nc" id="L124">                this.selectedKeyIndex = 0;</span>
+<span class="nc" id="L125">                this.inputCooldown.reset();</span>
+            }
+<span class="nc bnc" id="L127" title="All 8 branches missed.">            if (this.selectedSection == 1 &amp;&amp; inputManager.isKeyDown(KeyEvent.VK_LEFT) &amp;&amp; this.inputCooldown.checkFinished() &amp;&amp; !waitingForNewKey) {</span>
+<span class="nc" id="L128">                selectedSection = 0;</span>
+<span class="nc" id="L129">                this.inputCooldown.reset();</span>
+            }
+<span class="nc bnc" id="L131" title="All 10 branches missed.">            if (this.selectedSection == 1 &amp;&amp; inputManager.isKeyDown(KeyEvent.VK_UP) &amp;&amp; this.inputCooldown.checkFinished() &amp;&amp; selectedKeyIndex &gt; 0 &amp;&amp; !waitingForNewKey) {</span>
+<span class="nc" id="L132">                selectedKeyIndex--;</span>
+<span class="nc" id="L133">                this.inputCooldown.reset();</span>
+            }
+<span class="nc bnc" id="L135" title="All 10 branches missed.">            if (this.selectedSection == 1 &amp;&amp; inputManager.isKeyDown(KeyEvent.VK_DOWN) &amp;&amp; this.inputCooldown.checkFinished() &amp;&amp; selectedKeyIndex &lt; keyItems.length - 1 &amp;&amp; !waitingForNewKey) {</span>
+<span class="nc" id="L136">                selectedKeyIndex++;</span>
+<span class="nc" id="L137">                this.inputCooldown.reset();</span>
+            }
+            // Start waiting for new keystrokes
+<span class="nc bnc" id="L140" title="All 8 branches missed.">            if (this.selectedSection == 1 &amp;&amp; inputManager.isKeyDown(KeyEvent.VK_SPACE) &amp;&amp; this.inputCooldown.checkFinished() &amp;&amp; !waitingForNewKey) {</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">                keySelected[selectedKeyIndex] = !keySelected[selectedKeyIndex];</span>
+<span class="nc" id="L142">                waitingForNewKey = keySelected[selectedKeyIndex];</span>
+<span class="nc" id="L143">                this.inputCooldown.reset();</span>
+            }
+            // check duplicate and exception when new key is pressed, and save as new key if valid
+<span class="nc bnc" id="L146" title="All 2 branches missed.">            if (waitingForNewKey) {</span>
+<span class="nc" id="L147">                int newKey = inputManager.getLastPressedKey();</span>
+<span class="nc bnc" id="L148" title="All 4 branches missed.">                if (newKey != -1 &amp;&amp; this.inputCooldown.checkFinished()) {</span>
+                    // exception to esc key and backspace key
+<span class="nc bnc" id="L150" title="All 4 branches missed.">                    if (newKey == KeyEvent.VK_ESCAPE || newKey == KeyEvent.VK_BACK_SPACE) {</span>
+<span class="nc" id="L151">                        System.out.println(&quot;Key setting change cancelled : &quot; + KeyEvent.getKeyText(newKey) + &quot; input&quot;);</span>
+<span class="nc" id="L152">                        keySelected[selectedKeyIndex] = false;</span>
+<span class="nc" id="L153">                        waitingForNewKey = false;</span>
+<span class="nc" id="L154">                        this.inputCooldown.reset();</span>
+<span class="nc" id="L155">                        return;</span>
+                    }
+                    // Check duplicate keys
+<span class="nc bnc" id="L158" title="All 2 branches missed.">                    int[] targetKeys = (this.selectMenuItem == firstplayerMenu) ? player1Keys : player2Keys;</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">                    int[] otherKeys = (this.selectMenuItem == firstplayerMenu) ? player2Keys : player1Keys;</span>
+
+<span class="nc" id="L161">                    boolean duplicate = false;</span>
+
+<span class="nc bnc" id="L163" title="All 2 branches missed.">                    for (int i = 0; i &lt; targetKeys.length; i++) {</span>
+<span class="nc bnc" id="L164" title="All 4 branches missed.">                        if (i != selectedKeyIndex &amp;&amp; targetKeys[i] == newKey) {</span>
+<span class="nc" id="L165">                            duplicate = true;</span>
+<span class="nc" id="L166">                            System.out.println(&quot;Key already in use:&quot; + KeyEvent.getKeyText(newKey));</span>
+<span class="nc" id="L167">                            break;</span>
+                        }
+
+<span class="nc bnc" id="L170" title="All 2 branches missed.">                        if (otherKeys[i] == newKey) {</span>
+<span class="nc" id="L171">                            duplicate = true;</span>
+<span class="nc" id="L172">                            System.out.println(&quot;Key already in use:&quot; + KeyEvent.getKeyText(newKey));</span>
+<span class="nc" id="L173">                            break;</span>
+                        }
+                    }
+
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                    if (duplicate) {</span>
+<span class="nc" id="L178">                        keySelected[selectedKeyIndex] = false;</span>
+<span class="nc" id="L179">                        waitingForNewKey = false;</span>
+<span class="nc" id="L180">                        this.inputCooldown.reset();</span>
+<span class="nc" id="L181">                        return;</span>
+                    }
+                    // key assignment entered and save to config
+<span class="nc bnc" id="L184" title="All 2 branches missed.">                    if (this.selectMenuItem == firstplayerMenu) {</span>
+<span class="nc" id="L185">                        player1Keys[selectedKeyIndex] = newKey;</span>
+<span class="nc" id="L186">                        Core.getInputManager().setPlayer1Keys(player1Keys);</span>
+                    } else {
+<span class="nc" id="L188">                        player2Keys[selectedKeyIndex] = newKey;</span>
+<span class="nc" id="L189">                        Core.getInputManager().setPlayer2Keys(player2Keys);</span>
+                    }
+
+<span class="nc" id="L192">                    keySelected[selectedKeyIndex] = false;</span>
+<span class="nc" id="L193">                    waitingForNewKey = false;</span>
+<span class="nc" id="L194">                    Core.getInputManager().saveKeyConfig();</span>
+<span class="nc" id="L195">                    System.out.println(&quot;New key saved → &quot; + KeyEvent.getKeyText(newKey));</span>
+<span class="nc" id="L196">                    this.inputCooldown.reset();</span>
+                }
+            }
+         }
+
+         // change space to escape
+<span class="nc bnc" id="L202" title="All 4 branches missed.">         if (inputManager.isKeyDown(KeyEvent.VK_ESCAPE) &amp;&amp; this.inputCooldown.checkFinished()) {</span>
+<span class="nc" id="L203">            this.isRunning = false;</span>
+<span class="nc" id="L204">            this.inputCooldown.reset();</span>
+        }
+
+        // make mouse work on volume bar
+<span class="nc" id="L208">        int mx = inputManager.getMouseX();</span>
+<span class="nc" id="L209">        int my = inputManager.getMouseY();</span>
+<span class="nc" id="L210">        boolean pressed = inputManager.isMousePressed();</span>
+<span class="nc" id="L211">        boolean clicked = inputManager.isMouseClicked();</span>
+
+<span class="nc" id="L213">        Rectangle backBox = Core.getHitboxManager().getBackButtonHitbox(drawManager.getBackBufferGraphics(), this);</span>
+<span class="nc" id="L214">        Rectangle barBox  = Core.getHitboxManager().getVolumeBarHitbox(this);</span>
+
+<span class="nc bnc" id="L216" title="All 4 branches missed.">        if (clicked &amp;&amp; backBox.contains(mx, my)) {</span>
+<span class="nc" id="L217">            this.returnCode = 1;</span>
+<span class="nc" id="L218">            this.isRunning = false;</span>
+<span class="nc" id="L219">            return;</span>
+        }
+
+<span class="nc bnc" id="L222" title="All 6 branches missed.">        if (!draggingVolume &amp;&amp; pressed &amp;&amp; barBox.contains(mx, my)) {</span>
+<span class="nc" id="L223">            draggingVolume = true;</span>
+<span class="nc" id="L224">            setVolumeFromX(barBox, mx);</span>
+        }
+
+<span class="nc bnc" id="L227" title="All 4 branches missed.">        if (draggingVolume &amp;&amp; pressed) {</span>
+<span class="nc" id="L228">            setVolumeFromX(barBox, mx);</span>
+        }
+
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        if (!pressed) {</span>
+<span class="nc" id="L232">            draggingVolume = false;</span>
+        }
+
+<span class="nc bnc" id="L235" title="All 4 branches missed.">        if (inputManager.isKeyDown(KeyEvent.VK_SPACE) &amp;&amp; this.inputCooldown.checkFinished()) {</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">            if (this.selectMenuItem == back) {</span>
+<span class="nc" id="L237">                this.returnCode = 1;</span>
+<span class="nc" id="L238">                this.isRunning = false;</span>
+<span class="nc" id="L239">                return;</span>
+            }
+<span class="nc" id="L241">            this.inputCooldown.reset();</span>
+        }
+
+<span class="nc" id="L244">        draw();</span>
+<span class="nc" id="L245">    }</span>
+
+    /**
+     * Draws the elements associated with the screen.
+     */
+    private void draw() {
+<span class="nc" id="L251">        drawManager.initDrawing(this);</span>
+<span class="nc" id="L252">        drawManager.getSettingScreenRenderer().drawSettingMenu(drawManager.getBackBufferGraphics(), this);</span>
+<span class="nc" id="L253">        drawManager.getSettingScreenRenderer().drawSettingLayout(drawManager.getBackBufferGraphics(), this, this.menuItem, this.selectMenuItem);</span>
+
+<span class="nc bnc" id="L255" title="All 4 branches missed.">        switch(this.selectMenuItem) {</span>
+            case volumeMenu:
+<span class="nc" id="L257">                drawManager.getSettingScreenRenderer().drawVolumeBar(drawManager.getBackBufferGraphics(), this, this.volumelevel, this.draggingVolume);</span>
+<span class="nc" id="L258">                break;</span>
+            case firstplayerMenu:
+<span class="nc" id="L260">                drawManager.getSettingScreenRenderer().drawKeySettings(drawManager.getBackBufferGraphics(), this, 1, this.selectedSection, this.selectedKeyIndex, this.keySelected,this.player1Keys);</span>
+<span class="nc" id="L261">                break;</span>
+            case secondplayerMenu:
+<span class="nc" id="L263">                drawManager.getSettingScreenRenderer().drawKeySettings(drawManager.getBackBufferGraphics(), this, 2,  this.selectedSection, this.selectedKeyIndex, this.keySelected, this.player2Keys);</span>
+                break;
+        }
+
+        // hover highlight
+<span class="nc" id="L268">        int mx = inputManager.getMouseX();</span>
+<span class="nc" id="L269">        int my = inputManager.getMouseY();</span>
+<span class="nc" id="L270">        java.awt.Rectangle backBox = Core.getHitboxManager().getBackButtonHitbox(drawManager.getBackBufferGraphics(), this);</span>
+
+<span class="nc" id="L272">        boolean backHover = backBox.contains(mx, my);</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        boolean backSelected = (this. selectMenuItem == back);</span>
+<span class="nc bnc" id="L274" title="All 4 branches missed.">        drawManager.getCommonRenderer().drawBackButton(drawManager.getBackBufferGraphics(), this, backHover || backSelected);</span>
+
+<span class="nc" id="L276">        drawManager.completeDrawing(this);</span>
+<span class="nc" id="L277">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

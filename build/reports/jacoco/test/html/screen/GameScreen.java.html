@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameScreen.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">space_Invaders</a> &gt; <a href="index.source.html" class="el_package">screen</a> &gt; <span class="el_source">GameScreen.java</span></div><h1>GameScreen.java</h1><pre class="source lang-java linenums">package screen;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import animations.BasicGameSpace;
+import animations.MenuSpace;
+import engine.utils.Cooldown;
+import engine.Core;
+import engine.GameSettings;
+import engine.GameState;
+import engine.SoundManager;
+import engine.gameplay.achievement.AchievementManager;
+import engine.gameplay.item.ItemManager;
+import entity.Bullet;
+import entity.BulletPool;
+import entity.EnemyShip;
+import entity.EnemyShipFormation;
+import entity.Entity;
+import entity.Ship;
+
+// NEW Item code
+import entity.Item;
+import entity.ItemPool;
+
+/**
+ * Implements the game screen, where the action happens.(supports co-op with
+ * shared team lives)
+ *
+ * @author &lt;a href=&quot;mailto:RobertoIA1987@gmail.com&quot;&gt;Roberto Izquierdo Amo&lt;/a&gt;
+ *
+ */
+public class GameScreen extends Screen {
+
+    /** Milliseconds until the screen accepts user input. */
+    private static final int INPUT_DELAY = 6000;
+    /** Bonus score for each life remaining at the end of the level. */
+    private static final int LIFE_SCORE = 100;
+    /** Minimum time between bonus ship's appearances. */
+    private static final int BONUS_SHIP_INTERVAL = 20000;
+    /** Maximum variance in the time between bonus ship's appearances. */
+    private static final int BONUS_SHIP_VARIANCE = 10000;
+    /** Time until bonus ship explosion disappears. */
+    private static final int BONUS_SHIP_EXPLOSION = 500;
+    /** Time from finishing the level to screen change. */
+    private static final int SCREEN_CHANGE_INTERVAL = 1500;
+    /** Height of the interface separation line. */
+    private static final int SEPARATION_LINE_HEIGHT = 68;
+      private static final int HIGH_SCORE_NOTICE_DURATION = 2000;
+<span class="nc" id="L53">    private static boolean sessionHighScoreNotified = false;</span>
+
+    /** For Check Achievement
+     * 2015-10-02 add new */
+    private AchievementManager achievementManager;
+    /** Current game difficulty settings. */
+    private GameSettings gameSettings;
+    /** Current difficulty level number. */
+    private int level;
+    /** Formation of enemy ships. */
+    private EnemyShipFormation enemyShipFormation;
+    private EnemyShip enemyShipSpecial;
+    /** Formation of player ships. */
+<span class="nc" id="L66">    private Ship[] ships = new Ship[GameState.NUM_PLAYERS];</span>
+    /** Minimum time between bonus ship appearances. */
+    private Cooldown enemyShipSpecialCooldown;
+    /** Time until bonus ship explosion disappears. */
+    private Cooldown enemyShipSpecialExplosionCooldown;
+    /** Time from finishing the level to screen change. */
+    private Cooldown screenFinishedCooldown;
+    /** Set of all bullets fired by on screen ships. */
+    private Set&lt;Bullet&gt; bullets;
+    /** Set of all items spawned. */
+    private Set&lt;Item&gt; items;
+    private long gameStartTime;
+    /** Checks if the level is finished. */
+    private boolean levelFinished;
+    /** Checks if a bonus life is received. */
+    private boolean bonusLife;
+    private int topScore;
+    private boolean highScoreNotified;
+    private long highScoreNoticeStartTime;
+
+    private boolean isPaused;
+    private Cooldown pauseCooldown;
+    private Cooldown returnMenuCooldown;
+
+    private int score;
+    private int lives;
+    private int bulletsShot;
+    private int shipsDestroyed;
+    private Ship ship;
+
+    /** checks if player took damage
+     * 2025-10-02 add new variable
+     * */
+    private boolean tookDamageThisLevel;
+<span class="nc" id="L100">    private boolean countdownSoundPlayed = false;</span>
+
+    private final GameState state;
+
+    private Ship.ShipType shipTypeP1;
+    private Ship.ShipType shipTypeP2;
+
+<span class="nc" id="L107">    BasicGameSpace basicGameSpace = new BasicGameSpace(100);</span>
+
+    /**
+     * Constructor, establishes the properties of the screen.
+     *
+     * @param gameState
+     *                     Current game state.
+     * @param gameSettings
+     *                     Current game settings.
+     * @param bonusLife
+     *                     Checks if a bonus life is awarded this level.
+     * @param width
+     *                     Screen width.
+     * @param height
+     *                     Screen height.
+     * @param fps
+     *                     Frames per second, frame rate at which the game is run.
+     * @param shipTypeP1
+     *                     Player 1's ship type.
+     * @param shipTypeP2
+     *                     Player 2's ship type.
+     * @param achievementManager
+     * 			               Achievement manager instance used to track and save player achievements.
+     * 			  2025-10-03 add generator parameter and comment
+     */
+    public GameScreen(final GameState gameState,
+                      final GameSettings gameSettings, final boolean bonusLife,
+                      final int width, final int height, final int fps, final Ship.ShipType shipTypeP1, final Ship.ShipType shipTypeP2, final AchievementManager achievementManager) {
+<span class="nc" id="L135">        super(width, height, fps);</span>
+
+<span class="nc" id="L137">        this.state = gameState;</span>
+<span class="nc" id="L138">        this.gameSettings = gameSettings;</span>
+<span class="nc" id="L139">        this.bonusLife = bonusLife;</span>
+<span class="nc" id="L140">        this.shipTypeP1 = shipTypeP1;</span>
+<span class="nc" id="L141">        this.shipTypeP2 = shipTypeP2;</span>
+<span class="nc" id="L142">        this.level = gameState.getLevel();</span>
+<span class="nc" id="L143">        this.score = gameState.getScore();</span>
+<span class="nc" id="L144">        this.lives = gameState.getLivesRemaining();</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (this.bonusLife)</span>
+<span class="nc" id="L146">            this.lives++;</span>
+<span class="nc" id="L147">        this.bulletsShot = gameState.getBulletsShot();</span>
+<span class="nc" id="L148">        this.shipsDestroyed = gameState.getShipsDestroyed();</span>
+
+<span class="nc" id="L150">        this.achievementManager = achievementManager;</span>
+<span class="nc" id="L151">        this.tookDamageThisLevel = false;</span>
+
+<span class="nc" id="L153">        this.highScoreNotified = false;</span>
+<span class="nc" id="L154">        this.highScoreNoticeStartTime = 0;</span>
+
+        // 2P: bonus life adds to team pool + singleplayer mode
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (this.bonusLife) {</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (state.isSharedLives()) {</span>
+<span class="nc" id="L159">                state.addTeamLife(1); // two player</span>
+            } else {
+                // 1P legacy: grant to P1
+<span class="nc" id="L162">                state.addLife(0, 1);  // singleplayer</span>
+            }
+        }
+      // Ensure achievementManager is not null for popup system
+<span class="nc bnc" id="L166" title="All 2 branches missed.">		if (this.achievementManager == null) this.achievementManager = new AchievementManager();</span>
+<span class="nc" id="L167">    }</span>
+
+    /**
+     * Resets the session high score notification flag.
+     * Should be called when a new game starts from the main menu.
+     */
+    public static void resetSessionHighScoreNotified() {
+<span class="nc" id="L174">        sessionHighScoreNotified = false;</span>
+<span class="nc" id="L175">    }</span>
+
+    /**
+     * Initializes basic screen properties, and adds necessary elements.
+     */
+    public final void initialize() {
+<span class="nc" id="L181">        super.initialize();</span>
+
+<span class="nc" id="L183">        state.clearAllEffects();</span>
+
+        // Start background music for gameplay
+<span class="nc" id="L186">        soundManager.playLoop(&quot;game_theme&quot;);</span>
+
+<span class="nc" id="L188">        enemyShipFormation = new EnemyShipFormation(this.gameSettings);</span>
+<span class="nc" id="L189">        enemyShipFormation.attach(this);</span>
+
+        // 2P mode: create both ships, tagged to their respective teams
+<span class="nc" id="L192">        this.ships[0] = new Ship(this.width / 2 - 60, this.height - 30, Entity.Team.PLAYER1, shipTypeP1, this.state); // P1</span>
+<span class="nc" id="L193">        this.ships[0].setPlayerId(1);</span>
+
+        // only allowing second ship to spawn when 2P mode is chosen
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (state.isCoop()) {</span>
+<span class="nc" id="L197">            this.ships[1] = new Ship(this.width / 2 + 60, this.height - 30, Entity.Team.PLAYER2, shipTypeP2, this.state); // P2</span>
+
+<span class="nc" id="L199">            this.ships[1].setPlayerId(2);</span>
+        } else {
+<span class="nc" id="L201">            this.ships[1] = null; // ensuring there's no P2 ship in 1P mode</span>
+        }
+
+<span class="nc" id="L204">        this.enemyShipSpecialCooldown = Core.getVariableCooldown(BONUS_SHIP_INTERVAL, BONUS_SHIP_VARIANCE);</span>
+<span class="nc" id="L205">        this.enemyShipSpecialCooldown.reset();</span>
+<span class="nc" id="L206">        this.enemyShipSpecialExplosionCooldown = Core.getCooldown(BONUS_SHIP_EXPLOSION);</span>
+<span class="nc" id="L207">        this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);</span>
+<span class="nc" id="L208">        this.bullets = new HashSet&lt;Bullet&gt;();</span>
+
+        // New Item Code
+<span class="nc" id="L211">        this.items = new HashSet&lt;Item&gt;();</span>
+
+		// Special input delay / countdown.
+<span class="nc" id="L214">		this.gameStartTime = System.currentTimeMillis();</span>
+<span class="nc" id="L215">		this.inputDelay = Core.getCooldown(INPUT_DELAY);</span>
+<span class="nc" id="L216">		this.inputDelay.reset();</span>
+
+<span class="nc" id="L218">        this.isPaused = false;</span>
+<span class="nc" id="L219">        this.pauseCooldown = Core.getCooldown(300);</span>
+<span class="nc" id="L220">        this.returnMenuCooldown = Core.getCooldown(300);</span>
+<span class="nc" id="L221">    }</span>
+
+    /**
+     * Starts the action.
+     *
+     * @return Next screen code.
+     */
+    public final int run() {
+<span class="nc" id="L229">        super.run();</span>
+
+        // 2P mode: award bonus score for remaining TEAM lives
+<span class="nc" id="L232">        state.addScore(0, LIFE_SCORE * state.getLivesRemaining());</span>
+
+        // Stop all music on exiting this screen
+<span class="nc" id="L235">        SoundManager.stopAllMusic();</span>
+
+<span class="nc" id="L237">        this.LOGGER.info(&quot;Screen cleared with a score of &quot; + state.getScore());</span>
+<span class="nc" id="L238">        return this.returnCode;</span>
+    }
+
+    /**
+     * Updates the elements on screen and checks for events.
+     */
+    protected final void update() {
+<span class="nc" id="L245">        super.update();</span>
+
+        // Countdown beep once during pre-start
+<span class="nc bnc" id="L248" title="All 4 branches missed.">        if (!this.inputDelay.checkFinished() &amp;&amp; !countdownSoundPlayed) {</span>
+<span class="nc" id="L249">            long elapsed = System.currentTimeMillis() - this.gameStartTime;</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">            if (elapsed &gt; 1750) {</span>
+<span class="nc" id="L251">                SoundManager.playOnce(&quot;count_down_sound&quot;);</span>
+<span class="nc" id="L252">                countdownSoundPlayed = true;</span>
+            }
+        }
+
+<span class="nc" id="L256">        checkAchievement();</span>
+<span class="nc bnc" id="L257" title="All 6 branches missed.">        if (this.inputDelay.checkFinished() &amp;&amp; inputManager.isKeyDown(KeyEvent.VK_ESCAPE) &amp;&amp; this.pauseCooldown.checkFinished()) {</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">            this.isPaused = !this.isPaused;</span>
+<span class="nc" id="L259">            this.pauseCooldown.reset();</span>
+
+<span class="nc bnc" id="L261" title="All 2 branches missed.">            if (this.isPaused) {</span>
+                // Pause game music when pausing - no sound during pause
+<span class="nc" id="L263">                SoundManager.loopStop();</span>
+            } else {
+                // Resume game music when unpausing
+<span class="nc" id="L266">                SoundManager.playLoop(&quot;game_theme&quot;);</span>
+            }
+        }
+
+<span class="nc bnc" id="L270" title="All 6 branches missed.">        if (this.isPaused &amp;&amp; inputManager.isKeyDown(KeyEvent.VK_BACK_SPACE) &amp;&amp; this.returnMenuCooldown.checkFinished()) {</span>
+<span class="nc" id="L271">            SoundManager.playOnce(&quot;select&quot;);</span>
+<span class="nc" id="L272">            SoundManager.stopAllMusic(); // Stop all music before returning to menu</span>
+<span class="nc" id="L273">            returnCode = 1;</span>
+<span class="nc" id="L274">            this.isRunning = false;</span>
+        }
+
+<span class="nc bnc" id="L277" title="All 2 branches missed.">        if (!this.isPaused) {</span>
+<span class="nc bnc" id="L278" title="All 4 branches missed.">            if (this.inputDelay.checkFinished() &amp;&amp; !this.levelFinished) {</span>
+
+                // Per-player input/move/shoot
+<span class="nc bnc" id="L281" title="All 2 branches missed.">                for (int p = 0; p &lt; GameState.NUM_PLAYERS; p++) {</span>
+<span class="nc" id="L282">                    Ship ship = this.ships[p];</span>
+
+<span class="nc bnc" id="L284" title="All 4 branches missed.">                    if (ship == null || ship.isDestroyed())</span>
+<span class="nc" id="L285">                        continue;</span>
+
+                    boolean moveRight, moveLeft, fire;
+                    // Get player key input status
+<span class="nc bnc" id="L289" title="All 2 branches missed.">                    if (p == 0) {</span>
+<span class="nc" id="L290">                        moveRight = inputManager.isP1RightPressed();</span>
+<span class="nc" id="L291">                        moveLeft = inputManager.isP1LeftPressed();</span>
+<span class="nc" id="L292">                        fire = inputManager.isP1ShootPressed();</span>
+                    } else {
+<span class="nc" id="L294">                        moveRight = inputManager.isP2RightPressed();</span>
+<span class="nc" id="L295">                        moveLeft = inputManager.isP2LeftPressed();</span>
+<span class="nc" id="L296">                        fire = inputManager.isP2ShootPressed();</span>
+                    }
+
+<span class="nc bnc" id="L299" title="All 2 branches missed.">                    boolean isRightBorder = ship.getPositionX() + ship.getWidth() + ship.getSpeed() &gt; this.width - 1;</span>
+
+<span class="nc bnc" id="L301" title="All 2 branches missed.">                    boolean isLeftBorder = ship.getPositionX() - ship.getSpeed() &lt; 1;</span>
+
+<span class="nc bnc" id="L303" title="All 4 branches missed.">                    if (moveRight &amp;&amp; !isRightBorder)</span>
+<span class="nc" id="L304">                        ship.moveRight();</span>
+<span class="nc bnc" id="L305" title="All 4 branches missed.">                    if (moveLeft &amp;&amp; !isLeftBorder)</span>
+<span class="nc" id="L306">                        ship.moveLeft();</span>
+
+<span class="nc bnc" id="L308" title="All 2 branches missed.">                    fire = (p == 0)</span>
+<span class="nc" id="L309">                            ? inputManager.isKeyDown(KeyEvent.VK_SPACE)</span>
+<span class="nc" id="L310">                            : inputManager.isKeyDown(KeyEvent.VK_ENTER);</span>
+
+<span class="nc bnc" id="L312" title="All 4 branches missed.">                        if (fire &amp;&amp; ship.shoot(this.bullets)) {</span>
+<span class="nc" id="L313">                            SoundManager.playOnce(&quot;shoot&quot;);</span>
+
+<span class="nc" id="L315">                        state.incBulletsShot(p); // 2P mode: increments per-player bullet shots</span>
+
+                    }
+                }
+
+                // Special ship lifecycle
+<span class="nc bnc" id="L321" title="All 2 branches missed.">                if (this.enemyShipSpecial != null) {</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">                    if (!this.enemyShipSpecial.isDestroyed())</span>
+<span class="nc" id="L323">                        this.enemyShipSpecial.move(2, 0);</span>
+<span class="nc bnc" id="L324" title="All 2 branches missed.">                    else if (this.enemyShipSpecialExplosionCooldown.checkFinished())</span>
+<span class="nc" id="L325">                        this.enemyShipSpecial = null;</span>
+                }
+<span class="nc bnc" id="L327" title="All 4 branches missed.">                if (this.enemyShipSpecial == null &amp;&amp; this.enemyShipSpecialCooldown.checkFinished()) {</span>
+<span class="nc" id="L328">                    this.enemyShipSpecial = new EnemyShip();</span>
+<span class="nc" id="L329">                    this.enemyShipSpecialCooldown.reset();</span>
+<span class="nc" id="L330">                    SoundManager.playLoop(&quot;special_ship_sound&quot;);</span>
+<span class="nc" id="L331">                    this.LOGGER.info(&quot;A special ship appears&quot;);</span>
+                }
+<span class="nc bnc" id="L333" title="All 4 branches missed.">                if (this.enemyShipSpecial != null &amp;&amp; this.enemyShipSpecial.getPositionX() &gt; this.width) {</span>
+<span class="nc" id="L334">                    this.enemyShipSpecial = null;</span>
+<span class="nc" id="L335">                    SoundManager.loopStop();</span>
+<span class="nc" id="L336">                    this.LOGGER.info(&quot;The special ship has escaped&quot;);</span>
+                }
+
+                // Update ships &amp; enemies
+<span class="nc bnc" id="L340" title="All 2 branches missed.">                for (Ship s : this.ships) {</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">                    if (s != null) s.update();</span>
+                }
+
+<span class="nc" id="L344">                this.enemyShipFormation.update();</span>
+<span class="nc" id="L345">                int bulletsBefore = this.bullets.size();</span>
+<span class="nc" id="L346">                this.enemyShipFormation.shoot(this.bullets);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">                if (this.bullets.size() &gt; bulletsBefore) {</span>
+                    // At least one enemy bullet added
+<span class="nc" id="L349">                    SoundManager.playOnce(&quot;shoot_enemies&quot;);</span>
+                }
+            }
+
+
+<span class="nc" id="L354">            manageCollisions();</span>
+<span class="nc" id="L355">            cleanBullets();</span>
+
+            // Item Entity Code
+<span class="nc" id="L358">            cleanItems();</span>
+<span class="nc" id="L359">            manageItemPickups();</span>
+
+            // check active item affects
+<span class="nc" id="L362">            state.updateEffects();</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">            drawManager.getGameScreenRenderer().setLastLife(state.getLivesRemaining() == 1);</span>
+<span class="nc" id="L364">		    draw();</span>
+
+<span class="nc bnc" id="L366" title="All 4 branches missed.">            if (!sessionHighScoreNotified &amp;&amp; this.state.getScore() &gt; this.topScore) {</span>
+<span class="nc" id="L367">                sessionHighScoreNotified = true;</span>
+<span class="nc" id="L368">                this.highScoreNotified = true;</span>
+<span class="nc" id="L369">                this.highScoreNoticeStartTime = System.currentTimeMillis();</span>
+            }
+
+            // End condition: formation cleared or TEAM lives exhausted.
+<span class="nc bnc" id="L373" title="All 6 branches missed.">            if ((this.enemyShipFormation.isEmpty() || !state.teamAlive()) &amp;&amp; !this.levelFinished) {</span>
+                // The object managed by the object pool pattern must be recycled at the end of the level.
+<span class="nc" id="L375">                BulletPool.recycle(this.bullets);</span>
+<span class="nc" id="L376">                this.bullets.removeAll(this.bullets);</span>
+<span class="nc" id="L377">                ItemPool.recycle(items);</span>
+<span class="nc" id="L378">                this.items.removeAll(this.items);</span>
+
+<span class="nc" id="L380">                this.levelFinished = true;</span>
+<span class="nc" id="L381">                this.screenFinishedCooldown.reset();</span>
+
+<span class="nc bnc" id="L383" title="All 6 branches missed.">                if(enemyShipFormation.getShipCount() == 0 &amp;&amp; state.getBulletsShot() &gt; 0 &amp;&amp; state.getBulletsShot() == state.getShipsDestroyed()){</span>
+<span class="nc" id="L384">                    achievementManager.unlock(&quot;Perfect Shooter&quot;);</span>
+                }
+<span class="nc bnc" id="L386" title="All 4 branches missed.">                if(enemyShipFormation.getShipCount() == 0 &amp;&amp; !this.tookDamageThisLevel){</span>
+<span class="nc" id="L387">                    achievementManager.unlock(&quot;Survivor&quot;);</span>
+                }
+<span class="nc bnc" id="L389" title="All 6 branches missed.">                if(enemyShipFormation.getShipCount() == 0 &amp; state.getLevel() == 5){</span>
+<span class="nc" id="L390">                    achievementManager.unlock(&quot;Clear&quot;);</span>
+                }
+<span class="nc" id="L392">                    checkAchievement();</span>
+            }
+
+<span class="nc bnc" id="L395" title="All 4 branches missed.">            if (this.levelFinished &amp;&amp; this.screenFinishedCooldown.checkFinished()) {</span>
+<span class="nc bnc" id="L396" title="All 2 branches missed.">                if (!achievementManager.hasPendingToasts()) {</span>
+<span class="nc" id="L397">                    this.isRunning = false;</span>
+                }
+            }
+
+<span class="nc bnc" id="L401" title="All 2 branches missed.">            if (this.achievementManager != null) this.achievementManager.update();</span>
+        }
+
+<span class="nc" id="L404">        draw();</span>
+<span class="nc" id="L405">    }</span>
+
+    /**
+     * Draws the elements associated with the screen.
+     */
+    private void draw() {
+<span class="nc" id="L411">        drawManager.initDrawing(this);</span>
+
+<span class="nc" id="L413">        drawManager.getGameScreenRenderer().drawExplosions(drawManager.getBackBufferGraphics(), this);</span>
+<span class="nc" id="L414">        updateGameSpace(drawManager.getBackBufferGraphics());</span>
+
+<span class="nc bnc" id="L416" title="All 2 branches missed.">        for (Ship s : this.ships)</span>
+<span class="nc bnc" id="L417" title="All 2 branches missed.">            if (s != null)</span>
+<span class="nc" id="L418">                drawManager.getEntityRenderer().drawEntity(drawManager.getBackBufferGraphics(), s, s.getPositionX(), s.getPositionY());</span>
+
+<span class="nc bnc" id="L420" title="All 2 branches missed.">        if (this.enemyShipSpecial != null)</span>
+<span class="nc" id="L421">            drawManager.getEntityRenderer().drawEntity(drawManager.getBackBufferGraphics(), this.enemyShipSpecial,</span>
+<span class="nc" id="L422">                    this.enemyShipSpecial.getPositionX(), this.enemyShipSpecial.getPositionY());</span>
+
+<span class="nc" id="L424">        enemyShipFormation.draw();</span>
+
+<span class="nc bnc" id="L426" title="All 2 branches missed.">        for (Bullet bullet : this.bullets)</span>
+<span class="nc" id="L427">            drawManager.getEntityRenderer().drawEntity(drawManager.getBackBufferGraphics(), bullet, bullet.getPositionX(), bullet.getPositionY());</span>
+
+        // draw items
+<span class="nc bnc" id="L430" title="All 2 branches missed.">        for (Item item : this.items)</span>
+<span class="nc" id="L431">            drawManager.getEntityRenderer().drawEntity(drawManager.getBackBufferGraphics(),item, item.getPositionX(), item.getPositionY());</span>
+
+		// Aggregate UI (team score &amp; team lives)
+<span class="nc" id="L434">		drawManager.getGameScreenRenderer().drawScore(drawManager.getBackBufferGraphics(), this, state.getScore());</span>
+<span class="nc" id="L435">        drawManager.getGameScreenRenderer().drawLives(drawManager.getBackBufferGraphics(), this, state.getLivesRemaining(), state.isCoop());</span>
+<span class="nc" id="L436">		drawManager.getGameScreenRenderer().drawCoins(drawManager.getBackBufferGraphics(), this, state.getCoins());</span>
+<span class="nc" id="L437">        drawManager.getGameScreenRenderer().drawLevel(drawManager.getBackBufferGraphics(), this, this.state.getLevel());</span>
+<span class="nc" id="L438">		drawManager.getCommonRenderer().drawHorizontalLine(drawManager.getBackBufferGraphics(), this, SEPARATION_LINE_HEIGHT - 1);</span>
+<span class="nc" id="L439">        drawManager.getGameScreenRenderer().drawShipCount(drawManager.getBackBufferGraphics(), this, enemyShipFormation.getShipCount());</span>
+
+<span class="nc bnc" id="L441" title="All 2 branches missed.">		if (!this.inputDelay.checkFinished()) {</span>
+<span class="nc" id="L442">			int countdown = (int) ((INPUT_DELAY - (System.currentTimeMillis() - this.gameStartTime)) / 1000);</span>
+<span class="nc" id="L443">			drawManager.getGameScreenRenderer().drawCountDown(drawManager.getBackBufferGraphics(), this, this.state.getLevel(), countdown, this.bonusLife);</span>
+<span class="nc" id="L444">			drawManager.getCommonRenderer().drawHorizontalLine(drawManager.getBackBufferGraphics(), this, this.height / 2 - this.height / 12);</span>
+<span class="nc" id="L445">			drawManager.getCommonRenderer().drawHorizontalLine(drawManager.getBackBufferGraphics(), this, this.height / 2 + this.height / 12);</span>
+		}
+<span class="nc bnc" id="L447" title="All 2 branches missed.">        if (this.highScoreNotified &amp;&amp;</span>
+<span class="nc bnc" id="L448" title="All 2 branches missed.">                System.currentTimeMillis() - this.highScoreNoticeStartTime &lt; HIGH_SCORE_NOTICE_DURATION) {</span>
+<span class="nc" id="L449">            drawManager.getHighScoreScreenRenderer().drawNewHighScoreNotice(this);</span>
+        }
+
+		// [ADD] draw achievement popups right before completing the frame
+<span class="nc" id="L453">		drawManager.getGameScreenRenderer().drawAchievementToasts(drawManager.getBackBufferGraphics(), this,</span>
+<span class="nc bnc" id="L454" title="All 2 branches missed.">                (this.achievementManager != null) ? this.achievementManager.getActiveToasts() : Collections.emptyList());</span>
+<span class="nc bnc" id="L455" title="All 2 branches missed.">		if(this.isPaused){</span>
+<span class="nc" id="L456">			drawManager.getCommonRenderer().drawPauseOverlay(drawManager.getBackBufferGraphics(), this);</span>
+		}
+
+<span class="nc" id="L459">        drawManager.completeDrawing(this);</span>
+<span class="nc" id="L460">    }</span>
+
+    /**
+     * Cleans bullets that go off-screen.
+     */
+    private void cleanBullets() {
+<span class="nc" id="L466">        Set&lt;Bullet&gt; recyclable = new HashSet&lt;Bullet&gt;();</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">        for (Bullet bullet : this.bullets) {</span>
+<span class="nc" id="L468">            bullet.update();</span>
+<span class="nc bnc" id="L469" title="All 2 branches missed.">            if (bullet.getPositionY() &lt; SEPARATION_LINE_HEIGHT</span>
+<span class="nc bnc" id="L470" title="All 2 branches missed.">                    || bullet.getPositionY() &gt; this.height)</span>
+<span class="nc" id="L471">                recyclable.add(bullet);</span>
+<span class="nc" id="L472">        }</span>
+<span class="nc" id="L473">        this.bullets.removeAll(recyclable);</span>
+<span class="nc" id="L474">        BulletPool.recycle(recyclable);</span>
+<span class="nc" id="L475">    }</span>
+
+    /**
+     * Cleans items that go off-screen.
+     */
+    private void cleanItems() {
+<span class="nc" id="L481">        Set&lt;Item&gt; recyclableItems = new HashSet&lt;Item&gt;();</span>
+<span class="nc bnc" id="L482" title="All 2 branches missed.">        for (Item item : this.items) {</span>
+<span class="nc" id="L483">            item.update();</span>
+<span class="nc bnc" id="L484" title="All 2 branches missed.">            if (item.getPositionY() &gt; this.height)</span>
+<span class="nc" id="L485">                recyclableItems.add(item);</span>
+<span class="nc" id="L486">        }</span>
+<span class="nc" id="L487">        this.items.removeAll(recyclableItems);</span>
+<span class="nc" id="L488">        ItemPool.recycle(recyclableItems);</span>
+<span class="nc" id="L489">    }</span>
+
+    /**
+     * Manages pickups between player and items.
+     */
+    private void manageItemPickups() {
+<span class="nc" id="L495">        Set&lt;Item&gt; collected = new HashSet&lt;Item&gt;();</span>
+<span class="nc bnc" id="L496" title="All 2 branches missed.">        for (Item item : this.items) {</span>
+
+<span class="nc bnc" id="L498" title="All 2 branches missed.">            for(Ship ship: this.ships) {</span>
+<span class="nc bnc" id="L499" title="All 2 branches missed.">                if(ship == null) continue;</span>
+<span class="nc bnc" id="L500" title="All 4 branches missed.">                if (checkCollision(item, ship) &amp;&amp; !collected.contains(item)) {</span>
+<span class="nc" id="L501">                    collected.add(item);</span>
+<span class="nc" id="L502">                    LOGGER.info(&quot;Player &quot; + ship.getPlayerId() + &quot; picked up item: &quot; + item.getType());</span>
+<span class="nc" id="L503">                    SoundManager.playOnce(&quot;hover&quot;);</span>
+<span class="nc" id="L504">                    item.applyEffect(getGameState(), ship.getPlayerId());</span>
+                }
+            }
+<span class="nc" id="L507">        }</span>
+<span class="nc" id="L508">        this.items.removeAll(collected);</span>
+<span class="nc" id="L509">        ItemPool.recycle(collected);</span>
+<span class="nc" id="L510">    }</span>
+
+    /**
+     * Enemy bullets hit players → decrement TEAM lives; player bullets hit enemies
+     * → add score.
+     */
+    private void manageCollisions() {
+<span class="nc" id="L517">        Set&lt;Bullet&gt; recyclable = new HashSet&lt;Bullet&gt;();</span>
+<span class="nc bnc" id="L518" title="All 2 branches missed.">        for (Bullet bullet : this.bullets) {</span>
+<span class="nc bnc" id="L519" title="All 2 branches missed.">            if (bullet.getSpeed() &gt; 0) {</span>
+                // Enemy bullet vs both players
+
+<span class="nc bnc" id="L522" title="All 2 branches missed.">                for (int p = 0; p &lt; GameState.NUM_PLAYERS; p++) {</span>
+<span class="nc" id="L523">                    Ship ship = this.ships[p];</span>
+<span class="nc bnc" id="L524" title="All 4 branches missed.">                    if (ship != null &amp;&amp; !ship.isDestroyed()</span>
+<span class="nc bnc" id="L525" title="All 4 branches missed.">                            &amp;&amp; checkCollision(bullet, ship) &amp;&amp; !this.levelFinished) {</span>
+<span class="nc" id="L526">                        recyclable.add(bullet);</span>
+
+
+<span class="nc bnc" id="L529" title="All 2 branches missed.">                        this.drawManager.getGameScreenRenderer().triggerExplosion(ship.getPositionX(), ship.getPositionY(), false, state.getLivesRemaining() == 1);</span>
+<span class="nc" id="L530">                        ship.addHit();</span>
+
+<span class="nc" id="L532">                        ship.destroy(); // explosion/respawn handled by Ship.update()</span>
+<span class="nc" id="L533">                        SoundManager.playOnce(&quot;explosion&quot;);</span>
+<span class="nc" id="L534">                        this.state.decLife(p); // decrement shared/team lives by 1</span>
+
+                        // Record damage for Survivor achievement check
+<span class="nc" id="L537">                        this.tookDamageThisLevel = true;</span>
+
+<span class="nc bnc" id="L539" title="All 2 branches missed.">                        this.drawManager.getGameScreenRenderer().setLastLife(state.getLivesRemaining() == 1);</span>
+
+<span class="nc" id="L541">						this.LOGGER.info(&quot;Hit on player &quot; + (p + 1) + &quot;, team lives now: &quot; + state.getLivesRemaining());</span>
+<span class="nc" id="L542">						break;</span>
+					}
+				}
+			} else {
+				// Player bullet vs enemies
+				// map Bullet owner id (1 or 2) to per-player index (0 or 1)
+<span class="nc" id="L548">				final int ownerId = bullet.getOwnerPlayerId(); // 1 or 2 (0 if unset)</span>
+<span class="nc bnc" id="L549" title="All 2 branches missed.">				final int pIdx = (ownerId == 2) ? 1 : 0; // default to P1 when unset</span>
+
+<span class="nc" id="L551">                boolean finalShip = this.enemyShipFormation.lastShip();</span>
+
+                // Check collision with formation enemies
+<span class="nc bnc" id="L554" title="All 2 branches missed.">                for (EnemyShip enemyShip : this.enemyShipFormation) {</span>
+<span class="nc bnc" id="L555" title="All 4 branches missed.">                    if (!enemyShip.isDestroyed() &amp;&amp; checkCollision(bullet, enemyShip)) {</span>
+<span class="nc" id="L556">                        recyclable.add(bullet);</span>
+<span class="nc" id="L557">                        enemyShip.hit();</span>
+
+<span class="nc bnc" id="L559" title="All 2 branches missed.">                        if (enemyShip.isDestroyed()) {</span>
+<span class="nc" id="L560">                            int points = enemyShip.getPointValue();</span>
+<span class="nc" id="L561">                            state.addCoins(pIdx, enemyShip.getCoinValue()); // 2P mode: modified to per-player coins</span>
+
+<span class="nc" id="L563">                            drawManager.getGameScreenRenderer().triggerExplosion(enemyShip.getPositionX(), enemyShip.getPositionY(), true, finalShip);</span>
+<span class="nc" id="L564">                            state.addScore(pIdx, points); // 2P mode: modified to add to P1 score for now</span>
+<span class="nc" id="L565">                            state.incShipsDestroyed(pIdx);</span>
+
+                            // obtain drop from ItemManager (may return null)
+<span class="nc" id="L568">                            Item drop = ItemManager.getInstance().obtainDrop(enemyShip);</span>
+<span class="nc bnc" id="L569" title="All 2 branches missed.">                            if (drop != null) {</span>
+<span class="nc" id="L570">                                this.items.add(drop);</span>
+<span class="nc" id="L571">                                this.LOGGER.info(&quot;Spawned &quot; + drop.getType() + &quot; at &quot; + drop.getPositionX() + &quot;,&quot; + drop.getPositionY());</span>
+                            }
+
+<span class="nc" id="L574">                            this.enemyShipFormation.destroy(enemyShip);</span>
+<span class="nc" id="L575">                            SoundManager.playOnce(&quot;invader_killed&quot;);</span>
+<span class="nc" id="L576">                            this.LOGGER.info(&quot;Hit on enemy ship.&quot;);</span>
+
+<span class="nc" id="L578">                            checkAchievement();</span>
+<span class="nc" id="L579">                        }</span>
+                        break;
+                    }
+<span class="nc" id="L582">                }</span>
+
+<span class="nc bnc" id="L584" title="All 2 branches missed.">                if (this.enemyShipSpecial != null</span>
+<span class="nc bnc" id="L585" title="All 2 branches missed.">                        &amp;&amp; !this.enemyShipSpecial.isDestroyed()</span>
+<span class="nc bnc" id="L586" title="All 2 branches missed.">                        &amp;&amp; checkCollision(bullet, this.enemyShipSpecial)) {</span>
+<span class="nc" id="L587">                    int points = this.enemyShipSpecial.getPointValue();</span>
+
+<span class="nc" id="L589">                    state.addCoins(pIdx, this.enemyShipSpecial.getCoinValue()); // 2P mode: modified to per-player coins</span>
+
+<span class="nc" id="L591">                    state.addScore(pIdx, points);</span>
+<span class="nc" id="L592">                    state.incShipsDestroyed(pIdx); // 2P mode: modified incrementing ships destroyed</span>
+
+<span class="nc" id="L594">					this.enemyShipSpecial.destroy();</span>
+<span class="nc" id="L595">                    SoundManager.loopStop();</span>
+<span class="nc" id="L596">                    SoundManager.playOnce(&quot;explosion&quot;);</span>
+<span class="nc" id="L597">                    drawManager.getGameScreenRenderer().triggerExplosion(this.enemyShipSpecial.getPositionX(), this.enemyShipSpecial.getPositionY(), true, true);</span>
+<span class="nc" id="L598">                    this.enemyShipSpecialExplosionCooldown.reset();</span>
+<span class="nc" id="L599">                    recyclable.add(bullet);</span>
+                }
+            }
+<span class="nc" id="L602">        }</span>
+<span class="nc" id="L603">        this.bullets.removeAll(recyclable);</span>
+<span class="nc" id="L604">        BulletPool.recycle(recyclable);</span>
+<span class="nc" id="L605">    }</span>
+
+    /**
+     * Checks if two entities are colliding.
+     *
+     * @param a
+     *            First entity, the bullet.
+     * @param b
+     *            Second entity, the ship.
+     * @return Result of the collision test.
+     */
+    private boolean checkCollision(final Entity a, final Entity b) {
+<span class="nc" id="L617">        int centerAX = a.getPositionX() + a.getWidth() / 2;</span>
+<span class="nc" id="L618">        int centerAY = a.getPositionY() + a.getHeight() / 2;</span>
+<span class="nc" id="L619">        int centerBX = b.getPositionX() + b.getWidth() / 2;</span>
+<span class="nc" id="L620">        int centerBY = b.getPositionY() + b.getHeight() / 2;</span>
+<span class="nc" id="L621">        int maxDistanceX = a.getWidth() / 2 + b.getWidth() / 2;</span>
+<span class="nc" id="L622">        int maxDistanceY = a.getHeight() / 2 + b.getHeight() / 2;</span>
+<span class="nc" id="L623">        int distanceX = Math.abs(centerAX - centerBX);</span>
+<span class="nc" id="L624">        int distanceY = Math.abs(centerAY - centerBY);</span>
+<span class="nc bnc" id="L625" title="All 4 branches missed.">        return distanceX &lt; maxDistanceX &amp;&amp; distanceY &lt; maxDistanceY;</span>
+    }
+
+    /**
+     * Returns a GameState object representing the status of the game.
+     *
+     * @return Current game state.
+     */
+    public final GameState getGameState() {
+<span class="nc" id="L634">        return this.state;</span>
+    }
+
+    /**
+     * check Achievement released;
+     */
+    public void checkAchievement(){
+        // First Blood
+<span class="nc bnc" id="L642" title="All 2 branches missed.">        if(state.getShipsDestroyed() == 1) {</span>
+<span class="nc" id="L643">            achievementManager.unlock(&quot;First Blood&quot;);</span>
+        }
+        // Clear
+<span class="nc bnc" id="L646" title="All 6 branches missed.">        if (levelFinished &amp;&amp; this.enemyShipFormation.isEmpty() &amp;&amp; state.getLevel()==5) {</span>
+<span class="nc" id="L647">            achievementManager.unlock(&quot;Clear&quot;);</span>
+<span class="nc bnc" id="L648" title="All 2 branches missed.">            float p1Acc = state.getBulletsShot(0) &gt; 0 ? (float) state.getShipsDestroyed(0) / state.getBulletsShot(0)*100 : 0f;</span>
+<span class="nc bnc" id="L649" title="All 2 branches missed.">            float p2Acc = state.getBulletsShot(1) &gt; 0 ? (float) state.getShipsDestroyed(1) / state.getBulletsShot(1)*100 : 0f;</span>
+            // Survivor
+<span class="nc bnc" id="L651" title="All 2 branches missed.">            if(!this.tookDamageThisLevel){</span>
+<span class="nc" id="L652">                achievementManager.unlock(&quot;Survivor&quot;);</span>
+            }
+            //Sharpshooter
+<span class="nc bnc" id="L655" title="All 2 branches missed.">            if(p1Acc&gt;=80){</span>
+                //1p
+<span class="nc" id="L657">                achievementManager.unlock(&quot;Sharpshooter&quot;);</span>
+                //coop
+<span class="nc bnc" id="L659" title="All 2 branches missed.">                if(p2Acc&gt;=80){</span>
+<span class="nc" id="L660">                    achievementManager.unlock(&quot;Sharpshooter&quot;);</span>
+                }
+            }
+        }
+
+        //50 Bullets
+<span class="nc bnc" id="L666" title="All 2 branches missed.">        if(state.getBulletsShot() &gt;= 50){</span>
+<span class="nc" id="L667">            achievementManager.unlock(&quot;50 Bullets&quot;);</span>
+        }
+        //Get 3000 Score
+<span class="nc bnc" id="L670" title="All 2 branches missed.">        if(state.getScore()&gt;=3000){</span>
+<span class="nc" id="L671">            achievementManager.unlock(&quot;Get 3000 Score&quot;);</span>
+        }
+<span class="nc" id="L673">    }</span>
+
+    /**
+     * Draws the stars background animation during the game
+     */
+    public void updateGameSpace(Graphics g){
+<span class="nc" id="L679">        basicGameSpace.update();</span>
+
+<span class="nc" id="L681">        Graphics2D g2d = (Graphics2D) g;</span>
+<span class="nc" id="L682">        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);</span>
+
+<span class="nc" id="L684">        g.setColor(Color.WHITE);</span>
+<span class="nc" id="L685">        int[][] positions = basicGameSpace.getStarLocations();</span>
+<span class="nc bnc" id="L686" title="All 2 branches missed.">        for(int i = 0; i &lt; basicGameSpace.getNumStars(); i++){</span>
+
+<span class="nc bnc" id="L688" title="All 2 branches missed.">            int size = (positions[i][2] &lt; 2) ? 2 : 1;</span>
+<span class="nc" id="L689">            int radius = size * 2;</span>
+
+<span class="nc" id="L691">            float[] dist = {0.0f, 1.0f};</span>
+<span class="nc" id="L692">            Color[] colors = new Color[2];</span>
+<span class="nc bnc" id="L693" title="All 2 branches missed.">            if(basicGameSpace.isLastLife()){</span>
+<span class="nc" id="L694">                colors[0] = new Color(255, 0, 0, 100);</span>
+<span class="nc" id="L695">                colors[1] = new Color(255, 0, 0, 50);</span>
+            }
+            else{
+<span class="nc" id="L698">                colors[0] = new Color(255, 255, 200, 50);</span>
+<span class="nc" id="L699">                colors[1] = new Color(255, 255, 200, 50);</span>
+            }
+
+<span class="nc" id="L702">            RadialGradientPaint paint = new RadialGradientPaint(new Point(positions[i][0] + size / 2, positions[i][1] + size / 2),</span>
+                    radius, dist, colors);
+<span class="nc" id="L704">            g2d.setPaint(paint);</span>
+<span class="nc" id="L705">            g2d.fillOval(positions[i][0] - radius / 2, positions[i][1] - radius / 2, radius, radius);</span>
+<span class="nc" id="L706">            g.fillOval(positions[i][0], positions[i][1], size, size);</span>
+        }
+<span class="nc" id="L708">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

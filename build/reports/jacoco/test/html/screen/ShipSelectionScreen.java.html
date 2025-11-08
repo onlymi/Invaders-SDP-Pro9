@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ShipSelectionScreen.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">space_Invaders</a> &gt; <a href="index.source.html" class="el_package">screen</a> &gt; <span class="el_source">ShipSelectionScreen.java</span></div><h1>ShipSelectionScreen.java</h1><pre class="source lang-java linenums">package screen;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import engine.utils.Cooldown;
+import engine.Core;
+import entity.Entity;
+import entity.Ship;
+
+public class ShipSelectionScreen extends Screen {
+
+    private static final int SELECTION_TIME = 200;
+    private Cooldown selectionCooldown;
+<span class="nc" id="L14">    private int selectedShipIndex = 0; // 0: NORMAL, 1: BIG_SHOT, 2: DOUBLE_SHOT, 3: MOVE_FAST</span>
+<span class="nc" id="L15">    private Ship[] shipExamples = new Ship[4];</span>
+    Ship.ShipType[] shipType;
+
+    private int player;
+<span class="nc" id="L19">    private boolean backSelected = false; // If current state is on the back button, can't select ship</span>
+
+    public ShipSelectionScreen(final int width, final int height, final int fps, final int player) {
+<span class="nc" id="L22">        super(width, height, fps);</span>
+<span class="nc" id="L23">        this.player = player;</span>
+<span class="nc" id="L24">        this.selectionCooldown = Core.getCooldown(SELECTION_TIME);</span>
+<span class="nc" id="L25">        this.selectionCooldown.reset();</span>
+
+<span class="nc" id="L27">        shipType = new Ship.ShipType[]{Ship.ShipType.NORMAL, Ship.ShipType.BIG_SHOT, Ship.ShipType.DOUBLE_SHOT, Ship.ShipType.MOVE_FAST};</span>
+<span class="nc" id="L28">        int initialX_width = -100;</span>
+
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        for (int i = 0; i &lt; shipExamples.length; i++) {</span>
+<span class="nc" id="L31">            int positionX = width / 2 + (initialX_width + (200 / (shipExamples.length - 1)) * i);</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">            if (player == 1) {</span>
+<span class="nc" id="L33">                shipExamples[i] = new Ship(positionX, height / 2, Entity.Team.PLAYER1, shipType[i], null);</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">            } else if (player == 2) {</span>
+<span class="nc" id="L35">                shipExamples[i] = new Ship(positionX, height / 2, Entity.Team.PLAYER2, shipType[i], null);</span>
+            }
+        }
+<span class="nc" id="L38">    }</span>
+
+    /**
+     * Returns the selected ship type to Core.
+     *
+     * @return The selected ShipType enum.
+     */
+    public Ship.ShipType getSelectedShipType() {
+<span class="nc bnc" id="L46" title="All 4 branches missed.">        return switch (this.selectedShipIndex) {</span>
+<span class="nc" id="L47">            case 1 -&gt; Ship.ShipType.BIG_SHOT;</span>
+<span class="nc" id="L48">            case 2 -&gt; Ship.ShipType.DOUBLE_SHOT;</span>
+<span class="nc" id="L49">            case 3 -&gt; Ship.ShipType.MOVE_FAST;</span>
+<span class="nc" id="L50">            default -&gt; Ship.ShipType.NORMAL;</span>
+        };
+    }
+
+    public final int run() {
+<span class="nc" id="L55">        super.run();</span>
+<span class="nc" id="L56">        return this.returnCode;</span>
+    }
+
+    protected final void update() {
+<span class="nc" id="L60">        super.update();</span>
+<span class="nc" id="L61">        draw();</span>
+<span class="nc bnc" id="L62" title="All 4 branches missed.">        if (this.selectionCooldown.checkFinished() &amp;&amp; this.inputDelay.checkFinished()) {</span>
+<span class="nc bnc" id="L63" title="All 4 branches missed.">            if (inputManager.isKeyDown(KeyEvent.VK_UP) || inputManager.isKeyDown(KeyEvent.VK_W)) {</span>
+<span class="nc" id="L64">                backSelected = true;</span>
+<span class="nc" id="L65">                selectionCooldown.reset();</span>
+            }
+<span class="nc bnc" id="L67" title="All 4 branches missed.">            if (inputManager.isKeyDown(KeyEvent.VK_DOWN) ||  inputManager.isKeyDown(KeyEvent.VK_S)) {</span>
+<span class="nc" id="L68">                backSelected = false;</span>
+<span class="nc" id="L69">                selectionCooldown.reset();</span>
+            }
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            if (!backSelected) {</span>
+<span class="nc bnc" id="L72" title="All 4 branches missed.">                if (inputManager.isKeyDown(KeyEvent.VK_LEFT) || inputManager.isKeyDown(KeyEvent.VK_A)) {</span>
+<span class="nc" id="L73">                    this.selectedShipIndex = this.selectedShipIndex - 1;</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">                    if (this.selectedShipIndex &lt; 0) {</span>
+<span class="nc" id="L75">                        this.selectedShipIndex += 4;</span>
+                    }
+<span class="nc" id="L77">                    this.selectedShipIndex = this.selectedShipIndex % 4;</span>
+<span class="nc" id="L78">                    this.selectionCooldown.reset();</span>
+                }
+<span class="nc bnc" id="L80" title="All 4 branches missed.">                if (inputManager.isKeyDown(KeyEvent.VK_RIGHT) || inputManager.isKeyDown(KeyEvent.VK_D)) {</span>
+<span class="nc" id="L81">                    this.selectedShipIndex = (this.selectedShipIndex + 1) % 4;</span>
+<span class="nc" id="L82">                    this.selectionCooldown.reset();</span>
+                }
+            }
+<span class="nc bnc" id="L85" title="All 2 branches missed.">            if (inputManager.isKeyDown(KeyEvent.VK_SPACE)) {</span>
+<span class="nc bnc" id="L86" title="All 3 branches missed.">                switch (player) {</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">                    case 1 -&gt; this.returnCode = backSelected ? 5 : 6;</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">                    case 2 -&gt; this.returnCode = backSelected ? 6 : 2;</span>
+                }
+<span class="nc" id="L90">                this.isRunning = false;</span>
+            }
+<span class="nc" id="L92">            int mx = inputManager.getMouseX();</span>
+<span class="nc" id="L93">            int my = inputManager.getMouseY();</span>
+<span class="nc" id="L94">            boolean clicked = inputManager.isMouseClicked();</span>
+
+<span class="nc" id="L96">            Rectangle backBox = Core.getHitboxManager().getBackButtonHitbox(drawManager.getBackBufferGraphics(), this);</span>
+
+<span class="nc bnc" id="L98" title="All 4 branches missed.">            if (clicked &amp;&amp; backBox.contains(mx, my)) {</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">                if (player == 1) this.returnCode = 5;</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">                else if (player == 2) this.returnCode = 6;</span>
+<span class="nc" id="L101">                this.isRunning = false;</span>
+
+            }
+        }
+<span class="nc" id="L105">    }</span>
+
+    private void draw() {
+<span class="nc" id="L108">        drawManager.initDrawing(this);</span>
+
+<span class="nc" id="L110">        drawManager.getShipSelectionMenuRenderer().drawShipSelectionMenu(drawManager.getBackBufferGraphics(), this, shipExamples, this.selectedShipIndex, this.player);</span>
+
+        // hover highlight
+<span class="nc" id="L113">        int mx = inputManager.getMouseX();</span>
+<span class="nc" id="L114">        int my = inputManager.getMouseY();</span>
+<span class="nc" id="L115">        Rectangle backBox = Core.getHitboxManager().getBackButtonHitbox(drawManager.getBackBufferGraphics(), this);</span>
+<span class="nc" id="L116">        boolean backHover = backBox.contains(mx, my);</span>
+<span class="nc bnc" id="L117" title="All 4 branches missed.">        drawManager.getCommonRenderer().drawBackButton(drawManager.getBackBufferGraphics(), this, backHover || backSelected);</span>
+
+<span class="nc" id="L119">        drawManager.completeDrawing(this);</span>
+<span class="nc" id="L120">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
