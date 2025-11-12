@@ -7,68 +7,74 @@ package engine.utils;
  *
  */
 public class Cooldown {
-
-	/** Cooldown duration. */
-	private int milliseconds;
-	/** Maximum difference between durations. */
-	private int variance;
-	/** Duration of this run, varies between runs if variance > 0. */
-	private int duration;
-	/** Beginning time. */
-	private long time;
-
-	/**
-	 * Constructor, established the time until the action can be performed
-	 * again.
-	 *
-	 * @param milliseconds
-	 *            Time until cooldown period is finished.
-	 */
+    
+    /**
+     * Cooldown duration.
+     */
+    private int milliseconds;
+    /**
+     * Maximum difference between durations.
+     */
+    private int variance;
+    /**
+     * Duration of this run, varies between runs if variance > 0.
+     */
+    private int duration;
+    /**
+     * Beginning time.
+     */
+    private long time;
+    
+    /**
+     * Constructor, established the time until the action can be performed again.
+     *
+     * @param milliseconds Time until cooldown period is finished.
+     */
     public Cooldown(final int milliseconds) {
-		this.milliseconds = milliseconds;
-		this.variance = 0;
-		this.duration = milliseconds;
-		this.time = 0;
-	}
-
-	/**
-	 * Constructor, established the time until the action can be performed
-	 * again, with a variation of +/- variance.
-	 *
-	 * @param milliseconds
-	 *            Time until cooldown period is finished.
-	 * @param variance
-	 *            Variance in the cooldown period.
-	 */
+        this.milliseconds = milliseconds;
+        this.variance = 0;
+        this.duration = milliseconds;
+        this.time = 0;
+    }
+    
+    /**
+     * Constructor, established the time until the action can be performed again, with a variation
+     * of +/- variance.
+     *
+     * @param milliseconds Time until cooldown period is finished.
+     * @param variance     Variance in the cooldown period.
+     */
     public Cooldown(final int milliseconds, final int variance) {
-		this.milliseconds = milliseconds;
-		this.variance = variance;
-		this.time = 0;
-	}
-
-	/**
-	 * Checks if the cooldown is finished.
-	 *
-	 * @return Cooldown state.
-	 */
-	public final boolean checkFinished() {
-		if ((this.time == 0)
-				|| this.time + this.duration < System.currentTimeMillis())
-			return true;
-		return false;
-	}
-
-	/**
-	 * Restarts the cooldown.
-	 */
-	public final void reset() {
-		this.time = System.currentTimeMillis();
-		if (this.variance != 0)
-			this.duration = (this.milliseconds - this.variance)
-					+ (int) (Math.random()
-					* (this.milliseconds + this.variance));
-	}
-
+        this.milliseconds = milliseconds;
+        this.variance = variance;
+        this.time = 0;
+    }
+    
+    /**
+     * Checks if the cooldown is finished.
+     *
+     * @return Cooldown state.
+     */
+    public final boolean checkFinished() {
+        if ((this.time == 0)
+            || this.time + this.duration < System.currentTimeMillis()) {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Restarts the cooldown.
+     */
+    public final void reset() {
+        this.time = System.currentTimeMillis();
+        if (this.variance != 0) {
+            this.duration = (this.milliseconds - this.variance)
+                + (int) (Math.random()
+                * (this.milliseconds + this.variance));
+        }
+    }
+    
     public void addTime(int extraMs) {
         if (!this.checkFinished()) {
             // extend current cooldown
@@ -79,11 +85,13 @@ public class Cooldown {
             this.duration = extraMs;
         }
     }
-
+    
     public int getDuration() {
-        if (this.time == 0) return 0; // cooldown hasn't started
+        if (this.time == 0) {
+            return 0; // cooldown hasn't started
+        }
         long elapsed = System.currentTimeMillis() - this.time;
         return Math.max(0, this.duration - (int) elapsed);
     }
-
+    
 }
