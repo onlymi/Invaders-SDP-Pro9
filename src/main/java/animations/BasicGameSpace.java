@@ -15,7 +15,13 @@ public class BasicGameSpace {
     private final int screenWidth;
     private final int screenHeight;
     
-    
+    /**
+     * Countdown to game start.
+     *
+     * @param numStars     Num of stars.
+     * @param screenHeight Game screen's Height.
+     * @param screenWidth  .Game screen's Width.
+     */
     public BasicGameSpace(int numStars, int screenWidth, int screenHeight) {
         
         this.numStars = numStars;
