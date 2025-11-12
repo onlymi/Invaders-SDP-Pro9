@@ -1,5 +1,8 @@
 package entity;
 
+public class BossShip {
+
+}
 import java.awt.Color;
 import java.util.Random;
 
