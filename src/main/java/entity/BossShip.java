@@ -45,12 +45,38 @@ public class BossShip extends EnemyShip {
     }
 
     /**
-     * Reduces enemy health by 1.
+     * Returns the current health of the boss ship.
+     */
+    @Override
+    public final int getHealth() {
+        return this.health;
+    }
+
+    /**
+     * Reduces boss health by 1 and handles destruction or damage animation based on remaining HP.
      */
     @Override
     public final void hit() {
-        super.hit();
+        this.health--;
+        if (this.health <= 0) {
+            this.isDestroyed = true;
+            this.spriteType = SpriteType.Explosion;
+            Color color = this.getColor();
+            // Ensure full alpha upon destruction for explosion effect
+            color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
+            changeColor(color);
+        } else {
+            // Apply color change logic based on HP ratio for damage feedback
+            Color color = this.getColor();
+            if(initialHealth != 0) {
+                // Alpha range from a minimum visible (70) to full (255) based on remaining HP
+                int rawAlpha = (int)(70 + 150 * (float)health / initialHealth);
+                int alpha = Math.max(0, Math.min(255, rawAlpha));
 
-        // Add special logic for boss damage.
+                color = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+                changeColor(color);
+            }
+            // Note: No sprite flipping or animation logic is applied for the boss in hit().
+        }
     }
 }
