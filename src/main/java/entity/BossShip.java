@@ -41,7 +41,7 @@ public class BossShip extends EnemyShip {
      */
     @Override
     public final void update() {
-        // Implement complex movement or phase transitions here.
+
     }
 
     /**

@@ -45,19 +45,19 @@ public class EnemyShip extends Entity {
     /**
      * Checks if the ship has been hit by a bullet.
      */
-    private boolean isDestroyed;
+    protected boolean isDestroyed;
     /**
      * Values of the ship, in points, when destroyed.
      */
-    private int pointValue;
+    protected int pointValue;
     
-    private int coinValue;
+    protected int coinValue;
     
     /**
      * Current health of the enemy ship
      */
-    private int health;
-    private int initialHealth;
+    protected int health;
+    protected int initialHealth;
     
     /**
      * Constructor, establishes the ship's properties.
@@ -158,7 +158,7 @@ public class EnemyShip extends Entity {
     /**
      * Updates attributes, mainly used for animation purposes.
      */
-    public final void update() {
+    public void update() {
         if (this.animationCooldown.checkFinished()) {
             this.animationCooldown.reset();
             
@@ -198,7 +198,7 @@ public class EnemyShip extends Entity {
      * Reduces enemy health by 1 and handles destruction or damage animation if health drops to 0
      */
     
-    public final void hit() {
+    public void hit() {
         this.health--;
         if (this.health <= 0) {
             this.isDestroyed = true;
@@ -251,7 +251,7 @@ public class EnemyShip extends Entity {
      *
      * @return True if the ship has been destroyed.
      */
-    public final boolean isDestroyed() {
+    public boolean isDestroyed() {
         return this.isDestroyed;
     }
     
