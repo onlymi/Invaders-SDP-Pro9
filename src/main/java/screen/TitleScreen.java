@@ -63,7 +63,7 @@ public class TitleScreen extends Screen {
     public final int run() {
         super.run();
         // Stop menu music when leaving the title screen
-        SoundManager.loopStop();
+        this.soundManager.loopStop();
         return this.returnCode;
     }
     
