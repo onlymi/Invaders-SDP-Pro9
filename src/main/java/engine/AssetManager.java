@@ -1,20 +1,29 @@
 package engine;
 
-import engine.gameplay.achievement.Achievement;
-
-import javax.sound.sampled.*;
 import java.awt.Font;
 import java.awt.FontFormatException;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * 게임에 필요한 모든 Asset(스프라이트, 폰트 등)을 로드하고 저장 및 관리하는 클래스
  */
 public final class AssetManager {
-
+    
     /**
      * 6개의 그래픽 소스 파일을 구분하기 위한 Enum
      */
@@ -25,88 +34,136 @@ public final class AssetManager {
         BULLET("graphics/bullet_graphics"),
         MUTUAL("graphics/mutual_graphics"),
         ITEM("graphics/item_graphics");
-
+        
         private final String filePath;
-        SourceCategory(String path) { this.filePath = path; }
-        public String getFilePath() { return this.filePath; }
+        
+        SourceCategory(String path) {
+            this.filePath = path;
+        }
+        
+        public String getFilePath() {
+            return this.filePath;
+        }
     }
-
-    /** Sprite types. */
+    
+    /**
+     * Sprite types.
+     */
     public enum SpriteType {
-        /** Player ship. */
+        /**
+         * Player ship.
+         */
         Ship1(SourceCategory.PLAYER, 13, 8),
         Ship2(SourceCategory.PLAYER, 13, 8),
         Ship3(SourceCategory.PLAYER, 13, 8),
         Ship4(SourceCategory.PLAYER, 13, 8),
-        /** Destroyed player ship. */
+        /**
+         * Destroyed player ship.
+         */
         ShipDestroyed1(SourceCategory.PLAYER, 13, 8),
         ShipDestroyed2(SourceCategory.PLAYER, 13, 8),
         ShipDestroyed3(SourceCategory.PLAYER, 13, 8),
         ShipDestroyed4(SourceCategory.PLAYER, 13, 8),
-        /** Player bullet. */
+        /**
+         * Player bullet.
+         */
         Bullet(SourceCategory.BULLET, 3, 5),
-        /** Enemy bullet. */
+        /**
+         * Enemy bullet.
+         */
         EnemyBullet(SourceCategory.BULLET, 3, 5),
-        /** First enemy ship - first form. */
+        /**
+         * First enemy ship - first form.
+         */
         EnemyShipA1(SourceCategory.ENEMY, 12, 8),
-        /** First enemy ship - second form. */
+        /**
+         * First enemy ship - second form.
+         */
         EnemyShipA2(SourceCategory.ENEMY, 12, 8),
-        /** Second enemy ship - first form. */
+        /**
+         * Second enemy ship - first form.
+         */
         EnemyShipB1(SourceCategory.ENEMY, 12, 8),
-        /** Second enemy ship - second form. */
+        /**
+         * Second enemy ship - second form.
+         */
         EnemyShipB2(SourceCategory.ENEMY, 12, 8),
-        /** Third enemy ship - first form. */
+        /**
+         * Third enemy ship - first form.
+         */
         EnemyShipC1(SourceCategory.ENEMY, 12, 8),
-        /** Third enemy ship - second form. */
+        /**
+         * Third enemy ship - second form.
+         */
         EnemyShipC2(SourceCategory.ENEMY, 12, 8),
-        /** Bonus ship. */
+        /**
+         * Bonus ship.
+         */
         EnemyShipSpecial(SourceCategory.ENEMY, 16, 7),
-        /** Boss ship. */
+        /**
+         * Boss ship.
+         */
         BossEnemy1(SourceCategory.BOSS, 21, 10),
         BossEnemy2(SourceCategory.BOSS, 21, 10),
         BossEnemy3(SourceCategory.BOSS, 21, 10),
-        /** Destroyed enemy ship. */
+        /**
+         * Destroyed enemy ship.
+         */
         Explosion(SourceCategory.MUTUAL, 13, 7),
-        /** Heart for lives display. */
+        /**
+         * Heart for lives display.
+         */
         Heart(SourceCategory.MUTUAL, 11, 10),
-        /** Item Graphics Temp */
+        /**
+         * Item Graphics Temp
+         */
         ItemScore(SourceCategory.ITEM, 5, 5),
         ItemCoin(SourceCategory.ITEM, 5, 5),
         ItemHeal(SourceCategory.ITEM, 5, 5),
         ItemTripleShot(SourceCategory.ITEM, 5, 7),
         ItemScoreBooster(SourceCategory.ITEM, 5, 5),
         ItemBulletSpeedUp(SourceCategory.ITEM, 5, 5);
-
+        
         // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;
         private final int width;
         private final int height;
-
+        
         // Enum 생성자
         SpriteType(SourceCategory category, int width, int height) {
             this.category = category;
             this.width = width;
             this.height = height;
         }
-
+        
         // Getter 메서드
-        public SourceCategory getCategory() { return this.category; }
-        public int getWidth() { return this.width; }
-        public int getHeight() { return this.height; }
-    };
-
+        public SourceCategory getCategory() {
+            return this.category;
+        }
+        
+        public int getWidth() {
+            return this.width;
+        }
+        
+        public int getHeight() {
+            return this.height;
+        }
+    }
+    
+    ;
+    
     private static AssetManager instance;
     private static final Logger LOGGER = Core.getLogger();
-    private static final FileManager fileManager = Core.getFileManager();;
-
+    private static final FileManager fileManager = Core.getFileManager();
+    
     Map<SpriteType, boolean[][]> spriteMap;
     HashMap<String, Clip> soundMap;
     private Font fontRegular;
     private Font fontBig;
-
+    
     private AssetManager() {
         LOGGER.info("Started loading resources.");
-
+        
         try {
             spriteMap = new LinkedHashMap<SpriteType, boolean[][]>();
             for (SpriteType type : SpriteType.values()) {
@@ -115,18 +172,18 @@ public final class AssetManager {
             // Sprite graphics loading
             this.loadSprite(spriteMap);
             LOGGER.info("Finished loading the sprites.");
-
+            
             // Font loading
             fontRegular = this.loadFont(14f);
             fontBig = this.loadFont(24f);
             LOGGER.info("Finished loading the fonts.");
-
+            
         } catch (IOException e) {
             LOGGER.warning("Loading failed.");
         } catch (FontFormatException e) {
             LOGGER.warning("Font formating failed.");
         }
-
+        
         try {
             soundMap = new HashMap<String, Clip>();
             // 모든 사운드 파일을 미리 로드
@@ -144,119 +201,122 @@ public final class AssetManager {
             soundMap.put("special_ship_sound", loadSound("sound/special_ship_sound.wav"));
             soundMap.put("win", loadSound("sound/win.wav"));
             soundMap.put("lose", loadSound("sound/lose.wav"));
-
+            
             LOGGER.info("Finished loading the sounds.");
         } catch (Exception e) {
             LOGGER.warning("Sound loading failed.");
         }
     }
-
+    
     /**
      * Returns shared instance of AssetManager.
      *
      * @return Shared instance of AssetManager.
      */
     public static AssetManager getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new AssetManager();
+        }
         return instance;
     }
-
+    
     /**
      * Loads a font of a given size.
      *
-     * @param size
-     *            Point size of the font.
+     * @param size Point size of the font.
      * @return New font.
-     * @throws IOException
-     *             In case of loading problems.
-     * @throws FontFormatException
-     *             In case of incorrect font format.
+     * @throws IOException         In case of loading problems.
+     * @throws FontFormatException In case of incorrect font format.
      */
     public Font loadFont(final float size) throws IOException,
-            FontFormatException {
+        FontFormatException {
         InputStream inputStream = null;
         Font font;
-
+        
         try {
             // Font loading.
             inputStream = FileManager.class.getClassLoader().getResourceAsStream("font/font.ttf");
             font = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(
-                    size);
+                size);
         } finally {
-            if (inputStream != null)
+            if (inputStream != null) {
                 inputStream.close();
+            }
         }
-
+        
         return font;
     }
-
+    
     /**
      * Loads sprites from disk.
      *
-     * @param spriteMap
-     *            Mapping of sprite type and empty boolean matrix that will
-     *            contain the image.
-     * @throws IOException
-     *             In case of loading problems.
+     * @param spriteMap Mapping of sprite type and empty boolean matrix that will contain the
+     *                  image.
+     * @throws IOException In case of loading problems.
      */
     public void loadSprite(final Map<SpriteType, boolean[][]> spriteMap) throws IOException {
         Map<SourceCategory, InputStream> streamMap = new EnumMap<>(SourceCategory.class);
-        for (SourceCategory category: SourceCategory.values()) {
-            streamMap.put(category, AssetManager.class.getClassLoader().getResourceAsStream(category.getFilePath()));
+        for (SourceCategory category : SourceCategory.values()) {
+            streamMap.put(category,
+                AssetManager.class.getClassLoader().getResourceAsStream(category.getFilePath()));
         }
-
+        
         try {
             char c;
             for (Map.Entry<SpriteType, boolean[][]> sprite : spriteMap.entrySet()) {
                 SpriteType type = sprite.getKey();
                 boolean[][] data = sprite.getValue();
                 InputStream selectedStream = streamMap.get(type.getCategory());
-                for (int i = 0; i < sprite.getValue().length; i++)
+                for (int i = 0; i < sprite.getValue().length; i++) {
                     for (int j = 0; j < sprite.getValue()[i].length; j++) {
                         do {
                             c = (char) selectedStream.read();
                         } while (c != '0' && c != '1');
-
+                        
                         data[i][j] = (c == '1');
                     }
+                }
                 LOGGER.fine("Sprite " + sprite.getKey() + " loaded.");
             }
         } finally {
-            for (InputStream stream: streamMap.values()) {
-                if (stream != null)
+            for (InputStream stream : streamMap.values()) {
+                if (stream != null) {
                     stream.close();
+                }
             }
         }
     }
-
+    
     /**
      * 지정된 리소스 경로에서 오디오 파일을 읽어와 재생 준비가 완료된 Clip 객체로 반환합니다.
      *
      * @param resourcePath 리소스 폴더 내의 사운드 파일 경로 (예: "sound/shoot.wav")
      * @return 메모리에 로드된 Clip 객체
      * @throws UnsupportedAudioFileException 오디오 파일 형식이 지원되지 않는 경우
-     * @throws IOException 파일 입출력 오류가 발생한 경우
-     * @throws LineUnavailableException 오디오 라인을 열 수 없는 경우
+     * @throws IOException                   파일 입출력 오류가 발생한 경우
+     * @throws LineUnavailableException      오디오 라인을 열 수 없는 경우
      */
-    private Clip loadSound(String resourcePath) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+    private Clip loadSound(String resourcePath)
+        throws UnsupportedAudioFileException, IOException, LineUnavailableException {
         AudioInputStream audioStream = openAudioStream(resourcePath);
         if (audioStream == null) {
             throw new FileNotFoundException("Audio resource not found: " + resourcePath);
         }
-
+        
         audioStream = toPcmSigned(audioStream);
-
+        
         DataLine.Info info = new DataLine.Info(Clip.class, audioStream.getFormat());
         Clip clip = (Clip) AudioSystem.getLine(info);
         clip.open(audioStream);
-
+        
         return clip;
     }
-
-    /** Opens an audio stream from classpath resources or absolute/relative file path. */
+    
+    /**
+     * Opens an audio stream from classpath resources or absolute/relative file path.
+     */
     private static AudioInputStream openAudioStream(String resourcePath)
-            throws UnsupportedAudioFileException, IOException {
+        throws UnsupportedAudioFileException, IOException {
         InputStream in = SoundManager.class.getClassLoader().getResourceAsStream(resourcePath);
         if (in != null) {
             return AudioSystem.getAudioInputStream(in);
@@ -269,38 +329,41 @@ public final class AssetManager {
             return null;
         }
     }
-
-    /** Ensures the audio stream is PCM_SIGNED for Clip compatibility on all JVMs. */
-    public static AudioInputStream toPcmSigned(AudioInputStream source) throws UnsupportedAudioFileException, IOException {
+    
+    /**
+     * Ensures the audio stream is PCM_SIGNED for Clip compatibility on all JVMs.
+     */
+    public static AudioInputStream toPcmSigned(AudioInputStream source)
+        throws UnsupportedAudioFileException, IOException {
         AudioFormat format = source.getFormat();
         if (format.getEncoding() == AudioFormat.Encoding.PCM_SIGNED) {
             return source;
         }
-
+        
         AudioFormat targetFormat = new AudioFormat(
-                AudioFormat.Encoding.PCM_SIGNED,
-                format.getSampleRate(),
-                16,
-                format.getChannels(),
-                format.getChannels() * 2,
-                format.getSampleRate(),
-                false
+            AudioFormat.Encoding.PCM_SIGNED,
+            format.getSampleRate(),
+            16,
+            format.getChannels(),
+            format.getChannels() * 2,
+            format.getSampleRate(),
+            false
         );
         return AudioSystem.getAudioInputStream(targetFormat, source);
     }
-
+    
     public Clip getSound(String soundName) {
         return soundMap.get(soundName);
     }
-
+    
     public boolean[][] getSprite(SpriteType type) {
         return spriteMap.get(type);
     }
-
+    
     public Font getFontRegular() {
         return fontRegular;
     }
-
+    
     public Font getFontBig() {
         return fontBig;
     }

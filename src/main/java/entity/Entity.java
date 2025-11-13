@@ -1,9 +1,7 @@
 package entity;
 
-import java.awt.*;
-import java.util.Map;
-
 import engine.AssetManager.SpriteType;
+import java.awt.Color;
 
 /**
  * Implements a generic game entity.
@@ -12,51 +10,74 @@ import engine.AssetManager.SpriteType;
  *
  */
 public class Entity {
-
-    /** Position in the x-axis of the upper left corner of the entity. */
+    
+    /**
+     * Position in the x-axis of the upper left corner of the entity.
+     */
     protected int positionX;
-    /** Position in the y-axis of the upper left corner of the entity. */
+    /**
+     * Position in the y-axis of the upper left corner of the entity.
+     */
     protected int positionY;
-    /** Width of the entity. */
+    /**
+     * Width of the entity.
+     */
     protected int width;
-    /** Height of the entity. */
+    /**
+     * Height of the entity.
+     */
     protected int height;
-    /** Color of the entity. */
+    /**
+     * Color of the entity.
+     */
     private Color color;
-    /** Sprite type assigned to the entity. */
+    /**
+     * Sprite type assigned to the entity.
+     */
     protected SpriteType spriteType;
-
+    
     // 2P mode: adding team for multiplayer
     public enum Team {
         PLAYER1, PLAYER2, ENEMY, NEUTRAL
     }
-
+    
     // every entity knows their team - possibility for friendly-fire?
     protected Team team = Team.NEUTRAL;
-
+    
     /**
      * Constructor, establishes the entity's generic properties.
      *
-     * @param positionX
-     *                  Initial position of the entity in the X axis.
-     * @param positionY
-     *                  Initial position of the entity in the Y axis.
-     * @param width
-     *                  Width of the entity.
-     * @param height
-     *                  Height of the entity.
-     * @param color
-     *                  Color of the entity.
+     * @param positionX Initial position of the entity in the X axis.
+     * @param positionY Initial position of the entity in the Y axis.
+     * @param width     Width of the entity.
+     * @param height    Height of the entity.
      */
     public Entity(final int positionX, final int positionY, final int width,
-                  final int height, final Color color) {
+        final int height) {
+        this.positionX = positionX;
+        this.positionY = positionY;
+        this.width = width;
+        this.height = height;
+    }
+    
+    /**
+     * Constructor, establishes the entity's generic properties.
+     *
+     * @param positionX Initial position of the entity in the X axis.
+     * @param positionY Initial position of the entity in the Y axis.
+     * @param width     Width of the entity.
+     * @param height    Height of the entity.
+     * @param color     Color of the entity.
+     */
+    public Entity(final int positionX, final int positionY, final int width,
+        final int height, final Color color) {
         this.positionX = positionX;
         this.positionY = positionY;
         this.width = width;
         this.height = height;
         this.color = color;
     }
-
+    
     /**
      * Getter for the color of the entity.
      *
@@ -65,11 +86,11 @@ public class Entity {
     public final Color getColor() {
         return color;
     }
-
+    
     public final void changeColor(Color color) {
         this.color = color;
     }
-
+    
     /**
      * Getter for the X axis position of the entity.
      *
@@ -78,7 +99,7 @@ public class Entity {
     public final int getPositionX() {
         return this.positionX;
     }
-
+    
     /**
      * Getter for the Y axis position of the entity.
      *
@@ -87,27 +108,25 @@ public class Entity {
     public final int getPositionY() {
         return this.positionY;
     }
-
+    
     /**
      * Setter for the X axis position of the entity.
      *
-     * @param positionX
-     *                  New position of the entity in the X axis.
+     * @param positionX New position of the entity in the X axis.
      */
     public final void setPositionX(final int positionX) {
         this.positionX = positionX;
     }
-
+    
     /**
      * Setter for the Y axis position of the entity.
      *
-     * @param positionY
-     *                  New position of the entity in the Y axis.
+     * @param positionY New position of the entity in the Y axis.
      */
     public final void setPositionY(final int positionY) {
         this.positionY = positionY;
     }
-
+    
     /**
      * Getter for the sprite that the entity will be drawn as.
      *
@@ -116,7 +135,7 @@ public class Entity {
     public final SpriteType getSpriteType() {
         return this.spriteType;
     }
-
+    
     /**
      * Getter for the width of the image associated to the entity.
      *
@@ -125,7 +144,7 @@ public class Entity {
     public final int getWidth() {
         return this.width;
     }
-
+    
     /**
      * Getter for the height of the image associated to the entity.
      *
@@ -134,15 +153,15 @@ public class Entity {
     public final int getHeight() {
         return this.height;
     }
-
+    
     // 2P mode: adding getters for Team
     // TODO: add team-based canHit() later - friendly fire?
     public Team getTeam() {
         return team;
     }
-
+    
     public void setTeam(Team t) {
         this.team = (t == null ? Team.NEUTRAL : t);
     }
-
+    
 }
