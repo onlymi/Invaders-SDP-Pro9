@@ -53,11 +53,16 @@ public class AuthScreenRenderer {
      */
     public void drawTitle(Graphics graphics, final Screen screen) {
         String titleString = "Invaders";
+        String authString = "Create an account or log in";
         String instructionsString = "select with w+s / arrows, confirm with space";
         
         graphics.setColor(Color.GRAY);
         commonRenderer.drawCenteredRegularString(graphics, screen,
             instructionsString, screen.getHeight() / 2);
+        
+        graphics.setColor(Color.GRAY);
+        commonRenderer.drawCenteredRegularString(graphics, screen,
+            authString, (int) (screen.getHeight() / 1.7));
         
         graphics.setColor(Color.GREEN);
         commonRenderer.drawCenteredBigString(graphics, screen,

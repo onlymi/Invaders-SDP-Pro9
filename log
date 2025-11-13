@@ -1,44 +1,36 @@
-[INFO|10:31:56]: Started loading resources. 
-[FINE|10:31:56]: Sprite Ship1 loaded. 
-[FINE|10:31:56]: Sprite Ship2 loaded. 
-[FINE|10:31:56]: Sprite Ship3 loaded. 
-[FINE|10:31:56]: Sprite Ship4 loaded. 
-[FINE|10:31:56]: Sprite ShipDestroyed1 loaded. 
-[FINE|10:31:56]: Sprite ShipDestroyed2 loaded. 
-[FINE|10:31:56]: Sprite ShipDestroyed3 loaded. 
-[FINE|10:31:56]: Sprite ShipDestroyed4 loaded. 
-[FINE|10:31:56]: Sprite Bullet loaded. 
-[FINE|10:31:56]: Sprite EnemyBullet loaded. 
-[FINE|10:31:56]: Sprite EnemyShipA1 loaded. 
-[FINE|10:31:56]: Sprite EnemyShipA2 loaded. 
-[FINE|10:31:56]: Sprite EnemyShipB1 loaded. 
-[FINE|10:31:56]: Sprite EnemyShipB2 loaded. 
-[FINE|10:31:56]: Sprite EnemyShipC1 loaded. 
-[FINE|10:31:56]: Sprite EnemyShipC2 loaded. 
-[FINE|10:31:56]: Sprite EnemyShipSpecial loaded. 
-[FINE|10:31:56]: Sprite BossEnemy1 loaded. 
-[FINE|10:31:56]: Sprite BossEnemy2 loaded. 
-[FINE|10:31:56]: Sprite BossEnemy3 loaded. 
-[FINE|10:31:56]: Sprite Explosion loaded. 
-[FINE|10:31:56]: Sprite Heart loaded. 
-[FINE|10:31:56]: Sprite ItemScore loaded. 
-[FINE|10:31:56]: Sprite ItemCoin loaded. 
-[FINE|10:31:56]: Sprite ItemHeal loaded. 
-[FINE|10:31:56]: Sprite ItemTripleShot loaded. 
-[FINE|10:31:56]: Sprite ItemScoreBooster loaded. 
-[FINE|10:31:56]: Sprite ItemBulletSpeedUp loaded. 
-[INFO|10:31:56]: Finished loading the sprites. 
-[INFO|10:31:56]: Finished loading the fonts. 
-[INFO|10:31:56]: Finished loading the sounds. 
-[INFO|10:31:56]: Started loading resources. 
-[INFO|10:31:56]: Starting 1200x800 auth screen at 60 fps. 
-[INFO|10:32:26]: Closing auth system screen. 
-[INFO|10:32:26]: Starting 1200x800 title screen at 60 fps. 
-[INFO|10:32:40]: Closing title screen. 
-[INFO|10:32:40]: Starting 1200x800 play screen at 60 fps. 
-[INFO|10:32:42]: Closing play screen. 
-[INFO|10:32:42]: Starting 1200x800 title screen at 60 fps. 
-[INFO|10:32:48]: Closing title screen. 
-[INFO|10:32:48]: Starting 1200x800 setting screen at 60 fps. 
-[INFO|10:33:14]: Closing setting screen. 
-[INFO|10:33:15]: Starting 1200x800 title screen at 60 fps. 
+[INFO|1:18:02]: Started loading resources. 
+[FINE|1:18:02]: Sprite Ship1 loaded. 
+[FINE|1:18:02]: Sprite Ship2 loaded. 
+[FINE|1:18:02]: Sprite Ship3 loaded. 
+[FINE|1:18:02]: Sprite Ship4 loaded. 
+[FINE|1:18:02]: Sprite ShipDestroyed1 loaded. 
+[FINE|1:18:02]: Sprite ShipDestroyed2 loaded. 
+[FINE|1:18:02]: Sprite ShipDestroyed3 loaded. 
+[FINE|1:18:02]: Sprite ShipDestroyed4 loaded. 
+[FINE|1:18:02]: Sprite Bullet loaded. 
+[FINE|1:18:02]: Sprite EnemyBullet loaded. 
+[FINE|1:18:02]: Sprite EnemyShipA1 loaded. 
+[FINE|1:18:02]: Sprite EnemyShipA2 loaded. 
+[FINE|1:18:02]: Sprite EnemyShipB1 loaded. 
+[FINE|1:18:02]: Sprite EnemyShipB2 loaded. 
+[FINE|1:18:02]: Sprite EnemyShipC1 loaded. 
+[FINE|1:18:02]: Sprite EnemyShipC2 loaded. 
+[FINE|1:18:02]: Sprite EnemyShipSpecial loaded. 
+[FINE|1:18:02]: Sprite BossEnemy1 loaded. 
+[FINE|1:18:02]: Sprite BossEnemy2 loaded. 
+[FINE|1:18:02]: Sprite BossEnemy3 loaded. 
+[FINE|1:18:02]: Sprite Explosion loaded. 
+[FINE|1:18:02]: Sprite Heart loaded. 
+[FINE|1:18:02]: Sprite ItemScore loaded. 
+[FINE|1:18:02]: Sprite ItemCoin loaded. 
+[FINE|1:18:02]: Sprite ItemHeal loaded. 
+[FINE|1:18:02]: Sprite ItemTripleShot loaded. 
+[FINE|1:18:02]: Sprite ItemScoreBooster loaded. 
+[FINE|1:18:02]: Sprite ItemBulletSpeedUp loaded. 
+[INFO|1:18:02]: Finished loading the sprites. 
+[INFO|1:18:02]: Finished loading the fonts. 
+[INFO|1:18:02]: Finished loading the sounds. 
+[INFO|1:18:02]: Started loading resources. 
+[INFO|1:18:02]: Starting 1200x800 auth screen at 60 fps. 
+[INFO|1:18:07]: Closing auth system screen. 
+[INFO|1:18:07]: Starting 1200x800 title screen at 60 fps. 

@@ -160,4 +160,22 @@ public class Screen {
     public final int getHeight() {
         return this.height;
     }
+    
+    /**
+     * (for test) Getter for returnCode.
+     *
+     * @return returnCode
+     */
+    public int getReturnCode() {
+        return this.returnCode;
+    }
+    
+    /**
+     * (for test) Getter for isRunning
+     *
+     * @return isRunning
+     */
+    public boolean getIsRunning() {
+        return this.isRunning;
+    }
 }

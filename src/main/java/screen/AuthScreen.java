@@ -133,4 +133,13 @@ public class AuthScreen extends Screen {
         
         drawManager.completeDrawing(this);
     }
+    
+    /**
+     * (for test) getter menuInder
+     *
+     * @return meunIndex
+     */
+    public int getMenuIndex() {
+        return menuIndex;
+    }
 }
