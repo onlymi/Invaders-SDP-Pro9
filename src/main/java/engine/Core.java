@@ -510,7 +510,7 @@ public final class Core {
     @SuppressWarnings("checkstyle:TodoComment")
     public static int signUpSystem(int width, int height) {
         try {
-            boolean success = getFileManager().saveInfo("testuser", "1234");
+            boolean success = getFileManager().saveUser("testuser", "1234");
             if (success) {
                 LOGGER.info("Test user 'testuser' saved successfully.");
             } else {

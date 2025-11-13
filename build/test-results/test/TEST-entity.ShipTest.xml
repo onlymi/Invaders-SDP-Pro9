@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="entity.ShipTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-11-13T05:04:47" hostname="yunseungjuui-MacBookPro.local" time="0.093">
-  <properties/>
-  <testcase name="testShip_NormalType_ShouldHaveBaseSpeed()" classname="entity.ShipTest" time="0.09"/>
-  <testcase name="testShip_BigShotType_ShouldHaveSlowSpeed()" classname="entity.ShipTest" time="0.0"/>
-  <testcase name="testShip_MoveFastType_ShouldHaveFastSpeed()" classname="entity.ShipTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

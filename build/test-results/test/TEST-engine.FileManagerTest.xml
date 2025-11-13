@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="engine.FileManagerTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-11-13T15:45:41" hostname="yunseungjuui-MacBookPro.local" time="0.027">
+  <properties/>
+  <testcase name="testSaveUser_Success()" classname="engine.FileManagerTest" time="0.023"/>
+  <testcase name="testSaveUser_DuplicateId()" classname="engine.FileManagerTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[11월 14, 2025 12:45:41 오전 engine.FileManager saveUser
+INFO: New user newUser saved
+11월 14, 2025 12:45:41 오전 engine.FileManager saveUser
+INFO: New user dupeUser saved
+11월 14, 2025 12:45:41 오전 engine.FileManager saveUser
+WARNING: User ID already exists: dupeUser
+]]></system-err>
+</testsuite>

@@ -393,7 +393,7 @@ public final class FileManager {
      * @throws IOException              If file writing fails
      * @throws NoSuchAlgorithmException If the encryption algorithm cannot be found
      */
-    public boolean saveInfo(final String id, final String password)
+    public boolean saveUser(final String id, final String password)
         throws IOException, NoSuchAlgorithmException {
         // ID 중복 검사
         if (isUserExists(id)) {
