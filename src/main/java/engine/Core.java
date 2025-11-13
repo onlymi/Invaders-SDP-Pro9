@@ -509,9 +509,17 @@ public final class Core {
      */
     @SuppressWarnings("checkstyle:TodoComment")
     public static int signUpSystem(int width, int height) {
-        // Todo 회원가입 로직 구현 필요
+        try {
+            boolean success = getFileManager().saveInfo("testuser", "1234");
+            if (success) {
+                LOGGER.info("Test user 'testuser' saved successfully.");
+            } else {
+                LOGGER.warning("Test user 'testuser' already exists.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         // 구현 전까지는 임시로 Titlescreen(1)로 작동
-        LOGGER.warning("SignUpScreen is not implemented yet. Returning to TitleScreen.");
         return 1;
     }
 }
