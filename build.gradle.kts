@@ -1,7 +1,7 @@
-
 plugins {
     id("java")
     id("jacoco")
+    id("application")
 }
 
 group = "com.teampro9"
@@ -45,4 +45,8 @@ tasks.jacocoTestReport {
         csv.required.set(false)
         html.required.set(true)
     }
+}
+
+application {
+    mainClass.set("engine.Core")
 }

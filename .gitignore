@@ -301,6 +301,8 @@ modules.xml
 
 # Log file
 *.log
+.gradle
+.gradle/*
 
 # BlueJ files
 *.ctxt
