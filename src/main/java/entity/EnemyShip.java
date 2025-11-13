@@ -94,9 +94,9 @@ public class EnemyShip extends Entity {
                 this.coinValue = C_TYPE_COINS;
                 this.health = 1;
                 break;
-            case BossEnemy1:
-            case BossEnemy2:
-            case BossEnemy3:
+            case BossShip1:
+            case BossShip2:
+            case BossShip3:
                 this.pointValue = 1000;
                 this.coinValue = 1000;
                 this.health = 50;

@@ -103,9 +103,9 @@ public final class AssetManager {
         /**
          * Boss ship.
          */
-        BossEnemy1(SourceCategory.BOSS, 21, 10),
-        BossEnemy2(SourceCategory.BOSS, 21, 10),
-        BossEnemy3(SourceCategory.BOSS, 21, 10),
+        BossShip1(SourceCategory.BOSS, 21, 10),
+        BossShip2(SourceCategory.BOSS, 21, 10),
+        BossShip3(SourceCategory.BOSS, 21, 10),
         /**
          * Destroyed enemy ship.
          */

@@ -20,7 +20,7 @@ public class BossShip extends EnemyShip {
      * @param positionY Initial position of the ship in the Y axis.
      */
     public BossShip(final int positionX, final int positionY) {
-        super(positionX, positionY, SpriteType.BossEnemy1);
+        super(positionX, positionY, SpriteType.BossShip1);
         
         // Set dimensions to match BossEnemy sprite (21x10, scaled by 2 = 42x20)
         this.width = 21 * 2;
