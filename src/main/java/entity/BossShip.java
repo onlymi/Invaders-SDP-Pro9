@@ -1,49 +1,49 @@
 package entity;
 
+import engine.AssetManager.SpriteType;
 import java.awt.Color;
 
-import engine.Core;
-import engine.AssetManager.SpriteType;
-
 /**
- * Implements a boss ship, to be destroyed by the player.
- * Extends EnemyShip with boss-specific logic.
+ * Implements a boss ship, to be destroyed by the player. Extends EnemyShip with boss-specific
+ * logic.
  */
 public class BossShip extends EnemyShip {
-
+    
     private static final int BOSS_INITIAL_HEALTH = 500;
     private static final int BOSS_POINTS = 5000;
     private static final int BOSS_COINS = 5000;
-
+    
     /**
-     * Constructor, establishes the boss ship's properties.
-     * Initializes with SpriteType.BossEnemy1.
+     * Constructor, establishes the boss ship's properties. Initializes with SpriteType.BossEnemy1.
      *
      * @param positionX Initial position of the ship in the X axis.
      * @param positionY Initial position of the ship in the Y axis.
      */
     public BossShip(final int positionX, final int positionY) {
         super(positionX, positionY, SpriteType.BossEnemy1);
-
+        
+        // Set dimensions to match BossEnemy sprite (21x10, scaled by 2 = 42x20)
+        this.width = 21 * 2;
+        this.height = 10 * 2;
+        
         // Apply boss-specific, high stats.
         this.health = BOSS_INITIAL_HEALTH;
         this.initialHealth = BOSS_INITIAL_HEALTH;
         this.pointValue = BOSS_POINTS;
         this.coinValue = BOSS_COINS;
-
+        
         // Set a prominent default color.
         this.changeColor(Color.CYAN);
     }
-
+    
     /**
-     * Updates attributes for boss movement and phases.
-     * Custom boss logic goes here.
+     * Updates attributes for boss movement and phases. Custom boss logic goes here.
      */
     @Override
     public final void update() {
-
+    
     }
-
+    
     /**
      * Returns the current health of the boss ship.
      */
@@ -51,7 +51,7 @@ public class BossShip extends EnemyShip {
     public final int getHealth() {
         return this.health;
     }
-
+    
     /**
      * Reduces boss health by 1 and handles destruction or damage animation based on remaining HP.
      */
@@ -68,11 +68,11 @@ public class BossShip extends EnemyShip {
         } else {
             // Apply color change logic based on HP ratio for damage feedback
             Color color = this.getColor();
-            if(initialHealth != 0) {
+            if (initialHealth != 0) {
                 // Alpha range from a minimum visible (70) to full (255) based on remaining HP
-                int rawAlpha = (int)(70 + 150 * (float)health / initialHealth);
+                int rawAlpha = (int) (70 + 150 * (float) health / initialHealth);
                 int alpha = Math.max(0, Math.min(255, rawAlpha));
-
+                
                 color = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
                 changeColor(color);
             }
