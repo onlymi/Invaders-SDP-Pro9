@@ -223,13 +223,6 @@ public class EnemyShip extends Entity {
                 default:
                     break;
             }
-            Color color = this.getColor();
-            if (initialHealth != 0) {
-                int rawAlpha = (int) (70 + 150 * (float) health / initialHealth);
-                int alpha = Math.max(0, Math.min(255, rawAlpha));
-                color = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
-                changeColor(color);
-            }
         }
     }
     
@@ -257,5 +250,12 @@ public class EnemyShip extends Entity {
     
     public int getCoinValue() {
         return this.coinValue;
+    }
+    
+    /**
+     * Returns the initial health of the enemy ship
+     */
+    public final int getInitialHealth() {
+        return this.initialHealth;
     }
 }
