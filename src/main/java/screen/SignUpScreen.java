@@ -179,10 +179,10 @@ public class SignUpScreen extends Screen {
         try {
             boolean success = this.fileManager.saveUser(id, password);
             if (success) {
-                this.message = "Sign up Successful! Returning to login...";
+                this.message = "Sign Up Successful! Returning to login...";
                 this.signUpSuccess = true;
             } else {
-                this.message = "This ID already exists! Try another ID";
+                this.message = "This ID already exists! Try another ID.";
                 this.idInput.setLength(0);
                 this.passwordInput.setLength(0);
             }

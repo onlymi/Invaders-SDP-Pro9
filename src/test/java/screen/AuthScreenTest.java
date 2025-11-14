@@ -51,7 +51,7 @@ class AuthScreenTest {
         // Core.getter method 호출을 가로챔
         coreMock = mockStatic(Core.class);
         soundManagerMock = mockStatic(SoundManager.class);
-        // Core.getter method 가 호출될 때, 우리가 만든 가짜 객체를 반환하도록 설정
+        // Core.getter method 가 호출될 때, 가짜 객체를 반환하도록 설정
         coreMock.when(Core::getInputManager).thenReturn(inputManager);
         coreMock.when(Core::getDrawManager).thenReturn(drawManager);
         soundManagerMock.when(SoundManager::getInstance).thenReturn(soundManager);
@@ -72,7 +72,7 @@ class AuthScreenTest {
     
     @AfterEach
     void tearDown() {
-        // Static Mock을 해제합니다.
+        // Static Mock을 해제
         coreMock.close();
         soundManagerMock.close();
     }
@@ -80,7 +80,7 @@ class AuthScreenTest {
     @Test
     void testInitialState() {
         // 1. 테스트: 초기 상태 확인
-        // AuthScreen이 생성되면 menuIndex는 0 (Log In)이어야 합니다.
+        // AuthScreen이 생성되면 menuIndex는 0 (Log In)이어야 함
         assertEquals(0, authScreen.getMenuIndex());
         assertTrue(authScreen.getIsRunning());
     }
@@ -93,7 +93,7 @@ class AuthScreenTest {
         
         authScreen.update(); // update() 실행
         
-        // menuIndex가 0에서 1 (Sign Up)로 변경되어야 합니다.
+        // menuIndex가 0에서 1 (Sign Up)로 변경되어야 함
         assertEquals(1, authScreen.getMenuIndex());
         
         // 3. 테스트: 메뉴 이동 (아래 - 순환)
@@ -103,7 +103,7 @@ class AuthScreenTest {
         when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(true);
         authScreen.update(); // 다시 누름
         
-        // menuIndex가 1에서 0 (Log In)으로 순환해야 합니다.
+        // menuIndex가 1에서 0 (Log In)으로 순환해야 함
         assertEquals(0, authScreen.getMenuIndex());
         
         // 4. 테스트: 메뉴 이동 (위)
@@ -111,7 +111,7 @@ class AuthScreenTest {
         when(inputManager.isKeyDown(KeyEvent.VK_UP)).thenReturn(true);
         authScreen.update();
         
-        // menuIndex가 0에서 1 (Sign Up)로 변경되어야 합니다. (2개일 땐 위/아래 동일)
+        // menuIndex가 0에서 1 (Sign Up)로 변경되어야 함 (2개일 땐 위/아래 동일)
         assertEquals(1, authScreen.getMenuIndex());
     }
     
@@ -123,7 +123,7 @@ class AuthScreenTest {
         
         authScreen.update(); // update() 실행
         
-        // returnCode가 1이 되고, 화면이 종료(isRunning=false)되어야 합니다.
+        // returnCode가 1이 되고, 화면이 종료(isRunning=false)되어야 함
         assertEquals(1, authScreen.getReturnCode());
         assertFalse(authScreen.getIsRunning());
     }
@@ -141,7 +141,7 @@ class AuthScreenTest {
         when(inputManager.isKeyDown(KeyEvent.VK_SPACE)).thenReturn(true);
         authScreen.update();
         
-        // returnCode가 10이 되고, 화면이 종료(isRunning=false)되어야 합니다.
+        // returnCode가 10이 되고, 화면이 종료(isRunning=false)되어야 함
         assertEquals(10, authScreen.getReturnCode());
         assertFalse(authScreen.getIsRunning());
     }
