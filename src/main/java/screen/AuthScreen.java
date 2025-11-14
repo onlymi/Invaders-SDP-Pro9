@@ -7,7 +7,7 @@ import java.awt.event.KeyEvent;
 /**
  * Implements the Authentication screen. Handles user input for logging in or signing up.
  *
- * @author Seungju Yoon <ysj5450@hanyang.ac.kr>
+ * @author Seungju Yoon <yunseungju6@gmail.com>
  */
 public class AuthScreen extends Screen {
     
@@ -79,7 +79,8 @@ public class AuthScreen extends Screen {
                 this.selectionCooldown.reset();
             }
             
-            if (inputManager.isKeyDown(KeyEvent.VK_SPACE)) {
+            if (inputManager.isKeyDown(KeyEvent.VK_SPACE) || inputManager.isKeyDown(
+                KeyEvent.VK_ENTER)) {
                 this.soundManager.playOnce("select");
                 switch (this.menuIndex) {
                     case 0: // "Log In"

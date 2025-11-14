@@ -385,7 +385,7 @@ public final class FileManager {
     }
     
     /**
-     * Save new user at user_info.csv.
+     * Save new user at user_acct_info.csv.
      *
      * @param id       user ID
      * @param password user password(not encryption)
@@ -395,9 +395,10 @@ public final class FileManager {
      */
     public boolean saveUser(final String id, final String password)
         throws IOException, NoSuchAlgorithmException {
+        String trimmedId = id.trim();
         // ID 중복 검사
-        if (isUserExists(id)) {
-            LOGGER.warning("User ID already exists: " + id);
+        if (isUserExists(trimmedId)) {
+            LOGGER.warning("User ID already exists: " + trimmedId);
             return false;
         }
         
@@ -406,7 +407,7 @@ public final class FileManager {
         
         // CSV 파일에 쓰기
         try (FileWriter writer = new FileWriter(USER_ACCT_INFO_PATH, true)) {
-            writer.append(id);
+            writer.append(trimmedId);
             writer.append(',');
             writer.append(hashedPassword);
             writer.append('\n');
@@ -430,7 +431,7 @@ public final class FileManager {
             
             while ((line = reader.readLine()) != null) {
                 String[] values = line.split(",");
-                if (values.length > 0 && values[0].equals(id)) {
+                if (values.length > 0 && values[0].trim().equals(id)) {
                     return true;
                 }
             }

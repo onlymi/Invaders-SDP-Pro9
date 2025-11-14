@@ -13,7 +13,7 @@ import screen.Screen;
 /**
  * Renders the Authentication screen. Responsible for drawing all UI elements for the AuthScreen.
  *
- * @author Seungju Yoon <ysj5450@hanyang.ac.kr>
+ * @author Seungju Yoon <yunseungju6@gmail.com>
  */
 public class AuthScreenRenderer {
     

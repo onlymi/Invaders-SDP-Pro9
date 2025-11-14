@@ -13,6 +13,7 @@ import engine.renderer.PlayModeSelectionScreenRenderer;
 import engine.renderer.ScoreScreenRenderer;
 import engine.renderer.SettingScreenRenderer;
 import engine.renderer.ShipSelectionMenuRenderer;
+import engine.renderer.SignUpScreenRenderer;
 import engine.renderer.TitleScreenRenderer;
 import java.awt.Color;
 import java.awt.Font;
@@ -91,6 +92,7 @@ public final class DrawManager {
     private GameScreenRenderer gameScreenRenderer;
     private ScoreScreenRenderer scoreScreenRenderer;
     private AuthScreenRenderer authScreenRenderer;
+    private SignUpScreenRenderer signUpScreenRenderer;
     
     private final List<Explosion> explosions = new ArrayList<>();
     
@@ -121,13 +123,14 @@ public final class DrawManager {
         this.shipSelectionMenuRenderer = new ShipSelectionMenuRenderer(this.commonRenderer);
         this.gameScreenRenderer = new GameScreenRenderer(this.commonRenderer);
         this.scoreScreenRenderer = new ScoreScreenRenderer(this.commonRenderer);
+        this.authScreenRenderer = new AuthScreenRenderer(this.commonRenderer);
+        this.signUpScreenRenderer = new SignUpScreenRenderer(this.commonRenderer);
         
         fontRegular = this.assetManager.getFontRegular();
         fontBig = this.assetManager.getFontBig();
         
         this.LOGGER = Core.getLogger();
         LOGGER.info("Started loading resources.");
-        this.authScreenRenderer = new AuthScreenRenderer(this.commonRenderer);
     }
     
     /**
@@ -192,6 +195,10 @@ public final class DrawManager {
     
     public AuthScreenRenderer getAuthScreenRenderer() {
         return this.authScreenRenderer;
+    }
+    
+    public SignUpScreenRenderer getSignUpScreenRenderer() {
+        return this.signUpScreenRenderer;
     }
     
     /**

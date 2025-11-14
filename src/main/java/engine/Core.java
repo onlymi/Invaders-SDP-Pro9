@@ -21,6 +21,7 @@ import screen.ScoreScreen;
 import screen.Screen;
 import screen.SettingScreen;
 import screen.ShipSelectionScreen;
+import screen.SignUpScreen;
 import screen.TitleScreen;
 
 
@@ -507,19 +508,10 @@ public final class Core {
      * @ param height Sign up screen contents box height
      * @ return Next return code
      */
-    @SuppressWarnings("checkstyle:TodoComment")
     public static int signUpSystem(int width, int height) {
-        try {
-            boolean success = getFileManager().saveUser("testuser", "1234");
-            if (success) {
-                LOGGER.info("Test user 'testuser' saved successfully.");
-            } else {
-                LOGGER.warning("Test user 'testuser' already exists.");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        // 구현 전까지는 임시로 Titlescreen(1)로 작동
-        return 1;
+        currentScreen = new SignUpScreen(width, height, FPS);
+        LOGGER.info("Starting " + WIDTH + "x" + HEIGHT
+            + " sign up screen at " + FPS + " fps.");
+        return frame.setScreen(currentScreen);
     }
 }

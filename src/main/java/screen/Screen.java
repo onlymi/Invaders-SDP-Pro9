@@ -133,7 +133,7 @@ public class Screen {
             }
         }
         
-        return 0;
+        return this.returnCode;
     }
     
     /**
