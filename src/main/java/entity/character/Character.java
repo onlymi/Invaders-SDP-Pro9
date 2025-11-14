@@ -27,7 +27,7 @@ public abstract class Character extends Entity {
     protected boolean unlocked;
     
     public enum CharacterType {
-        WARRIOR(150, 50, 1.0f, 25, 0, 0.8f, 1.5f, 0.05f, 1.5f, 30, true),
+        WARRIOR(150, 100, 1.0f, 25, 0, 0.8f, 1.5f, 0.05f, 1.5f, 30, true),
         // Quick long-range attack
         ARCHER(90, 100, 1.2f, 18, 0, 1.5f, 12.0f, 0.15f, 2.0f, 8, true),
         // Powerful long-range attack
@@ -39,7 +39,7 @@ public abstract class Character extends Entity {
         // Bomb-throwing attack
         BOMBER(110, 100, 1.1f, 5, 22, 0.5f, 8.0f, 0.05f, 1.5f, 12, false),
         // Bomb-throwing attack
-        HEALER(100, 200, 1.0f, 5, 25, 0.8f, 8.0f, 0.01f, 1.5f, 10, false);
+        HEALER(100, 200, 1.0f, 5, 30, 0.8f, 8.0f, 0.01f, 1.5f, 10, false);
         
         private final int maxHealthPoints;
         private final int healthPoints;
