@@ -41,7 +41,27 @@ public class BossShip extends EnemyShip {
      */
     @Override
     public final void update() {
-    
+        // Inherited from EnemyShip, checks if 500ms animation interval is finished.
+        if (this.bossAnimationCooldown.checkFinished()) {
+            this.bossAnimationCooldown.reset();
+            
+            // Cycles through BossShip1, BossShip2, BossShip3 for animation
+            switch (this.spriteType) {
+                case BossShip1:
+                    this.spriteType = SpriteType.BossShip2;
+                    break;
+                case BossShip2:
+                    this.spriteType = SpriteType.BossShip3;
+                    break;
+                case BossShip3:
+                    this.spriteType = SpriteType.BossShip1;
+                    break;
+                default:
+                    // Reverts to base sprite if an unknown sprite is encountered
+                    this.spriteType = SpriteType.BossShip1;
+                    break;
+            }
+        }
     }
     
     /**

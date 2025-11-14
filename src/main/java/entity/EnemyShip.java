@@ -40,8 +40,8 @@ public class EnemyShip extends Entity {
     /**
      * Cooldown between sprite changes.
      */
-    private Cooldown animationCooldown;
-    private Cooldown bossAnimationCooldown;
+    protected Cooldown animationCooldown;
+    protected Cooldown bossAnimationCooldown;
     /**
      * Checks if the ship has been hit by a bullet.
      */
