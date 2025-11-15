@@ -5,6 +5,7 @@ import engine.SoundManager;
 import engine.utils.Cooldown;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import animations.MenuSpace;
 
 /**
  * Implements the title screen.
@@ -26,6 +27,10 @@ public class TitleScreen extends Screen {
      * Time between changes in user selection.
      */
     private Cooldown selectionCooldown;
+    /**
+     * Implements the title screen.
+     */
+    private MenuSpace menuSpace;
     
     // menu index added for user mode selection
     private int menuIndex = 0;
@@ -50,7 +55,7 @@ public class TitleScreen extends Screen {
         this.returnCode = 1; // 2P mode: changed to default selection as 1P
         this.selectionCooldown = Core.getCooldown(SELECTION_TIME);
         this.selectionCooldown.reset();
-        
+        this.menuSpace = new MenuSpace(50, this.width, this.height);
         // Start menu music loop when the title screen is created
         Core.getSoundManager().playLoop("title_sound");
     }
@@ -143,7 +148,7 @@ public class TitleScreen extends Screen {
      */
     private void nextMenuItem() {
         this.menuIndex = (this.menuIndex + 1) % 5;
-        drawManager.getTitleScreenRenderer().menuHover(this.menuIndex);
+        drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, this.menuIndex);
     }
     
     /**
@@ -152,7 +157,7 @@ public class TitleScreen extends Screen {
     private void previousMenuItem() {
         this.menuIndex = (this.menuIndex + 4)
             % 5; // Fix : an issue where only the down arrow keys on the keyboard are entered and not up
-        drawManager.getTitleScreenRenderer().menuHover(this.menuIndex);
+        drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, this.menuIndex);
     }
     /**
      * Draws the elements associated with the screen.
@@ -165,7 +170,8 @@ public class TitleScreen extends Screen {
         drawManager.initDrawing(this);
         
         // Main menu space animation
-        drawManager.getTitleScreenRenderer().updateMenuSpace(drawManager.getBackBufferGraphics());
+        drawManager.getTitleScreenRenderer()
+            .updateMenuSpace(drawManager.getBackBufferGraphics(), this.menuSpace);
         
         int mx = inputManager.getMouseX();
         int my = inputManager.getMouseY();
@@ -175,23 +181,23 @@ public class TitleScreen extends Screen {
         Integer newHover = null;
         if (boxesForHover[0].contains(mx, my)) {
             newHover = 0;
-            drawManager.getTitleScreenRenderer().menuHover(0);
+            drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, 0);
         }
         if (boxesForHover[1].contains(mx, my)) {
             newHover = 1;
-            drawManager.getTitleScreenRenderer().menuHover(1);
+            drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, 1);
         }
         if (boxesForHover[2].contains(mx, my)) {
             newHover = 2;
-            drawManager.getTitleScreenRenderer().menuHover(2);
+            drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, 2);
         }
         if (boxesForHover[3].contains(mx, my)) {
             newHover = 3;
-            drawManager.getTitleScreenRenderer().menuHover(3);
+            drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, 3);
         }
         if (boxesForHover[4].contains(mx, my)) {
             newHover = 4;
-            drawManager.getTitleScreenRenderer().menuHover(4);
+            drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, 4);
         }
         
         // Modify : Update after hover calculation

@@ -20,7 +20,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+
+import engine.AssetManager.SpriteType;
+import engine.gameplay.achievement.Achievement;
 
 /**
  * Manages files used in the application.

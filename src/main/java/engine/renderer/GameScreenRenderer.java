@@ -1,6 +1,5 @@
 package engine.renderer;
 
-import animations.BasicGameSpace;
 import animations.Explosion;
 import engine.AssetManager;
 import engine.Core;
@@ -33,7 +32,6 @@ public class GameScreenRenderer {
     private static FontMetrics fontMetrics;
     
     private final List<Explosion> explosions = new java.util.ArrayList<>();
-    BasicGameSpace basicGameSpace = new BasicGameSpace(100);
     
     public GameScreenRenderer(CommonRenderer commonRenderer) {
         LOGGER = Core.getLogger();
@@ -41,9 +39,6 @@ public class GameScreenRenderer {
         this.entityRenderer = new EntityRenderer(commonRenderer);
     }
     
-    public void setLastLife(boolean status) {
-        basicGameSpace.setLastLife(status);
-    }
     
     /**
      * Countdown to game start.

@@ -1,6 +1,7 @@
 package screen;
 
 import engine.Core;
+import engine.SoundManager;
 import engine.gameplay.achievement.Achievement;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;

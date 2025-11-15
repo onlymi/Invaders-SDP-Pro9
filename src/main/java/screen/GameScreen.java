@@ -75,6 +75,10 @@ public class GameScreen extends Screen {
      */
     private GameSettings gameSettings;
     /**
+     * BasicGameSpace for screen resizing.
+     */
+    private BasicGameSpace basicGameSpace;
+    /**
      * Current difficulty level number.
      */
     private int level;
@@ -142,7 +146,6 @@ public class GameScreen extends Screen {
     private Ship.ShipType shipTypeP1;
     private Ship.ShipType shipTypeP2;
     
-    BasicGameSpace basicGameSpace = new BasicGameSpace(100);
     
     /**
      * Constructor, establishes the properties of the screen.
@@ -245,6 +248,9 @@ public class GameScreen extends Screen {
         
         // New Item Code
         this.items = new HashSet<Item>();
+        
+        // New BasicGameSpace Code
+        this.basicGameSpace = new BasicGameSpace(100, this.width, this.height);
         
         // Special input delay / countdown.
         this.gameStartTime = System.currentTimeMillis();
@@ -406,7 +412,7 @@ public class GameScreen extends Screen {
             
             // check active item affects
             state.updateEffects();
-            drawManager.getGameScreenRenderer().setLastLife(state.getLivesRemaining() == 1);
+            this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
             draw();
             
             if (!sessionHighScoreNotified && this.state.getScore() > this.topScore) {
@@ -622,8 +628,8 @@ public class GameScreen extends Screen {
                         // Record damage for Survivor achievement check
                         this.tookDamageThisLevel = true;
                         
-                        this.drawManager.getGameScreenRenderer()
-                            .setLastLife(state.getLivesRemaining() == 1);
+                        this.drawManager.getGameScreenRenderer();
+                        this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
                         
                         this.LOGGER.info("Hit on player " + (p + 1) + ", team lives now: "
                             + state.getLivesRemaining());

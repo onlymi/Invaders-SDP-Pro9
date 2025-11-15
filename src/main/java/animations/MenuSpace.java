@@ -11,18 +11,22 @@ public class MenuSpace {
     private int numStars;
     private Color color;
     private int speed;
+    private final int screenWidth;
+    private final int screenHeight;
     
-    public MenuSpace(int numStars) {
+    public MenuSpace(int numStars, int screenWidth, int screenHeight) {
         
         this.numStars = numStars;
         this.stars = new Star[this.numStars];
         this.positions = new int[this.numStars][2];
         this.color = Color.YELLOW;
         this.speed = 1;
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
         
         for (int i = 0; i < this.numStars; i++) {
             
-            stars[i] = new Star(rand.nextInt(0, 448), rand.nextInt(0, 520));
+            stars[i] = new Star(rand.nextInt(0, screenWidth), rand.nextInt(0, screenHeight));
             positions[i][0] = stars[i].x;
             positions[i][1] = stars[i].y;
         }
@@ -35,7 +39,7 @@ public class MenuSpace {
             star.y += this.speed;
             positions[i][1] = star.y;
             
-            if (star.y >= 525) {
+            if (star.y >= screenHeight + 5) {
                 star.y = 0;
                 positions[i][1] = 0;
             }

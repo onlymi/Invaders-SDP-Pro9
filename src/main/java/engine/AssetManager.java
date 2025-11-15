@@ -22,7 +22,6 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 /**
  * 게임에 필요한 모든 Asset(스프라이트, 폰트 등)을 로드하고 저장 및 관리하는 클래스
  */
-@SuppressWarnings("checkstyle:EmptyLineSeparator")
 public final class AssetManager {
     
     /**
@@ -50,7 +49,6 @@ public final class AssetManager {
     /**
      * Sprite types.
      */
-    @SuppressWarnings("checkstyle:RightCurly")
     public enum SpriteType {
         /**
          * Player ship.
@@ -105,9 +103,9 @@ public final class AssetManager {
         /**
          * Boss ship.
          */
-        BossEnemy1(SourceCategory.BOSS, 21, 10),
-        BossEnemy2(SourceCategory.BOSS, 21, 10),
-        BossEnemy3(SourceCategory.BOSS, 21, 10),
+        BossShip1(SourceCategory.BOSS, 21, 10),
+        BossShip2(SourceCategory.BOSS, 21, 10),
+        BossShip3(SourceCategory.BOSS, 21, 10),
         /**
          * Destroyed enemy ship.
          */
@@ -151,6 +149,8 @@ public final class AssetManager {
             return this.height;
         }
     }
+    
+    ;
     
     private static AssetManager instance;
     private static final Logger LOGGER = Core.getLogger();

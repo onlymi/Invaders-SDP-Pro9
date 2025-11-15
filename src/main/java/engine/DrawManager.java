@@ -4,7 +4,6 @@ import animations.BasicGameSpace;
 import animations.Explosion;
 import animations.MenuSpace;
 import engine.renderer.AchievementScreenRenderer;
-import engine.renderer.AuthScreenRenderer;
 import engine.renderer.CommonRenderer;
 import engine.renderer.EntityRenderer;
 import engine.renderer.GameScreenRenderer;
@@ -13,7 +12,6 @@ import engine.renderer.PlayModeSelectionScreenRenderer;
 import engine.renderer.ScoreScreenRenderer;
 import engine.renderer.SettingScreenRenderer;
 import engine.renderer.ShipSelectionMenuRenderer;
-import engine.renderer.SignUpScreenRenderer;
 import engine.renderer.TitleScreenRenderer;
 import java.awt.Color;
 import java.awt.Font;
@@ -99,8 +97,6 @@ public final class DrawManager {
     /**
      * Stars background animations for both game and main menu Star density specified as argument.
      */
-    BasicGameSpace basicGameSpace = new BasicGameSpace(100);
-    MenuSpace menuSpace = new MenuSpace(50);
     int explosion_size = 2;
     
     /**
