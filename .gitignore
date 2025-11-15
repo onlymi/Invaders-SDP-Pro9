@@ -406,5 +406,7 @@ $RECYCLE.BIN/
 log
 .gradle
 .gradle/*
+build
+build/*
 
 # End of https://www.toptal.com/developers/gitignore/api/java,intellij,intellij+iml,intellij+all,macos,windows,visualstudiocode,eclipse
