@@ -1,5 +1,6 @@
 package screen;
 
+import animations.MenuSpace;
 import engine.Core;
 import engine.utils.Cooldown;
 import java.awt.event.KeyEvent;
@@ -22,6 +23,11 @@ public class AuthScreen extends Screen {
     private Cooldown selectionCooldown;
     
     /**
+     *
+     */
+    private MenuSpace menuSpace;
+    
+    /**
      * Current menu item index. 0: Log In, 1: Sign Up.
      */
     private int menuIndex;
@@ -41,6 +47,7 @@ public class AuthScreen extends Screen {
         this.menuIndex = 0;
         this.selectionCooldown = Core.getCooldown(SELECTION_TIME);
         this.selectionCooldown.reset();
+        this.menuSpace = new MenuSpace(50, this.width, this.height);
         
         // Start menu music loop
         this.soundManager.playLoop("title_sound");
@@ -105,7 +112,7 @@ public class AuthScreen extends Screen {
      */
     private void moveToNextMenuItem() {
         this.menuIndex = (this.menuIndex + 1) % 2; // 2개의 메뉴만 순환
-        drawManager.getAuthScreenRenderer().menuHover(this.menuIndex);
+        drawManager.getAuthScreenRenderer().menuHover(this.menuSpace, this.menuIndex);
     }
     
     /**
@@ -113,7 +120,7 @@ public class AuthScreen extends Screen {
      */
     private void moveToPreviousMenuItem() {
         this.menuIndex = (this.menuIndex + 1) % 2; // (0 + 1) % 2 = 1, (1 + 1) % 2 = 0
-        drawManager.getAuthScreenRenderer().menuHover(this.menuIndex);
+        drawManager.getAuthScreenRenderer().menuHover(this.menuSpace, this.menuIndex);
     }
     
     /**
@@ -123,7 +130,8 @@ public class AuthScreen extends Screen {
         drawManager.initDrawing(this);
         
         // 배경 애니메이션
-        drawManager.getAuthScreenRenderer().updateMenuSpace(drawManager.getBackBufferGraphics());
+        drawManager.getAuthScreenRenderer()
+            .updateMenuSpace(drawManager.getBackBufferGraphics(), this.menuSpace);
         
         // 타이틀
         drawManager.getAuthScreenRenderer().drawTitle(drawManager.getBackBufferGraphics(), this);

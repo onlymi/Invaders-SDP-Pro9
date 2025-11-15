@@ -31,11 +31,6 @@ public class AuthScreenRenderer {
     private static FontMetrics fontMetrics;
     
     /**
-     * Menu background star animation.
-     */
-    private animations.MenuSpace menuSpace = new animations.MenuSpace(50);
-    
-    /**
      * Constructor for AuthScreenRenderer.
      *
      * @param commonRenderer A CommonRenderer instance for shared drawing methods.
@@ -72,12 +67,12 @@ public class AuthScreenRenderer {
     /**
      * Draws the main menu stars background animation.
      *
-     * @param graphics Graphics context to draw on.
+     * @param g Graphics context to draw on.
      */
-    public void updateMenuSpace(Graphics graphics) {
+    public void updateMenuSpace(Graphics g, animations.MenuSpace menuSpace) {
         menuSpace.updateStars();
         
-        Graphics2D g2d = (Graphics2D) graphics;
+        Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         g2d.setColor(Color.WHITE);
@@ -135,9 +130,10 @@ public class AuthScreenRenderer {
     /**
      * Changes the color of the menu background animation based on the selected item.
      *
-     * @param state The index of the selected menu item.
+     * @param menuSpace
+     * @param state     The index of the selected menu item.
      */
-    public void menuHover(final int state) {
+    public void menuHover(animations.MenuSpace menuSpace, final int state) {
         menuSpace.setColor(state);
         menuSpace.setSpeed(state == 4); // state == 4 is Exit, but we only have 0 and 1.
     }

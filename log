@@ -1,0 +1,771 @@
+[INFO|7:25:38]: Started loading resources. 
+[FINE|7:25:38]: Sprite Ship1 loaded. 
+[FINE|7:25:38]: Sprite Ship2 loaded. 
+[FINE|7:25:38]: Sprite Ship3 loaded. 
+[FINE|7:25:38]: Sprite Ship4 loaded. 
+[FINE|7:25:38]: Sprite ShipDestroyed1 loaded. 
+[FINE|7:25:38]: Sprite ShipDestroyed2 loaded. 
+[FINE|7:25:38]: Sprite ShipDestroyed3 loaded. 
+[FINE|7:25:38]: Sprite ShipDestroyed4 loaded. 
+[FINE|7:25:38]: Sprite Bullet loaded. 
+[FINE|7:25:38]: Sprite EnemyBullet loaded. 
+[FINE|7:25:38]: Sprite EnemyShipA1 loaded. 
+[FINE|7:25:38]: Sprite EnemyShipA2 loaded. 
+[FINE|7:25:38]: Sprite EnemyShipB1 loaded. 
+[FINE|7:25:38]: Sprite EnemyShipB2 loaded. 
+[FINE|7:25:38]: Sprite EnemyShipC1 loaded. 
+[FINE|7:25:38]: Sprite EnemyShipC2 loaded. 
+[FINE|7:25:38]: Sprite EnemyShipSpecial loaded. 
+[FINE|7:25:38]: Sprite BossShip1 loaded. 
+[FINE|7:25:38]: Sprite BossShip2 loaded. 
+[FINE|7:25:38]: Sprite BossShip3 loaded. 
+[FINE|7:25:38]: Sprite Explosion loaded. 
+[FINE|7:25:38]: Sprite Heart loaded. 
+[FINE|7:25:38]: Sprite ItemScore loaded. 
+[FINE|7:25:38]: Sprite ItemCoin loaded. 
+[FINE|7:25:38]: Sprite ItemHeal loaded. 
+[FINE|7:25:38]: Sprite ItemTripleShot loaded. 
+[FINE|7:25:38]: Sprite ItemScoreBooster loaded. 
+[FINE|7:25:38]: Sprite ItemBulletSpeedUp loaded. 
+[INFO|7:25:38]: Finished loading the sprites. 
+[INFO|7:25:38]: Finished loading the fonts. 
+[INFO|7:25:39]: Finished loading the sounds. 
+[INFO|7:25:39]: Started loading resources. 
+[INFO|7:25:39]: Starting 1200x800 auth screen at 60 fps. 
+[INFO|7:25:43]: Closing auth system screen. 
+[INFO|7:25:43]: Starting 1200x800 sign up screen at 60 fps. 
+[INFO|7:25:52]: New user ysj1234 saved 
+[INFO|7:25:54]: Closing sign up screen. 
+[INFO|7:25:54]: Starting 1200x800 auth screen at 60 fps. 
+[INFO|7:25:57]: Closing auth system screen. 
+[INFO|7:25:57]: Starting 1200x800 title screen at 60 fps. 
+[INFO|7:26:00]: Closing title screen. 
+[INFO|7:26:00]: Starting 1200x800 play screen at 60 fps. 
+[INFO|7:26:03]: Closing play screen. 
+[INFO|7:26:06]: Closing first player ship selection screen. 
+[INFO|7:26:06]: Starting 1200x800 game screen at 60 fps. 
+[INFO|7:26:06]: [GameState] Player 0: All effects cleared. 
+[INFO|7:26:06]: [GameState] Player 1: All effects cleared. 
+[INFO|7:26:06]: Initializing 6x4 ship formation in (20,100) 
+[INFO|7:26:06]: Destroyed ship in (0,0) 
+[INFO|7:26:06]: Destroyed ship in (1,0) 
+[INFO|7:26:06]: Destroyed ship in (4,0) 
+[INFO|7:26:06]: Destroyed ship in (5,0) 
+[INFO|7:26:06]: Destroyed ship in (0,1) 
+[INFO|7:26:06]: Destroyed ship in (5,1) 
+[INFO|7:26:06]: Destroyed ship in (2,2) 
+[INFO|7:26:06]: Destroyed ship in (3,2) 
+[INFO|7:26:06]: Destroyed ship in (2,3) 
+[INFO|7:26:06]: Destroyed ship in (3,3) 
+[INFO|7:26:06]: Removed enemy 0 from column 0 
+[INFO|7:26:06]: Removed enemy 1 from column 0 
+[INFO|7:26:06]: Removed enemy 0 from column 1 
+[INFO|7:26:06]: Removed enemy 2 from column 2 
+[INFO|7:26:06]: Removed enemy 3 from column 2 
+[INFO|7:26:06]: Removed enemy 2 from column 3 
+[INFO|7:26:06]: Removed enemy 3 from column 3 
+[INFO|7:26:06]: Removed enemy 0 from column 4 
+[INFO|7:26:06]: Removed enemy 0 from column 5 
+[INFO|7:26:06]: Removed enemy 1 from column 5 
+[INFO|7:26:16]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:17]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:19]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:20]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:21]: Enemy: true 
+[INFO|7:26:21]: final: false 
+[INFO|7:26:21]: [ItemManager]: DropRoll 93.5 
+[INFO|7:26:21]: [ItemManager]: created item SCOREBOOST at (232, 148) 
+[INFO|7:26:21]: Spawned SCOREBOOST at 229,148 
+[INFO|7:26:21]: Destroyed ship in (3,1) 
+[INFO|7:26:21]: Hit on enemy ship. 
+[WARNING|7:26:21]: Sound not found in AssetManager: sound/achievement.wav 
+[WARNING|7:26:21]: Sound not found in AssetManager: sound/achievement.wav 
+[INFO|7:26:21]: Achievement unlocked: First Blood - Defeat your first enemy. [Unlocked] 
+[INFO|7:26:21]: Removed enemy 1 from column 3 
+[INFO|7:26:23]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:26]: Player 1 picked up item: SCOREBOOST 
+[INFO|7:26:26]: [GameState] Player 0 started SCOREBOOST (value: 2)) for 5s 
+[INFO|7:26:26]: [ItemEffect - SCOREBOOST] Player 1 applied for 5s. Score gain will be multiplied by 2. 
+[INFO|7:26:26]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:30]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:31]: [GameState] Player 0 effect SCOREBOOST expired. 
+[INFO|7:26:31]: Enemy: true 
+[INFO|7:26:31]: final: false 
+[INFO|7:26:31]: [ItemManager]: DropRoll 9.0 
+[INFO|7:26:31]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:26:31]: Destroyed ship in (0,0) 
+[INFO|7:26:31]: Hit on enemy ship. 
+[INFO|7:26:32]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:32]: Removed enemy 0 from column 0 
+[INFO|7:26:34]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:36]: Enemy: true 
+[INFO|7:26:36]: final: false 
+[INFO|7:26:36]: [ItemManager]: DropRoll 79.8 
+[INFO|7:26:36]: [ItemManager]: created item SCORE at (368, 148) 
+[INFO|7:26:36]: Spawned SCORE at 365,148 
+[INFO|7:26:36]: Destroyed ship in (2,1) 
+[INFO|7:26:36]: Hit on enemy ship. 
+[INFO|7:26:36]: Removed enemy 1 from column 2 
+[INFO|7:26:37]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:41]: Player 1 picked up item: SCORE 
+[INFO|7:26:41]: [ItemEffect - SCORE] Player 1 : 60 + 10 -> 70 
+[INFO|7:26:42]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:44]: Enemy: true 
+[INFO|7:26:44]: final: false 
+[INFO|7:26:44]: [ItemManager]: DropRoll 86.3 
+[INFO|7:26:44]: [ItemManager]: created item COIN at (440, 188) 
+[INFO|7:26:44]: Spawned COIN at 437,188 
+[INFO|7:26:44]: Destroyed ship in (1,1) 
+[INFO|7:26:44]: Hit on enemy ship. 
+[INFO|7:26:44]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:44]: Removed enemy 1 from column 1 
+[INFO|7:26:45]: A special ship appears 
+[INFO|7:26:49]: Player 1 picked up item: COIN 
+[INFO|7:26:49]: Player 1 added 20 coins. before : 12, after : 32 
+[INFO|7:26:50]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:51]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:51]: Enemy: true 
+[INFO|7:26:51]: final: false 
+[INFO|7:26:51]: [ItemManager]: DropRoll 58.7 
+[INFO|7:26:51]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:26:51]: Destroyed ship in (1,1) 
+[INFO|7:26:51]: Hit on enemy ship. 
+[INFO|7:26:52]: Removed enemy 1 from column 1 
+[INFO|7:26:52]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:53]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:54]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:56]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:56]: Enemy: true 
+[INFO|7:26:56]: final: false 
+[INFO|7:26:56]: [ItemManager]: DropRoll 4.4 
+[INFO|7:26:56]: [ItemManager]: Tier=NONE (pity=2) 
+[INFO|7:26:56]: Destroyed ship in (4,2) 
+[INFO|7:26:56]: Hit on enemy ship. 
+[INFO|7:26:56]: Removed enemy 2 from column 4 
+[INFO|7:26:57]: The special ship has escaped 
+[INFO|7:26:57]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:26:59]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:01]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:01]: Enemy: true 
+[INFO|7:27:01]: final: false 
+[INFO|7:27:01]: [ItemManager]: DropRoll 20.3 
+[INFO|7:27:01]: [ItemManager]: Tier=NONE (pity=3) 
+[INFO|7:27:01]: Destroyed ship in (0,0) 
+[INFO|7:27:01]: Shooters list reduced to 5 members. 
+[INFO|7:27:01]: Hit on enemy ship. 
+[INFO|7:27:01]: Removed enemy 0 from column 0 
+[INFO|7:27:01]: Removed column 0 
+[INFO|7:27:02]: A special ship appears 
+[INFO|7:27:03]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:05]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:07]: Enemy: true 
+[INFO|7:27:07]: final: false 
+[INFO|7:27:07]: [ItemManager]: DropRoll 93.3 
+[INFO|7:27:07]: [ItemManager]: created item HEAL at (952, 108) 
+[INFO|7:27:07]: Spawned HEAL at 949,108 
+[INFO|7:27:07]: Destroyed ship in (2,0) 
+[INFO|7:27:07]: Shooters list reduced to 4 members. 
+[INFO|7:27:07]: Hit on enemy ship. 
+[INFO|7:27:07]: Removed enemy 0 from column 2 
+[INFO|7:27:07]: Removed column 2 
+[INFO|7:27:07]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:09]: Enemy: true 
+[INFO|7:27:09]: final: false 
+[INFO|7:27:09]: [ItemManager]: DropRoll 41.5 
+[INFO|7:27:09]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:27:09]: Destroyed ship in (3,1) 
+[INFO|7:27:09]: Hit on enemy ship. 
+[INFO|7:27:09]: Removed enemy 1 from column 3 
+[INFO|7:27:10]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:11]: Formation now moving down 5 
+[INFO|7:27:12]: Player 1 picked up item: HEAL 
+[INFO|7:27:12]: Player added 1 lives. before : 3, after : 3 
+[INFO|7:27:12]: Formation now moving left 1 
+[INFO|7:27:13]: The special ship has escaped 
+[INFO|7:27:14]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:15]: Enemy: true 
+[INFO|7:27:15]: final: false 
+[INFO|7:27:15]: [ItemManager]: DropRoll 72.4 
+[INFO|7:27:15]: [ItemManager]: created item SCORE at (920, 168) 
+[INFO|7:27:15]: Spawned SCORE at 917,168 
+[INFO|7:27:15]: Destroyed ship in (0,0) 
+[INFO|7:27:15]: Shooters list reduced to 3 members. 
+[INFO|7:27:15]: Hit on enemy ship. 
+[INFO|7:27:15]: Removed enemy 0 from column 0 
+[INFO|7:27:15]: Removed column 0 
+[INFO|7:27:17]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:18]: Enemy: true 
+[INFO|7:27:18]: final: false 
+[INFO|7:27:18]: [ItemManager]: DropRoll 84.2 
+[INFO|7:27:18]: [ItemManager]: created item SCORE at (920, 208) 
+[INFO|7:27:18]: Spawned SCORE at 917,208 
+[INFO|7:27:18]: Destroyed ship in (1,1) 
+[INFO|7:27:19]: Hit on enemy ship. 
+[INFO|7:27:19]: Removed enemy 1 from column 1 
+[INFO|7:27:21]: Player 1 picked up item: SCORE 
+[INFO|7:27:21]: [ItemEffect - SCORE] Player 1 : 220 + 10 -> 230 
+[INFO|7:27:23]: Player 1 picked up item: SCORE 
+[INFO|7:27:23]: [ItemEffect - SCORE] Player 1 : 230 + 10 -> 240 
+[INFO|7:27:26]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:27]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:27]: Enemy: true 
+[INFO|7:27:27]: final: false 
+[INFO|7:27:27]: [ItemManager]: DropRoll 64.0 
+[INFO|7:27:27]: [ItemManager]: created item SCORE at (616, 208) 
+[INFO|7:27:27]: Spawned SCORE at 613,208 
+[INFO|7:27:27]: Destroyed ship in (2,0) 
+[INFO|7:27:27]: Shooters list reduced to 2 members. 
+[INFO|7:27:27]: Hit on enemy ship. 
+[INFO|7:27:28]: Removed enemy 0 from column 2 
+[INFO|7:27:28]: Removed column 2 
+[INFO|7:27:29]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:30]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:32]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:33]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:34]: Enemy: true 
+[INFO|7:27:34]: final: false 
+[INFO|7:27:34]: [ItemManager]: DropRoll 104.1 
+[INFO|7:27:34]: [ItemManager]: created item TRIPLESHOT at (296, 168) 
+[INFO|7:27:34]: Spawned TRIPLESHOT at 293,168 
+[INFO|7:27:34]: Destroyed ship in (1,0) 
+[INFO|7:27:34]: Shooters list reduced to 1 members. 
+[INFO|7:27:34]: Hit on enemy ship. 
+[INFO|7:27:34]: Removed enemy 0 from column 1 
+[INFO|7:27:34]: Removed column 1 
+[INFO|7:27:35]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:37]: A special ship appears 
+[INFO|7:27:37]: Enemy: true 
+[INFO|7:27:37]: final: true 
+[INFO|7:27:37]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:39]: Formation now moving down 3 
+[INFO|7:27:39]: Enemy: true 
+[INFO|7:27:39]: final: true 
+[INFO|7:27:39]: [ItemManager]: DropRoll 13.0 
+[INFO|7:27:39]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:27:39]: Destroyed ship in (0,0) 
+[INFO|7:27:39]: Shooters list reduced to 0 members. 
+[INFO|7:27:39]: Hit on enemy ship. 
+[WARNING|7:27:39]: Sound not found in AssetManager: sound/achievement.wav 
+[WARNING|7:27:39]: Sound not found in AssetManager: sound/achievement.wav 
+[INFO|7:27:39]: Achievement unlocked: Survivor - Clear a round without losing a life. [Unlocked] 
+[INFO|7:27:42]: Screen cleared with a score of 710 
+[INFO|7:27:42]: Closing game screen. 
+[INFO|7:27:42]: Starting 1200x800 game screen at 60 fps. 
+[INFO|7:27:42]: [GameState] Player 0: All effects cleared. 
+[INFO|7:27:42]: [GameState] Player 1: All effects cleared. 
+[INFO|7:27:42]: Initializing 5x5 ship formation in (20,100) 
+[INFO|7:27:42]: Destroyed ship in (0,0) 
+[INFO|7:27:42]: Destroyed ship in (2,0) 
+[INFO|7:27:42]: Destroyed ship in (4,0) 
+[INFO|7:27:42]: Destroyed ship in (0,1) 
+[INFO|7:27:42]: Destroyed ship in (4,1) 
+[INFO|7:27:42]: Destroyed ship in (0,2) 
+[INFO|7:27:42]: Destroyed ship in (4,2) 
+[INFO|7:27:42]: Destroyed ship in (0,4) 
+[INFO|7:27:42]: Destroyed ship in (1,4) 
+[INFO|7:27:42]: Destroyed ship in (3,4) 
+[INFO|7:27:42]: Destroyed ship in (4,4) 
+[INFO|7:27:42]: Removed enemy 0 from column 0 
+[INFO|7:27:42]: Removed enemy 1 from column 0 
+[INFO|7:27:42]: Removed enemy 2 from column 0 
+[INFO|7:27:42]: Removed enemy 4 from column 0 
+[INFO|7:27:42]: Removed enemy 4 from column 1 
+[INFO|7:27:42]: Removed enemy 0 from column 2 
+[INFO|7:27:42]: Removed enemy 4 from column 3 
+[INFO|7:27:42]: Removed enemy 0 from column 4 
+[INFO|7:27:42]: Removed enemy 1 from column 4 
+[INFO|7:27:42]: Removed enemy 2 from column 4 
+[INFO|7:27:42]: Removed enemy 4 from column 4 
+[INFO|7:27:51]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:53]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:55]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:56]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:27:59]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:01]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:03]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:06]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:09]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:11]: A special ship appears 
+[INFO|7:28:11]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:12]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:12]: Enemy: true 
+[INFO|7:28:12]: final: false 
+[INFO|7:28:12]: [ItemManager]: DropRoll 55.1 
+[INFO|7:28:12]: [ItemManager]: Tier=NONE (pity=2) 
+[INFO|7:28:12]: Destroyed ship in (1,2) 
+[INFO|7:28:12]: Hit on enemy ship. 
+[INFO|7:28:13]: Removed enemy 2 from column 1 
+[INFO|7:28:14]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:18]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:19]: Enemy: true 
+[INFO|7:28:19]: final: false 
+[INFO|7:28:19]: [ItemManager]: DropRoll 50.6 
+[INFO|7:28:19]: [ItemManager]: Tier=NONE (pity=3) 
+[INFO|7:28:19]: Destroyed ship in (2,3) 
+[INFO|7:28:19]: Hit on enemy ship. 
+[INFO|7:28:19]: Removed enemy 3 from column 2 
+[INFO|7:28:20]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:22]: The special ship has escaped 
+[INFO|7:28:22]: [Ship] Shooting :MOVE_FAST 
+[WARNING|7:28:22]: Sound not found in AssetManager: sound/achievement.wav 
+[WARNING|7:28:22]: Sound not found in AssetManager: sound/achievement.wav 
+[INFO|7:28:22]: Achievement unlocked: 50 Bullets - Fire 50 Bullets. [Unlocked] 
+[INFO|7:28:24]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:26]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:29]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:31]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:32]: A special ship appears 
+[INFO|7:28:33]: Enemy: true 
+[INFO|7:28:33]: final: false 
+[INFO|7:28:33]: [ItemManager]: DropRoll 81.2 
+[INFO|7:28:33]: [ItemManager]: created item SCOREBOOST at (744, 228) 
+[INFO|7:28:33]: Spawned SCOREBOOST at 741,228 
+[INFO|7:28:33]: Destroyed ship in (4,0) 
+[INFO|7:28:33]: Shooters list reduced to 4 members. 
+[INFO|7:28:33]: Hit on enemy ship. 
+[INFO|7:28:33]: Removed enemy 0 from column 4 
+[INFO|7:28:33]: Removed column 4 
+[INFO|7:28:35]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:37]: Player 1 picked up item: SCOREBOOST 
+[INFO|7:28:37]: [GameState] Player 0 started SCOREBOOST (value: 2)) for 5s 
+[INFO|7:28:37]: [ItemEffect - SCOREBOOST] Player 1 applied for 5s. Score gain will be multiplied by 2. 
+[INFO|7:28:38]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:40]: Enemy: true 
+[INFO|7:28:40]: final: false 
+[INFO|7:28:40]: [GameState] Player 1 ScoreBoost active (x2). Score changed from 10 to 20 
+[INFO|7:28:40]: [ItemManager]: DropRoll 79.9 
+[INFO|7:28:40]: [ItemManager]: created item SCORE at (816, 228) 
+[INFO|7:28:40]: Spawned SCORE at 813,228 
+[INFO|7:28:40]: Destroyed ship in (3,3) 
+[INFO|7:28:40]: Hit on enemy ship. 
+[INFO|7:28:40]: Removed enemy 3 from column 3 
+[INFO|7:28:41]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:42]: Enemy: true 
+[INFO|7:28:42]: final: false 
+[INFO|7:28:42]: [GameState] Player 1 ScoreBoost active (x2). Score changed from 20 to 40 
+[INFO|7:28:42]: [ItemManager]: DropRoll 9.9 
+[INFO|7:28:42]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:28:42]: Destroyed ship in (3,2) 
+[INFO|7:28:42]: Hit on enemy ship. 
+[INFO|7:28:42]: Removed enemy 2 from column 3 
+[INFO|7:28:42]: [GameState] Player 0 effect SCOREBOOST expired. 
+[INFO|7:28:43]: The special ship has escaped 
+[INFO|7:28:43]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:45]: Enemy: true 
+[INFO|7:28:45]: final: false 
+[INFO|7:28:45]: [ItemManager]: DropRoll 66.1 
+[INFO|7:28:45]: [ItemManager]: created item SCORE at (832, 228) 
+[INFO|7:28:45]: Spawned SCORE at 829,228 
+[INFO|7:28:45]: Destroyed ship in (1,2) 
+[INFO|7:28:45]: Hit on enemy ship. 
+[INFO|7:28:45]: Removed enemy 2 from column 1 
+[INFO|7:28:46]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:49]: Player 1 picked up item: SCORE 
+[INFO|7:28:49]: [ItemEffect - SCORE] Player 1 : 840 + 10 -> 850 
+[INFO|7:28:51]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:53]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:54]: A special ship appears 
+[INFO|7:28:55]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:56]: Formation now moving down 5 
+[INFO|7:28:57]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:58]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:28:58]: Formation now moving left 1 
+[INFO|7:28:59]: Enemy: true 
+[INFO|7:28:59]: final: false 
+[INFO|7:28:59]: [ItemManager]: DropRoll 61.9 
+[INFO|7:28:59]: [ItemManager]: created item SCORE at (1144, 168) 
+[INFO|7:28:59]: Spawned SCORE at 1141,168 
+[INFO|7:28:59]: Destroyed ship in (3,1) 
+[INFO|7:28:59]: Hit on enemy ship. 
+[INFO|7:28:59]: Removed enemy 1 from column 3 
+[INFO|7:28:59]: Enemy: true 
+[INFO|7:28:59]: final: false 
+[INFO|7:28:59]: [ItemManager]: DropRoll 38.7 
+[INFO|7:28:59]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:28:59]: Destroyed ship in (2,2) 
+[INFO|7:28:59]: Hit on enemy ship. 
+[INFO|7:28:59]: Removed enemy 2 from column 2 
+[INFO|7:29:00]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:01]: Enemy: true 
+[INFO|7:29:01]: final: false 
+[INFO|7:29:01]: [ItemManager]: DropRoll 53.9 
+[INFO|7:29:01]: [ItemManager]: Tier=NONE (pity=2) 
+[INFO|7:29:01]: Destroyed ship in (2,1) 
+[INFO|7:29:01]: Hit on enemy ship. 
+[INFO|7:29:01]: Removed enemy 1 from column 2 
+[INFO|7:29:02]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:04]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:06]: The special ship has escaped 
+[INFO|7:29:06]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:07]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:08]: Enemy: true 
+[INFO|7:29:08]: final: false 
+[INFO|7:29:08]: [ItemManager]: DropRoll 50.4 
+[INFO|7:29:08]: [ItemManager]: Tier=NONE (pity=3) 
+[INFO|7:29:08]: Destroyed ship in (1,1) 
+[INFO|7:29:08]: Hit on enemy ship. 
+[INFO|7:29:08]: Removed enemy 1 from column 1 
+[INFO|7:29:09]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:11]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:12]: Enemy: true 
+[INFO|7:29:12]: final: false 
+[INFO|7:29:12]: [ItemManager]: DropRoll 48.2 
+[INFO|7:29:12]: [ItemManager]: Tier=NONE (pity=4) 
+[INFO|7:29:12]: Destroyed ship in (0,0) 
+[INFO|7:29:12]: Shooters list reduced to 3 members. 
+[INFO|7:29:12]: Hit on enemy ship. 
+[INFO|7:29:12]: Removed enemy 0 from column 0 
+[INFO|7:29:12]: Removed column 0 
+[INFO|7:29:13]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:15]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:17]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:18]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:20]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:20]: A special ship appears 
+[INFO|7:29:22]: Enemy: true 
+[INFO|7:29:22]: final: false 
+[INFO|7:29:22]: [ItemManager]: DropRoll 66.8 
+[INFO|7:29:22]: [ItemManager]: created item SCORE at (296, 168) 
+[INFO|7:29:22]: Spawned SCORE at 293,168 
+[INFO|7:29:22]: Destroyed ship in (1,0) 
+[INFO|7:29:22]: Shooters list reduced to 2 members. 
+[INFO|7:29:22]: Hit on enemy ship. 
+[INFO|7:29:22]: Removed enemy 0 from column 1 
+[INFO|7:29:22]: Removed column 1 
+[INFO|7:29:23]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:27]: Player 1 picked up item: SCORE 
+[INFO|7:29:27]: [ItemEffect - SCORE] Player 1 : 960 + 10 -> 970 
+[INFO|7:29:27]: Formation now moving down 3 
+[INFO|7:29:28]: Formation now moving right 2 
+[INFO|7:29:29]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:30]: Enemy: true 
+[INFO|7:29:30]: final: false 
+[INFO|7:29:30]: [ItemManager]: DropRoll 37.3 
+[INFO|7:29:30]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:29:30]: Destroyed ship in (1,0) 
+[INFO|7:29:30]: Shooters list reduced to 1 members. 
+[INFO|7:29:30]: Hit on enemy ship. 
+[INFO|7:29:31]: Removed enemy 0 from column 1 
+[INFO|7:29:31]: Removed column 1 
+[INFO|7:29:31]: The special ship has escaped 
+[INFO|7:29:32]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:34]: Enemy: true 
+[INFO|7:29:34]: final: true 
+[INFO|7:29:34]: [ItemManager]: DropRoll 32.7 
+[INFO|7:29:34]: [ItemManager]: Tier=NONE (pity=2) 
+[INFO|7:29:34]: Destroyed ship in (0,0) 
+[INFO|7:29:34]: Shooters list reduced to 0 members. 
+[INFO|7:29:34]: Hit on enemy ship. 
+[INFO|7:29:36]: Screen cleared with a score of 1390 
+[INFO|7:29:36]: Closing game screen. 
+[INFO|7:29:36]: Starting 1200x800 game screen at 60 fps. 
+[INFO|7:29:36]: [GameState] Player 0: All effects cleared. 
+[INFO|7:29:36]: [GameState] Player 1: All effects cleared. 
+[INFO|7:29:36]: Initializing 9x4 ship formation in (20,100) 
+[INFO|7:29:36]: Destroyed ship in (1,3) 
+[INFO|7:29:36]: Destroyed ship in (2,0) 
+[INFO|7:29:36]: Destroyed ship in (2,1) 
+[INFO|7:29:36]: Destroyed ship in (2,2) 
+[INFO|7:29:36]: Destroyed ship in (2,3) 
+[INFO|7:29:36]: Shooters list reduced to 8 members. 
+[INFO|7:29:36]: Destroyed ship in (3,2) 
+[INFO|7:29:36]: Destroyed ship in (3,3) 
+[INFO|7:29:36]: Destroyed ship in (4,1) 
+[INFO|7:29:36]: Destroyed ship in (4,2) 
+[INFO|7:29:36]: Destroyed ship in (4,3) 
+[INFO|7:29:36]: Destroyed ship in (5,2) 
+[INFO|7:29:36]: Destroyed ship in (5,3) 
+[INFO|7:29:36]: Destroyed ship in (6,0) 
+[INFO|7:29:36]: Destroyed ship in (6,1) 
+[INFO|7:29:36]: Destroyed ship in (6,2) 
+[INFO|7:29:36]: Destroyed ship in (6,3) 
+[INFO|7:29:36]: Shooters list reduced to 7 members. 
+[INFO|7:29:36]: Destroyed ship in (7,3) 
+[INFO|7:29:36]: Removed enemy 3 from column 1 
+[INFO|7:29:36]: Removed enemy 0 from column 2 
+[INFO|7:29:36]: Removed enemy 1 from column 2 
+[INFO|7:29:36]: Removed enemy 2 from column 2 
+[INFO|7:29:36]: Removed enemy 3 from column 2 
+[INFO|7:29:36]: Removed enemy 2 from column 3 
+[INFO|7:29:36]: Removed enemy 3 from column 3 
+[INFO|7:29:36]: Removed enemy 1 from column 4 
+[INFO|7:29:36]: Removed enemy 2 from column 4 
+[INFO|7:29:36]: Removed enemy 3 from column 4 
+[INFO|7:29:36]: Removed enemy 2 from column 5 
+[INFO|7:29:36]: Removed enemy 3 from column 5 
+[INFO|7:29:36]: Removed enemy 0 from column 6 
+[INFO|7:29:36]: Removed enemy 1 from column 6 
+[INFO|7:29:36]: Removed enemy 2 from column 6 
+[INFO|7:29:36]: Removed enemy 3 from column 6 
+[INFO|7:29:36]: Removed enemy 3 from column 7 
+[INFO|7:29:42]: Removed column 2 
+[INFO|7:29:42]: Removed column 5 
+[INFO|7:29:43]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:45]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:47]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:49]: Enemy: true 
+[INFO|7:29:49]: final: false 
+[INFO|7:29:49]: [ItemManager]: DropRoll 7.2 
+[INFO|7:29:49]: [ItemManager]: Tier=NONE (pity=3) 
+[INFO|7:29:49]: Destroyed ship in (6,3) 
+[INFO|7:29:49]: Hit on enemy ship. 
+[INFO|7:29:49]: Removed enemy 3 from column 6 
+[INFO|7:29:49]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:51]: Enemy: true 
+[INFO|7:29:51]: final: false 
+[INFO|7:29:51]: [ItemManager]: DropRoll 23.5 
+[INFO|7:29:51]: [ItemManager]: Tier=NONE (pity=4) 
+[INFO|7:29:51]: Destroyed ship in (5,2) 
+[INFO|7:29:51]: Hit on enemy ship. 
+[INFO|7:29:51]: Removed enemy 2 from column 5 
+[INFO|7:29:51]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:53]: Enemy: true 
+[INFO|7:29:53]: final: false 
+[INFO|7:29:53]: [ItemManager]: DropRoll 84.9 
+[INFO|7:29:53]: [ItemManager]: created item COIN at (512, 188) 
+[INFO|7:29:53]: Spawned COIN at 509,188 
+[INFO|7:29:53]: Destroyed ship in (6,2) 
+[INFO|7:29:53]: Hit on enemy ship. 
+[INFO|7:29:53]: Removed enemy 2 from column 6 
+[INFO|7:29:54]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:54]: A special ship appears 
+[INFO|7:29:57]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:29:58]: Player 1 picked up item: COIN 
+[INFO|7:29:58]: Player 1 added 20 coins. before : 156, after : 176 
+[INFO|7:30:00]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:02]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:04]: Enemy: true 
+[INFO|7:30:04]: final: false 
+[INFO|7:30:04]: [ItemManager]: DropRoll 38.9 
+[INFO|7:30:04]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:30:04]: Destroyed ship in (3,0) 
+[INFO|7:30:04]: Shooters list reduced to 6 members. 
+[INFO|7:30:04]: Hit on enemy ship. 
+[INFO|7:30:04]: Removed enemy 0 from column 3 
+[INFO|7:30:04]: Removed column 3 
+[INFO|7:30:04]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:06]: The special ship has escaped 
+[INFO|7:30:06]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:08]: Enemy: true 
+[INFO|7:30:08]: final: false 
+[INFO|7:30:08]: [ItemManager]: DropRoll 2.5 
+[INFO|7:30:08]: [ItemManager]: Tier=NONE (pity=2) 
+[INFO|7:30:08]: Destroyed ship in (4,1) 
+[INFO|7:30:08]: Hit on enemy ship. 
+[INFO|7:30:09]: Removed enemy 1 from column 4 
+[INFO|7:30:09]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:12]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:14]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:16]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:19]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:21]: Enemy: true 
+[INFO|7:30:21]: final: false 
+[INFO|7:30:21]: [ItemManager]: DropRoll 4.3 
+[INFO|7:30:21]: [ItemManager]: Tier=NONE (pity=3) 
+[INFO|7:30:21]: Destroyed ship in (0,1) 
+[INFO|7:30:21]: Hit on enemy ship. 
+[INFO|7:30:21]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:21]: Removed enemy 1 from column 0 
+[INFO|7:30:22]: Enemy: true 
+[INFO|7:30:22]: final: false 
+[INFO|7:30:22]: [ItemManager]: DropRoll 71.3 
+[INFO|7:30:22]: [ItemManager]: created item SCORE at (736, 228) 
+[INFO|7:30:22]: Spawned SCORE at 733,228 
+[INFO|7:30:22]: Destroyed ship in (0,2) 
+[INFO|7:30:23]: Hit on enemy ship. 
+[INFO|7:30:23]: Removed enemy 2 from column 0 
+[INFO|7:30:23]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:24]: Enemy: true 
+[INFO|7:30:24]: final: false 
+[INFO|7:30:24]: [ItemManager]: DropRoll 90.4 
+[INFO|7:30:24]: [ItemManager]: created item SCOREBOOST at (824, 188) 
+[INFO|7:30:24]: Spawned SCOREBOOST at 821,188 
+[INFO|7:30:24]: Destroyed ship in (1,2) 
+[INFO|7:30:24]: Hit on enemy ship. 
+[INFO|7:30:24]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:25]: Removed enemy 2 from column 1 
+[INFO|7:30:27]: Formation now moving down 5 
+[INFO|7:30:27]: Player 1 picked up item: SCORE 
+[INFO|7:30:27]: [ItemEffect - SCORE] Player 1 : 1540 + 10 -> 1550 
+[INFO|7:30:29]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:29]: Formation now moving left 1 
+[INFO|7:30:30]: Player 1 picked up item: SCOREBOOST 
+[INFO|7:30:30]: [GameState] Player 0 started SCOREBOOST (value: 2)) for 5s 
+[INFO|7:30:30]: [ItemEffect - SCOREBOOST] Player 1 applied for 5s. Score gain will be multiplied by 2. 
+[INFO|7:30:30]: Enemy: true 
+[INFO|7:30:30]: final: false 
+[INFO|7:30:30]: [GameState] Player 1 ScoreBoost active (x2). Score changed from 20 to 40 
+[INFO|7:30:30]: [ItemManager]: DropRoll 77.8 
+[INFO|7:30:30]: [ItemManager]: created item SCORE at (848, 168) 
+[INFO|7:30:30]: Spawned SCORE at 845,168 
+[INFO|7:30:30]: Destroyed ship in (1,1) 
+[INFO|7:30:30]: Hit on enemy ship. 
+[INFO|7:30:30]: Removed enemy 1 from column 1 
+[INFO|7:30:31]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:33]: Enemy: true 
+[INFO|7:30:33]: final: false 
+[INFO|7:30:33]: [GameState] Player 1 ScoreBoost active (x2). Score changed from 20 to 40 
+[INFO|7:30:33]: [ItemManager]: DropRoll 62.7 
+[INFO|7:30:33]: [ItemManager]: created item SCORE at (744, 208) 
+[INFO|7:30:33]: Spawned SCORE at 741,208 
+[INFO|7:30:33]: Destroyed ship in (0,1) 
+[INFO|7:30:33]: Hit on enemy ship. 
+[INFO|7:30:33]: Removed enemy 1 from column 0 
+[INFO|7:30:33]: A special ship appears 
+[INFO|7:30:34]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:35]: [GameState] Player 0 effect SCOREBOOST expired. 
+[INFO|7:30:36]: Player 1 picked up item: SCORE 
+[INFO|7:30:36]: [ItemEffect - SCORE] Player 1 : 1630 + 10 -> 1640 
+[INFO|7:30:36]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:39]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:40]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:41]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:42]: Enemy: true 
+[INFO|7:30:42]: final: false 
+[INFO|7:30:42]: [ItemManager]: DropRoll 71.6 
+[INFO|7:30:42]: [ItemManager]: created item SCORE at (760, 128) 
+[INFO|7:30:42]: Spawned SCORE at 757,128 
+[INFO|7:30:42]: Destroyed ship in (4,0) 
+[INFO|7:30:42]: Shooters list reduced to 5 members. 
+[INFO|7:30:42]: Hit on enemy ship. 
+[INFO|7:30:42]: Removed enemy 0 from column 4 
+[INFO|7:30:42]: Removed column 4 
+[INFO|7:30:43]: Enemy: true 
+[INFO|7:30:43]: final: false 
+[INFO|7:30:43]: [ItemManager]: DropRoll 77.0 
+[INFO|7:30:43]: [ItemManager]: created item SCORE at (648, 168) 
+[INFO|7:30:43]: Spawned SCORE at 645,168 
+[INFO|7:30:43]: Destroyed ship in (3,1) 
+[INFO|7:30:43]: Hit on enemy ship. 
+[INFO|7:30:43]: Removed enemy 1 from column 3 
+[INFO|7:30:44]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:45]: The special ship has escaped 
+[INFO|7:30:47]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:51]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:52]: Enemy: true 
+[INFO|7:30:52]: final: false 
+[INFO|7:30:52]: [ItemManager]: DropRoll 16.1 
+[INFO|7:30:52]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:30:52]: Destroyed ship in (3,0) 
+[INFO|7:30:52]: Shooters list reduced to 4 members. 
+[INFO|7:30:52]: Hit on enemy ship. 
+[INFO|7:30:52]: Removed enemy 0 from column 3 
+[INFO|7:30:53]: Removed column 3 
+[INFO|7:30:54]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:55]: Formation now moving down 3 
+[INFO|7:30:56]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:56]: Formation now moving right 2 
+[INFO|7:30:57]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:59]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:30:59]: A special ship appears 
+[INFO|7:31:00]: Enemy: false 
+[INFO|7:31:00]: final: false 
+[INFO|7:31:00]: Hit on player 1, team lives now: 2 
+[INFO|7:31:02]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:05]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:06]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:08]: Enemy: true 
+[INFO|7:31:08]: final: false 
+[INFO|7:31:08]: [ItemManager]: DropRoll 85.1 
+[INFO|7:31:08]: [ItemManager]: created item SCOREBOOST at (576, 188) 
+[INFO|7:31:08]: Spawned SCOREBOOST at 573,188 
+[INFO|7:31:08]: Destroyed ship in (2,1) 
+[INFO|7:31:08]: Hit on enemy ship. 
+[INFO|7:31:08]: Removed enemy 1 from column 2 
+[INFO|7:31:09]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:11]: The special ship has escaped 
+[INFO|7:31:11]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:12]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:14]: Enemy: true 
+[INFO|7:31:14]: final: false 
+[INFO|7:31:14]: [ItemManager]: DropRoll 20.6 
+[INFO|7:31:14]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:31:14]: Destroyed ship in (3,1) 
+[INFO|7:31:14]: Hit on enemy ship. 
+[INFO|7:31:14]: Removed enemy 1 from column 3 
+[INFO|7:31:15]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:17]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:18]: Formation now moving down 5 
+[INFO|7:31:18]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:19]: Formation now moving left 1 
+[INFO|7:31:20]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:22]: Enemy: true 
+[INFO|7:31:22]: final: false 
+[INFO|7:31:22]: [ItemManager]: DropRoll 43.5 
+[INFO|7:31:22]: [ItemManager]: Tier=NONE (pity=2) 
+[INFO|7:31:22]: Destroyed ship in (3,0) 
+[INFO|7:31:22]: Shooters list reduced to 3 members. 
+[INFO|7:31:22]: Hit on enemy ship. 
+[INFO|7:31:22]: Removed enemy 0 from column 3 
+[INFO|7:31:22]: Removed column 3 
+[INFO|7:31:23]: A special ship appears 
+[INFO|7:31:34]: The special ship has escaped 
+[INFO|7:31:38]: Formation now moving down 3 
+[INFO|7:31:39]: Formation now moving right 2 
+[INFO|7:31:39]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:41]: Enemy: true 
+[INFO|7:31:41]: final: false 
+[INFO|7:31:41]: [ItemManager]: DropRoll 88.8 
+[INFO|7:31:41]: [ItemManager]: created item COIN at (240, 188) 
+[INFO|7:31:41]: Spawned COIN at 237,188 
+[INFO|7:31:41]: Destroyed ship in (2,0) 
+[INFO|7:31:41]: Shooters list reduced to 2 members. 
+[INFO|7:31:41]: Hit on enemy ship. 
+[INFO|7:31:41]: Removed enemy 0 from column 2 
+[INFO|7:31:41]: Removed column 2 
+[INFO|7:31:43]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:45]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:46]: [Ship] Shooting :MOVE_FAST 
+[INFO|7:31:46]: Enemy: true 
+[INFO|7:31:46]: final: false 
+[INFO|7:31:46]: [ItemManager]: DropRoll 10.3 
+[INFO|7:31:46]: [ItemManager]: Tier=NONE (pity=1) 
+[INFO|7:31:46]: Destroyed ship in (0,0) 
+[INFO|7:31:46]: Shooters list reduced to 1 members. 
+[INFO|7:31:46]: Hit on enemy ship. 
+[INFO|7:31:46]: Removed enemy 0 from column 0 
+[INFO|7:31:46]: Removed column 0 
+[INFO|7:31:48]: Enemy: true 
+[INFO|7:31:48]: final: true 
+[INFO|7:31:48]: [ItemManager]: DropRoll 80.7 
+[INFO|7:31:48]: [ItemManager]: created item SCORE at (464, 188) 
+[INFO|7:31:48]: Spawned SCORE at 461,188 
+[INFO|7:31:48]: Destroyed ship in (0,0) 
+[INFO|7:31:48]: Shooters list reduced to 0 members. 
+[INFO|7:31:48]: Hit on enemy ship. 
+[INFO|7:31:50]: Screen cleared with a score of 2160 
+[INFO|7:31:50]: Closing game screen. 
+[INFO|7:31:50]: Starting 1200x800 game screen at 60 fps. 
+[INFO|7:31:50]: [GameState] Player 0: All effects cleared. 
+[INFO|7:31:50]: [GameState] Player 1: All effects cleared. 
+[INFO|7:31:50]: Initializing 9x4 ship formation in (20,100) 
+[INFO|7:31:50]: Destroyed ship in (0,2) 
+[INFO|7:31:50]: Destroyed ship in (0,3) 
+[INFO|7:31:50]: Destroyed ship in (1,1) 
+[INFO|7:31:50]: Destroyed ship in (1,2) 
+[INFO|7:31:50]: Destroyed ship in (1,3) 
+[INFO|7:31:50]: Destroyed ship in (3,2) 
+[INFO|7:31:50]: Destroyed ship in (3,3) 
+[INFO|7:31:50]: Destroyed ship in (4,1) 
+[INFO|7:31:50]: Destroyed ship in (4,2) 
+[INFO|7:31:50]: Destroyed ship in (4,3) 
+[INFO|7:31:50]: Destroyed ship in (6,2) 
+[INFO|7:31:50]: Destroyed ship in (6,3) 
+[INFO|7:31:50]: Destroyed ship in (7,1) 
+[INFO|7:31:50]: Destroyed ship in (7,2) 
+[INFO|7:31:50]: Destroyed ship in (7,3) 
+[INFO|7:31:50]: Removed enemy 2 from column 0 
+[INFO|7:31:50]: Removed enemy 3 from column 0 
+[INFO|7:31:50]: Removed enemy 1 from column 1 
+[INFO|7:31:50]: Removed enemy 2 from column 1 
+[INFO|7:31:50]: Removed enemy 3 from column 1 
+[INFO|7:31:50]: Removed enemy 2 from column 3 
+[INFO|7:31:50]: Removed enemy 3 from column 3 
+[INFO|7:31:50]: Removed enemy 1 from column 4 
+[INFO|7:31:50]: Removed enemy 2 from column 4 
+[INFO|7:31:50]: Removed enemy 3 from column 4 
+[INFO|7:31:50]: Removed enemy 2 from column 6 
+[INFO|7:31:50]: Removed enemy 3 from column 6 
+[INFO|7:31:50]: Removed enemy 1 from column 7 
+[INFO|7:31:50]: Removed enemy 2 from column 7 
+[INFO|7:31:50]: Removed enemy 3 from column 7 

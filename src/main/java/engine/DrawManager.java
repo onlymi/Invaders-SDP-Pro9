@@ -1,9 +1,8 @@
 package engine;
 
-import animations.BasicGameSpace;
 import animations.Explosion;
-import animations.MenuSpace;
 import engine.renderer.AchievementScreenRenderer;
+import engine.renderer.AuthScreenRenderer;
 import engine.renderer.CommonRenderer;
 import engine.renderer.EntityRenderer;
 import engine.renderer.GameScreenRenderer;
@@ -12,6 +11,7 @@ import engine.renderer.PlayModeSelectionScreenRenderer;
 import engine.renderer.ScoreScreenRenderer;
 import engine.renderer.SettingScreenRenderer;
 import engine.renderer.ShipSelectionMenuRenderer;
+import engine.renderer.SignUpScreenRenderer;
 import engine.renderer.TitleScreenRenderer;
 import java.awt.Color;
 import java.awt.Font;
