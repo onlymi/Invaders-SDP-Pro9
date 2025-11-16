@@ -300,7 +300,9 @@ modules.xml
 *.class
 
 # Log file
-*.log
+*.loggi
+.gradle
+.gradle/*
 
 # BlueJ files
 *.ctxt
@@ -403,8 +405,5 @@ $RECYCLE.BIN/
 # User-generated data files
 /game_data/
 
-log
-.gradle
-.gradle/*
 
 # End of https://www.toptal.com/developers/gitignore/api/java,intellij,intellij+iml,intellij+all,macos,windows,visualstudiocode,eclipse
