@@ -88,8 +88,6 @@ public abstract class Character extends Entity {
      *
      * @param positionX     Initial position of the entity in the X axis.
      * @param positionY     Initial position of the entity in the Y axis.
-     * @param width         Width of the entity.
-     * @param height        Height of the entity.
      * @param characterType Type of character.
      */
     public Character(int positionX, int positionY, int width, int height,

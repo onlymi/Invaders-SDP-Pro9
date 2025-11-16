@@ -1,5 +1,6 @@
 package entity.character;
 
+import engine.AssetManager.SpriteType;
 import entity.skill.EvasionShotSkill;
 import entity.skill.PiercingArrowSkill;
 import entity.skill.RapidFireSkill;
@@ -12,11 +13,10 @@ public class ArcherCharacter extends Character {
      *
      * @param positionX Initial position of the entity in the X axis.
      * @param positionY Initial position of the entity in the Y axis.
-     * @param width     Width of the entity.
-     * @param height    Height of the entity.
      */
-    public ArcherCharacter(int positionX, int positionY, int width, int height) {
-        super(positionX, positionY, width, height, CharacterType.ARCHER);
+    public ArcherCharacter(int positionX, int positionY) {
+        super(positionX, positionY, SpriteType.CharacterArcherBasic.getWidth(),
+            SpriteType.CharacterArcherBasic.getHeight(), CharacterType.ARCHER);
         this.skills = new ArrayList<>();
         this.skills.add(new RapidFireSkill()); // First skill
         this.skills.add(new EvasionShotSkill()); // Second skill
