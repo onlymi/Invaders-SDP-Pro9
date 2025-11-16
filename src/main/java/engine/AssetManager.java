@@ -28,7 +28,15 @@ public final class AssetManager {
      * 6개의 그래픽 소스 파일을 구분하기 위한 Enum
      */
     private enum SourceCategory {
-        PLAYER("graphics/player_graphics"),
+        WARRIOR_CHARACTER("graphics/character/warrior_graphics"),
+        ARCHER_CHARACTER("graphics/character/archer_graphics"),
+        WIZARD_CHARACTER("graphics/character/wizard_graphics"),
+        LASER_CHARACTER("graphics/character/laser_graphics"),
+        ELECTRIC_CHARACTER("graphics/character/electric_graphics"),
+        BOMBER_CHARACTER("graphics/character/bomber_graphics"),
+        HEALER_CHARACTER("graphics/character/healer_graphics"),
+        
+        PLAYERSHIP("graphics/playersShip_graphics"),
         ENEMY("graphics/enemy_graphics"),
         BOSS("graphics/boss_graphics"),
         BULLET("graphics/bullet_graphics"),
@@ -51,19 +59,68 @@ public final class AssetManager {
      */
     public enum SpriteType {
         /**
+         * Warrior Character.
+         */
+        CharacterWarriorBasic(SourceCategory.WARRIOR_CHARACTER, 19, 15),
+        CharacterWarriorAttack1(SourceCategory.WARRIOR_CHARACTER, 19, 15),
+        CharacterWarriorWalk1(SourceCategory.WARRIOR_CHARACTER, 19, 15),
+        CharacterWarriorWalk2(SourceCategory.WARRIOR_CHARACTER, 19, 15),
+        /**
+         * Archer Character.
+         */
+        CharacterArcherBasic(SourceCategory.ARCHER_CHARACTER, 17, 13),
+        CharacterArcherAttack1(SourceCategory.ARCHER_CHARACTER, 17, 13),
+        CharacterArcherWalk1(SourceCategory.ARCHER_CHARACTER, 17, 13),
+        CharacterArcherWalk2(SourceCategory.ARCHER_CHARACTER, 17, 13),
+        /**
+         * Wizard Character.
+         */
+        CharacterWizardBasic(SourceCategory.WIZARD_CHARACTER, 19, 15),
+        CharacterWizardAttack1(SourceCategory.WIZARD_CHARACTER, 19, 15),
+        CharacterWizardWalk1(SourceCategory.WIZARD_CHARACTER, 19, 15),
+        CharacterWizardWalk2(SourceCategory.WIZARD_CHARACTER, 19, 15),
+        /**
+         * Laser Character.
+         */
+        CharacterLaserBasic(SourceCategory.LASER_CHARACTER, 19, 17),
+        CharacterLaserAttack1(SourceCategory.LASER_CHARACTER, 19, 17),
+        CharacterLaserWalk1(SourceCategory.LASER_CHARACTER, 19, 17),
+        CharacterLaserWalk2(SourceCategory.LASER_CHARACTER, 19, 17),
+        /**
+         * Electric Character.
+         */
+        CharacterElectricBasic(SourceCategory.ELECTRIC_CHARACTER, 18, 18),
+        CharacterElectricAttack1(SourceCategory.ELECTRIC_CHARACTER, 18, 18),
+        CharacterElectricWalk1(SourceCategory.ELECTRIC_CHARACTER, 18, 18),
+        CharacterElectricWalk2(SourceCategory.ELECTRIC_CHARACTER, 18, 18),
+        /**
+         * Bomber Character.
+         */
+        CharacterBomberBasic(SourceCategory.BOMBER_CHARACTER, 19, 16),
+        CharacterBomberAttack1(SourceCategory.BOMBER_CHARACTER, 19, 16),
+        CharacterBomberWalk1(SourceCategory.BOMBER_CHARACTER, 19, 16),
+        CharacterBomberWalk2(SourceCategory.BOMBER_CHARACTER, 19, 16),
+        /**
+         * Healer Character.
+         */
+        CharacterHealerBasic(SourceCategory.HEALER_CHARACTER, 17, 15),
+        CharacterHealerAttack1(SourceCategory.HEALER_CHARACTER, 17, 15),
+        CharacterHealerWalk1(SourceCategory.HEALER_CHARACTER, 17, 15),
+        CharacterHealerWalk2(SourceCategory.HEALER_CHARACTER, 17, 15),
+        /**
          * Player ship.
          */
-        Ship1(SourceCategory.PLAYER, 13, 8),
-        Ship2(SourceCategory.PLAYER, 13, 8),
-        Ship3(SourceCategory.PLAYER, 13, 8),
-        Ship4(SourceCategory.PLAYER, 13, 8),
+        Ship1(SourceCategory.PLAYERSHIP, 13, 8),
+        Ship2(SourceCategory.PLAYERSHIP, 13, 8),
+        Ship3(SourceCategory.PLAYERSHIP, 13, 8),
+        Ship4(SourceCategory.PLAYERSHIP, 13, 8),
         /**
          * Destroyed player ship.
          */
-        ShipDestroyed1(SourceCategory.PLAYER, 13, 8),
-        ShipDestroyed2(SourceCategory.PLAYER, 13, 8),
-        ShipDestroyed3(SourceCategory.PLAYER, 13, 8),
-        ShipDestroyed4(SourceCategory.PLAYER, 13, 8),
+        ShipDestroyed1(SourceCategory.PLAYERSHIP, 13, 8),
+        ShipDestroyed2(SourceCategory.PLAYERSHIP, 13, 8),
+        ShipDestroyed3(SourceCategory.PLAYERSHIP, 13, 8),
+        ShipDestroyed4(SourceCategory.PLAYERSHIP, 13, 8),
         /**
          * Player bullet.
          */
@@ -149,8 +206,6 @@ public final class AssetManager {
             return this.height;
         }
     }
-    
-    ;
     
     private static AssetManager instance;
     private static final Logger LOGGER = Core.getLogger();
