@@ -406,7 +406,6 @@ $RECYCLE.BIN/
 /game_data/
 
 log
-.gradle
-.gradle/*
+.gradle/
 
 # End of https://www.toptal.com/developers/gitignore/api/java,intellij,intellij+iml,intellij+all,macos,windows,visualstudiocode,eclipse
