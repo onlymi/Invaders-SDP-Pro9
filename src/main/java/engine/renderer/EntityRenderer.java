@@ -97,10 +97,15 @@ public class EntityRenderer {
         
         if (entity instanceof entity.EnemyShip) {
             entity.EnemyShip enemy = (entity.EnemyShip) entity;
-            if ((enemy.getSpriteType() == AssetManager.SpriteType.EnemyShipA1
-                || enemy.getSpriteType() == AssetManager.SpriteType.EnemyShipA2)
-                && enemy.getHealth() == 1) {
-                color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 32);
+            
+            int health = enemy.getHealth();
+            int initialHealth = enemy.getInitialHealth();
+            
+            if (health > 0 && initialHealth > 0) {
+                int rawAlpha = (int) (70 + 150 * (float) health / initialHealth);
+                int alpha = Math.max(0, Math.min(255, rawAlpha));
+                
+                return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
             }
         }
         return color;
