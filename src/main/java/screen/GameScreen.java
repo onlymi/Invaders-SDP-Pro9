@@ -303,10 +303,10 @@ public class GameScreen extends Screen {
 
             if (this.isPaused) {
                 // Pause game music when pausing - no sound during pause
-                SoundManager.loopStop();
+                this.soundManager.loopStop();
             } else {
                 // Resume game music when unpausing
-                SoundManager.playLoop("game_theme");
+                this.soundManager.playLoop("game_theme");
             }
         }
 
@@ -377,13 +377,13 @@ public class GameScreen extends Screen {
                     && this.enemyShipSpecialCooldown.checkFinished()) {
                     this.enemyShipSpecial = new EnemyShip();
                     this.enemyShipSpecialCooldown.reset();
-                    SoundManager.playLoop("special_ship_sound");
+                    this.soundManager.playLoop("special_ship_sound");
                     this.LOGGER.info("A special ship appears");
                 }
                 if (this.enemyShipSpecial != null
                     && this.enemyShipSpecial.getPositionX() > this.width) {
                     this.enemyShipSpecial = null;
-                    SoundManager.loopStop();
+                    this.soundManager.loopStop();
                     this.LOGGER.info("The special ship has escaped");
                 }
 
@@ -700,7 +700,7 @@ public class GameScreen extends Screen {
                     state.incShipsDestroyed(pIdx); // 2P mode: modified incrementing ships destroyed
 
                     this.enemyShipSpecial.destroy();
-                    SoundManager.loopStop();
+                    this.soundManager.loopStop();
                     SoundManager.playOnce("explosion");
                     drawManager.getGameScreenRenderer()
                         .triggerExplosion(this.enemyShipSpecial.getPositionX(),
