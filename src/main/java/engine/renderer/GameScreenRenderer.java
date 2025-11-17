@@ -4,6 +4,7 @@ import animations.Explosion;
 import engine.AssetManager;
 import engine.Core;
 import engine.gameplay.achievement.Achievement;
+import engine.gameplay.item.ItemData;
 import engine.gameplay.item.ItemManager;
 import entity.Entity;
 import java.awt.AlphaComposite;
@@ -333,9 +334,32 @@ public class GameScreenRenderer {
         }
 
         itemManager.getItemToDescribe().ifPresent(item -> {
-            String name =
-                (item.getData() != null) ? item.getData().getDisplayName() : item.getType();
-            String desc = (item.getData() != null) ? item.getData().getDescription() : "";
+            String name = item.getDisplayName();
+            String baseDesc = item.getDescription();
+
+            ItemData data = item.getData();
+            int cost = 0;
+            if (item.getData() != null) {
+                cost = item.getData().getCost();
+            }
+
+            StringBuilder descBuilder = new StringBuilder();
+            if (baseDesc != null && !baseDesc.isEmpty()) {
+                descBuilder.append(baseDesc);
+            }
+
+            if (cost == 0) {
+                if (descBuilder.length() > 0) {
+                    descBuilder.append("\n");
+                }
+                descBuilder.append("No cost required.");
+            } else {
+                if (descBuilder.length() > 0) {
+                    descBuilder.append("\n");
+                }
+                descBuilder.append("Cost: ").append(cost);
+            }
+            String desc = descBuilder.toString();
 
             Graphics2D g2d = (Graphics2D) g.create();
             try {
