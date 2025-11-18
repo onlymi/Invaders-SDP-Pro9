@@ -41,7 +41,7 @@ public class SettingScreen extends Screen {
         this.player2Keys = Core.getInputManager().getPlayer2Keys();
         
         // Start menu music loop when the settings screen is created
-        SoundManager.playLoop("title_sound");
+        this.soundManager.playLoop("title_sound");
     }
     
     private void setVolumeFromX(java.awt.Rectangle barBox, int mouseX) {

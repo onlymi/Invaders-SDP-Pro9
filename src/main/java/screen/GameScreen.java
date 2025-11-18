@@ -137,9 +137,10 @@ public class GameScreen extends Screen {
     private int bulletsShot;
     private int shipsDestroyed;
     private Ship ship;
-
+    
     /**
      * checks if player took damage 2025-10-02 add new variable
+     *
      */
     private boolean tookDamageThisLevel;
     private boolean countdownSoundPlayed = false;
@@ -401,7 +402,7 @@ public class GameScreen extends Screen {
                 if (this.bossShip != null) {
                     this.bossShip.update();
                 }
-                
+
                 this.enemyShipFormation.update();
                 int bulletsBefore = this.bullets.size();
                 this.enemyShipFormation.shoot(this.bullets);
@@ -431,7 +432,7 @@ public class GameScreen extends Screen {
 
             // Check if the boss is present and destroyed.
             boolean bossDestroyed = (this.bossShip != null && this.bossShip.isDestroyed());
-            
+
             // End condition: formation cleared or TEAM lives exhausted.
             if ((this.enemyShipFormation.isEmpty() || !state.teamAlive()) && !this.levelFinished) {
                 // The object managed by the object pool pattern must be recycled at the end of the level.
@@ -530,7 +531,9 @@ public class GameScreen extends Screen {
                 SEPARATION_LINE_HEIGHT - 1);
         drawManager.getGameScreenRenderer().drawShipCount(drawManager.getBackBufferGraphics(), this,
             enemyShipFormation.getShipCount());
-        
+        drawManager.getGameScreenRenderer()
+            .drawItemToast(drawManager.getBackBufferGraphics(), this);
+
         if (!this.inputDelay.checkFinished()) {
             int countdown = (int) ((INPUT_DELAY - (System.currentTimeMillis() - this.gameStartTime))
                 / 1000);
@@ -610,7 +613,12 @@ public class GameScreen extends Screen {
                     LOGGER.info(
                         "Player " + ship.getPlayerId() + " picked up item: " + item.getType());
                     SoundManager.playOnce("hover");
-                    item.applyEffect(getGameState(), ship.getPlayerId());
+
+                    boolean applied = item.applyEffect(getGameState(), ship.getPlayerId());
+
+                    if (applied) {
+                        ItemManager.getInstance().onPickup(item);
+                    }
                 }
             }
         }

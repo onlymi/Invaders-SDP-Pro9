@@ -1,11 +1,11 @@
 package screen;
 
-import animations.MenuSpace;
 import engine.Core;
 import engine.SoundManager;
 import engine.utils.Cooldown;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import animations.MenuSpace;
 
 /**
  * Implements the title screen.
@@ -68,7 +68,7 @@ public class TitleScreen extends Screen {
     public final int run() {
         super.run();
         // Stop menu music when leaving the title screen
-        SoundManager.loopStop();
+        this.soundManager.loopStop();
         return this.returnCode;
     }
     

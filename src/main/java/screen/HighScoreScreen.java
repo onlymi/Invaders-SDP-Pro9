@@ -30,7 +30,7 @@ public class HighScoreScreen extends Screen {
      */
     public HighScoreScreen(final int width, final int height, final int fps) {
         super(width, height, fps);
-        SoundManager.playLoop("title_sound");
+        this.soundManager.playLoop("title_sound");
         
         this.returnCode = 1;
         
