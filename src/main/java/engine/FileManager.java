@@ -33,7 +33,7 @@ public final class FileManager {
     /**
      * user account info file path.
      */
-    private static final String USER_ACCT_INFO_PATH = "src/main/resources/game_data/user_acct_info.csv";
+    private String userAccountPath = "src/main/resources/game_data/user_acct_info.csv";
     /**
      * Singleton instance of the class.
      */
@@ -415,7 +415,7 @@ public final class FileManager {
         String hashedPassword = hashPassword(password);
         
         // CSV 파일에 쓰기
-        try (FileWriter writer = new FileWriter(USER_ACCT_INFO_PATH, true)) {
+        try (FileWriter writer = new FileWriter(userAccountPath, true)) {
             writer.append(trimmedId);
             writer.append(',');
             writer.append(hashedPassword);
@@ -434,7 +434,7 @@ public final class FileManager {
      * @throws IOException If the file fails to read
      */
     private boolean isUserExists(final String id) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(USER_ACCT_INFO_PATH))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(userAccountPath))) {
             String line;
             reader.readLine(); // 헤더(id,password_hash) 스킵
             
@@ -446,6 +446,15 @@ public final class FileManager {
             }
         }
         return false;
+    }
+    
+    /**
+     * Setter Method for Path Change
+     *
+     * @param path File path to save
+     */
+    public void setUserAccountPath(String path) {
+        this.userAccountPath = path;
     }
     
     /**
@@ -462,7 +471,7 @@ public final class FileManager {
         String trimmedId = id.trim();   // ID 공백 제거
         String hashedPassword = hashPassword(password);     // password 해싱
         
-        try (BufferedReader reader = new BufferedReader(new FileReader(USER_ACCT_INFO_PATH))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(userAccountPath))) {
             String line;
             reader.readLine();      // 헤더 스킵
             
