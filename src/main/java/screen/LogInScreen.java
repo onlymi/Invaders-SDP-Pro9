@@ -110,11 +110,6 @@ public class LogInScreen extends Screen {
      * Handles text input for ID and Password fields.
      */
     private void handleTextInput() {
-        // Backspace 입력 시 실패 메시지 제거
-        if (inputManager.isKeyDown(KeyEvent.VK_BACK_SPACE)) {
-            clearFailureMessage();
-        }
-        
         // Backspace 구현
         if (inputManager.isKeyDown(KeyEvent.VK_BACK_SPACE)) {
             clearFailureMessage();

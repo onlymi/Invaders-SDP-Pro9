@@ -114,31 +114,38 @@ public class SignUpScreen extends Screen {
      * Handles text input for ID and Password fields.
      */
     private void handleTextInput() {
+        // Backspace 구현
+        if (inputManager.isKeyDown(KeyEvent.VK_BACK_SPACE)) {
+            clearFailureMessage();
+            if (this.activeField == 0 && !this.idInput.isEmpty()) {
+                this.idInput.deleteCharAt(this.idInput.length() - 1);
+            } else if (this.activeField == 1 && !this.idInput.isEmpty()) {
+                this.passwordInput.deleteCharAt(this.passwordInput.length() - 1);
+            }
+            this.selectionCooldown.reset();
+            return;
+        }
+        
         // Get typed character
         char typedChar = InputManager.getLastChar();
-        // Check if it's a valid alphanumeric or symbol character
         if (typedChar >= ' ' && typedChar <= '~') {
             // User restarts the input, clear the previous error message
-            if (this.message != null && !this.signUpSuccess) {
-                this.message = null;
-            }
+            clearFailureMessage();
             if (this.activeField == 0) {
                 this.idInput.append(typedChar);
             } else if (this.activeField == 1) {
                 this.passwordInput.append(typedChar);
             }
             this.selectionCooldown.reset();
-        } else if (inputManager.isKeyDown(KeyEvent.VK_BACK_SPACE)) { // Backspace logic
-            // User restarts the input, clear the previous error message
-            if (this.message != null && !this.signUpSuccess) {
-                this.message = null;
-            }
-            if (this.activeField == 0 && !this.idInput.isEmpty()) {
-                this.idInput.deleteCharAt(this.idInput.length() - 1);
-            } else if (this.activeField == 1 && !this.passwordInput.isEmpty()) {
-                this.passwordInput.deleteCharAt(this.passwordInput.length() - 1);
-            }
-            this.selectionCooldown.reset();
+        }
+    }
+    
+    /**
+     * When the user restarts the input, clear the failure message.
+     */
+    private void clearFailureMessage() {
+        if (this.message != null && !this.signUpSuccess) {
+            this.message = null;
         }
     }
     
@@ -206,7 +213,7 @@ public class SignUpScreen extends Screen {
      * Moves focus to the previous field.
      */
     private void previousField() {
-        this.activeField = (this.activeField - 1 + 4) % 4;
+        this.activeField = (this.activeField + 3) % 4;
     }
     
     /**
