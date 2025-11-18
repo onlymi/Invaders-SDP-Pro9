@@ -8,6 +8,7 @@ import engine.renderer.CommonRenderer;
 import engine.renderer.EntityRenderer;
 import engine.renderer.GameScreenRenderer;
 import engine.renderer.HighScoreScreenRenderer;
+import engine.renderer.LogInScreenRenderer;
 import engine.renderer.PlayModeSelectionScreenRenderer;
 import engine.renderer.ScoreScreenRenderer;
 import engine.renderer.SettingScreenRenderer;
@@ -31,7 +32,7 @@ import screen.Screen;
  *
  */
 public final class DrawManager {
-
+    
     /**
      * Singleton instance of the class.
      */
@@ -76,7 +77,7 @@ public final class DrawManager {
      * Big sized font properties.
      */
     private static FontMetrics fontBigMetrics;
-
+    
     private AssetManager assetManager;
     // Common Renderer
     private CommonRenderer commonRenderer;
@@ -92,14 +93,15 @@ public final class DrawManager {
     private ScoreScreenRenderer scoreScreenRenderer;
     private AuthScreenRenderer authScreenRenderer;
     private SignUpScreenRenderer signUpScreenRenderer;
+    private LogInScreenRenderer logInScreenRenderer;
     
     private final List<Explosion> explosions = new ArrayList<>();
-
+    
     /**
      * Stars background animations for both game and main menu Star density specified as argument.
      */
     int explosion_size = 2;
-
+    
     /**
      * Private constructor.
      */
@@ -123,14 +125,15 @@ public final class DrawManager {
         this.scoreScreenRenderer = new ScoreScreenRenderer(this.commonRenderer);
         this.authScreenRenderer = new AuthScreenRenderer(this.commonRenderer);
         this.signUpScreenRenderer = new SignUpScreenRenderer(this.commonRenderer);
+        this.logInScreenRenderer = new LogInScreenRenderer(this.commonRenderer);
         
         fontRegular = this.assetManager.getFontRegular();
         fontBig = this.assetManager.getFontBig();
-
+        
         this.LOGGER = Core.getLogger();
         LOGGER.info("Started loading resources.");
     }
-
+    
     /**
      * Returns shared instance of DrawManager.
      *
@@ -142,51 +145,51 @@ public final class DrawManager {
         }
         return instance;
     }
-
+    
     public static Frame getFrame() {
         return frame;
     }
-
+    
     public Graphics getBackBufferGraphics() {
         return backBufferGraphics;
     }
-
+    
     public CommonRenderer getCommonRenderer() {
         return this.commonRenderer;
     }
-
+    
     public EntityRenderer getEntityRenderer() {
         return this.entityRenderer;
     }
-
+    
     public TitleScreenRenderer getTitleScreenRenderer() {
         return this.titleScreenRenderer;
     }
-
+    
     public AchievementScreenRenderer getAchievementScreenRenderer() {
         return this.achievementScreenRenderer;
     }
-
+    
     public HighScoreScreenRenderer getHighScoreScreenRenderer() {
         return this.highScoreScreenRenderer;
     }
-
+    
     public SettingScreenRenderer getSettingScreenRenderer() {
         return this.settingScreenRenderer;
     }
-
+    
     public PlayModeSelectionScreenRenderer getPlayModeSelectionScreenRenderer() {
         return this.playModeSelectionScreenRenderer;
     }
-
+    
     public ShipSelectionMenuRenderer getShipSelectionMenuRenderer() {
         return this.shipSelectionMenuRenderer;
     }
-
+    
     public GameScreenRenderer getGameScreenRenderer() {
         return this.gameScreenRenderer;
     }
-
+    
     public ScoreScreenRenderer getScoreScreenRenderer() {
         return this.scoreScreenRenderer;
     }
@@ -199,6 +202,10 @@ public final class DrawManager {
         return this.signUpScreenRenderer;
     }
     
+    public LogInScreenRenderer getLogInScreenRenderer() {
+        return this.logInScreenRenderer;
+    }
+    
     /**
      * Sets the frame to draw the image on.
      *
@@ -207,7 +214,7 @@ public final class DrawManager {
     public void setFrame(final Frame currentFrame) {
         frame = currentFrame;
     }
-
+    
     /**
      * First part of the drawing process. Initialises buffers, draws the background and prepares the
      * images.
@@ -217,20 +224,20 @@ public final class DrawManager {
     public void initDrawing(final Screen screen) {
         backBuffer = new BufferedImage(screen.getWidth(), screen.getHeight(),
             BufferedImage.TYPE_INT_RGB);
-
+        
         graphics = frame.getGraphics();
         backBufferGraphics = backBuffer.getGraphics();
-
+        
         backBufferGraphics.setColor(Color.BLACK);
         backBufferGraphics.fillRect(0, 0, screen.getWidth(), screen.getHeight());
-
+        
         fontRegularMetrics = backBufferGraphics.getFontMetrics(fontRegular);
         fontBigMetrics = backBufferGraphics.getFontMetrics(fontBig);
-
+        
         // drawBorders(screen);
         // drawGrid(screen);
     }
-
+    
     /**
      * Draws the completed drawing on screen.
      *
@@ -239,8 +246,8 @@ public final class DrawManager {
     public void completeDrawing(final Screen screen) {
         graphics.drawImage(backBuffer, frame.getInsets().left, frame.getInsets().top, frame);
     }
-
-
+    
+    
     /**
      * For debugging purposes, draws the canvas borders.
      *
@@ -256,7 +263,7 @@ public final class DrawManager {
         backBufferGraphics.drawLine(0, screen.getHeight() - 1, screen.getWidth() - 1,
             screen.getHeight() - 1);
     }
-
+    
     /**
      * For debugging purposes, draws a grid over the canvas.
      *
