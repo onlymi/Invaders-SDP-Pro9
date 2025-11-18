@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import engine.FileManager.LoginResult;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -92,5 +93,29 @@ class FileManagerTest {
             assertTrue(line1.startsWith("dupeUser,"));
             assertEquals(null, line2); // 두 번째 라인이 없어야 함
         }
+    }
+    
+    @Test
+    void testValidateUser_Success() throws Exception {
+        // 유저 생성
+        fileManager.saveUser("validUser", "validPass");
+        // ID/PW 검증
+        FileManager.LoginResult result = fileManager.validateUser("validUser", "validPass");
+        // 결과 확인
+        assertEquals(LoginResult.SUCCESS, result);
+    }
+    
+    @Test
+    void testValidateUser_IdNotFound() throws Exception {
+        fileManager.saveUser("validUser", "validPass");
+        FileManager.LoginResult result = fileManager.validateUser("invalidUser", "validPass");
+        assertEquals(LoginResult.ID_NOT_FOUND, result);
+    }
+    
+    @Test
+    void testValidateUser_PasswordMismatch() throws Exception {
+        fileManager.saveUser("validUser", "validPass");
+        FileManager.LoginResult result = fileManager.validateUser("validUser", "invalidPass");
+        assertEquals(LoginResult.PASSWORD_MISMATCH, result);
     }
 }
