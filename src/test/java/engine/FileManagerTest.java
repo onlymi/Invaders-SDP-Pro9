@@ -20,7 +20,7 @@ import org.junit.jupiter.api.TestInstance;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FileManagerTest {
     
-    private static final String TEST_CSV_PATH = "src/main/resources/game_data/user_acct_info.csv";
+    private static final String TEST_CSV_PATH = "src/main/resources/game_data/user_acct_info_test.csv";
     
     // FileManager는 싱글톤이므로 실제 인스턴스를 가져옴
     private FileManager fileManager = FileManager.getInstance();
@@ -30,6 +30,8 @@ class FileManagerTest {
      */
     @BeforeEach
     void setUp() throws Exception {
+        // fileManager가 테스트 파일에 연결되도록 변경
+        fileManager.setUserAccountPath(TEST_CSV_PATH);
         // 기존 파일이 있다면 삭제
         Files.deleteIfExists(Paths.get(TEST_CSV_PATH));
         
