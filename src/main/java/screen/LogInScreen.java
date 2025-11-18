@@ -227,10 +227,8 @@ public class LogInScreen extends Screen {
         drawManager.getLogInScreenRenderer().draw(
             drawManager.getBackBufferGraphics(),
             this,
-            this.activeField,
-            this.idInput.toString(),
-            this.passwordInput.toString(),
-            this.message);
+            this.activeField, this.idInput.toString(),
+            this.passwordInput.toString(), this.message, this.logInSuccess);
         drawManager.completeDrawing(this);
     }
 }
