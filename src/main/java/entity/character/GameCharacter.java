@@ -1,12 +1,16 @@
 package entity.character;
 
 import entity.Entity;
+import entity.buff.Buff;
 import entity.skill.Skill;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-public abstract class Character extends Entity {
+public abstract class GameCharacter extends Entity {
     
     protected ArrayList<Skill> skills;
+    protected List<Buff> activeBuffs;
     
     protected int maxHealthPoints;
     protected int healthPoints;
@@ -90,9 +94,11 @@ public abstract class Character extends Entity {
      * @param positionY     Initial position of the entity in the Y axis.
      * @param characterType Type of character.
      */
-    public Character(int positionX, int positionY, int width, int height,
+    public GameCharacter(int positionX, int positionY, int width, int height,
         CharacterType characterType) {
         super(positionX, positionY, width, height);
+        this.skills = new ArrayList<>();
+        this.activeBuffs = new ArrayList<>();
         // Initial basic stat
         this.maxHealthPoints = characterType.maxHealthPoints;
         this.healthPoints = characterType.healthPoints;
@@ -111,6 +117,55 @@ public abstract class Character extends Entity {
         this.physicalDefense = characterType.physicalDefense;
         // Initial character unlocked stat
         this.unlocked = characterType.unlocked;
+    }
+    
+    /**
+     * Check the time for each frame.
+     *
+     * @param deltaTime The time it took from the last frame to the present
+     */
+    public void update(float deltaTime) {
+        Iterator<Buff> iterator = activeBuffs.iterator();
+        
+        while (iterator.hasNext()) {
+            Buff buff = iterator.next();
+            buff.update(deltaTime, this);
+            
+            if (!buff.isActive()) {
+                iterator.remove();
+            }
+        }
+    }
+    
+    /**
+     * Add buff to this character.
+     *
+     * @param buff Buff to apply to characters
+     */
+    public void addBuff(Buff buff) {
+        buff.apply(this);
+        this.activeBuffs.add(buff);
+    }
+    
+    public void decreaseMana(int manaCost) {
+        this.manaPoints = Math.max(0, this.manaPoints - manaCost);
+    }
+    
+    public void increaseAttackSpeed(float multiplier) {
+        this.attackSpeed *= (1 + multiplier);
+    }
+    
+    public void decreaseAttackSpeed(float multiplier) {
+        this.attackSpeed /= (1 + multiplier);
+    }
+    
+    public void decreasePhysicalDamage(float multiplier) {
+        Iterator<Buff> iterator = this.activeBuffs.iterator();
+        this.physicalDamage = (int) (this.physicalDamage * (1 - multiplier));
+    }
+    
+    public void increasePhysicalDamage(float multiplier) {
+        this.physicalDamage = (int) (this.physicalDamage / (1 - multiplier));
     }
     
     public ArrayList<Skill> getSkills() {

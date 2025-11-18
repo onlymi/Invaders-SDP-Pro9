@@ -1,15 +1,15 @@
 package entity.skill;
 
-import entity.character.Character;
+import entity.character.GameCharacter;
 
 public class PiercingArrowSkill extends Skill {
     
     public PiercingArrowSkill() {
-        super("Rapid Fire", 30, 12);
+        super("Piercing Arrow", 60, 50);
     }
     
     @Override
-    public void activate(Character attacker) {
+    public void activate(GameCharacter attacker) {
     
     }
 }

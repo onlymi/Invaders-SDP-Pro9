@@ -100,7 +100,7 @@ public class GameScreen extends Screen {
      */
     private Cooldown screenFinishedCooldown;
     /**
-     * Set of all bullets fired by on screen ships.
+     * Set of all bullets fired by on-screen ships.
      */
     private Set<Bullet> bullets;
     /**

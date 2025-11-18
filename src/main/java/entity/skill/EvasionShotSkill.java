@@ -1,6 +1,6 @@
 package entity.skill;
 
-import entity.character.Character;
+import entity.character.GameCharacter;
 
 public class EvasionShotSkill extends Skill {
     
@@ -9,7 +9,7 @@ public class EvasionShotSkill extends Skill {
     }
     
     @Override
-    public void activate(Character attacker) {
+    public void activate(GameCharacter attacker) {
     
     }
 }

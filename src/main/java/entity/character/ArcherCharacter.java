@@ -6,7 +6,7 @@ import entity.skill.PiercingArrowSkill;
 import entity.skill.RapidFireSkill;
 import java.util.ArrayList;
 
-public class ArcherCharacter extends Character {
+public class ArcherCharacter extends GameCharacter {
     
     /**
      * Constructor, establishes the entity's generic properties.

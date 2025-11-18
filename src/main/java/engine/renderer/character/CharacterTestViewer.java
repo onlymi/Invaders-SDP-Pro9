@@ -52,15 +52,15 @@ public class CharacterTestViewer extends JPanel implements ActionListener {
     // Setting viewer
     private Timer timer;
     private int currentFrame = 1; // 0: Basic, 1: Walk1, 2: Walk2
-    private final int SCALE = 4;  // 확대 배율
+    private final int SCALE = 2;  // 확대 배율
     private final int GAP = 120;  // 캐릭터 간 간격
     
     public CharacterTestViewer() {
         AssetManager.getInstance();
         
         // 0.5초(500ms)마다 애니메이션 프레임 변경
-        timer = new Timer(500, this);
-        timer.start();
+        this.timer = new Timer(500, this);
+        this.timer.start();
         
         this.setBackground(Color.BLACK);
         this.setPreferredSize(new Dimension(900, 300));
@@ -75,22 +75,22 @@ public class CharacterTestViewer extends JPanel implements ActionListener {
         
         g.setFont(new Font("Arial", Font.BOLD, 16));
         
-        for (int i = 0; i < characters.length; i++) {
-            CharacterInfo info = characters[i];
-            int x = startX + (i * GAP);
+        for (int i = 0; i < this.characters.length; i++) {
+            CharacterInfo info = this.characters[i];
+            int x = startX + (i * this.GAP);
             
             SpriteType currentSpriteType = null;
             
-            if (currentFrame == 1) {
+            if (this.currentFrame == 1) {
                 currentSpriteType = info.walk1;
-            } else if (currentFrame == 2) {
+            } else if (this.currentFrame == 2) {
                 currentSpriteType = info.walk2;
             }
             
             boolean[][] spriteData = AssetManager.getInstance().getSprite(currentSpriteType);
             
             if (spriteData != null) {
-                drawCharacter(g, spriteData, x, startY, SCALE, info.color);
+                drawCharacter(g, spriteData, x, startY, this.SCALE, info.color);
             } else {
                 g.setColor(Color.RED);
                 g.drawString("No Data", x, startY);
@@ -121,10 +121,10 @@ public class CharacterTestViewer extends JPanel implements ActionListener {
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (currentFrame == 1) {
-            currentFrame = 2;
+        if (this.currentFrame == 1) {
+            this.currentFrame = 2;
         } else {
-            currentFrame = 1;
+            this.currentFrame = 1;
         }
         repaint();
     }
