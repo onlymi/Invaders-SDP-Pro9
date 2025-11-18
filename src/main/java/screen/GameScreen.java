@@ -137,10 +137,9 @@ public class GameScreen extends Screen {
     private int bulletsShot;
     private int shipsDestroyed;
     private Ship ship;
-    
+
     /**
      * checks if player took damage 2025-10-02 add new variable
-     *
      */
     private boolean tookDamageThisLevel;
     private boolean countdownSoundPlayed = false;
@@ -397,6 +396,11 @@ public class GameScreen extends Screen {
                         s.update();
                     }
                 }
+
+                // Update bossShip
+                if (this.bossShip != null) {
+                    this.bossShip.update();
+                }
                 
                 this.enemyShipFormation.update();
                 int bulletsBefore = this.bullets.size();
@@ -424,6 +428,9 @@ public class GameScreen extends Screen {
                 this.highScoreNotified = true;
                 this.highScoreNoticeStartTime = System.currentTimeMillis();
             }
+
+            // Check if the boss is present and destroyed.
+            boolean bossDestroyed = (this.bossShip != null && this.bossShip.isDestroyed());
             
             // End condition: formation cleared or TEAM lives exhausted.
             if ((this.enemyShipFormation.isEmpty() || !state.teamAlive()) && !this.levelFinished) {
@@ -486,7 +493,13 @@ public class GameScreen extends Screen {
                 .drawEntity(drawManager.getBackBufferGraphics(), this.enemyShipSpecial,
                     this.enemyShipSpecial.getPositionX(), this.enemyShipSpecial.getPositionY());
         }
-        
+
+        if (this.bossShip != null) {
+            drawManager.getEntityRenderer()
+                .drawEntity(drawManager.getBackBufferGraphics(), this.bossShip,
+                    this.bossShip.getPositionX(), this.bossShip.getPositionY());
+        }
+
         enemyShipFormation.draw();
         
         for (Bullet bullet : this.bullets) {
