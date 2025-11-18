@@ -173,7 +173,7 @@ public class LogInScreen extends Screen {
         String password = this.passwordInput.toString();
         
         if (id.isEmpty() || password.isEmpty()) {
-            this.message = "ID and password cannot be empty.";
+            this.message = "ID and Password cannot be empty.";
             this.messageCooldown.reset();
             return;
         }
@@ -188,11 +188,11 @@ public class LogInScreen extends Screen {
                     // TODO     Core에 로그인한 계정 저장. 스탯 구매 구현 시 수정 예정
                     break;
                 case PASSWORD_MISMATCH:
-                    this.message = "Passwords do not match!";
+                    this.message = "Password is incorrect!";
                     this.passwordInput.setLength(0);
                     break;
                 case ID_NOT_FOUND:
-                    this.message = "This ID dose not found.";
+                    this.message = "This ID does not exist.";
                     this.passwordInput.setLength(0);
                     break;
             }
