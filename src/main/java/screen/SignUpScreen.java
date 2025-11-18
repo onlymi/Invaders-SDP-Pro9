@@ -15,7 +15,7 @@ public class SignUpScreen extends Screen {
     /**
      * Milliseconds between menu selection changes.
      */
-    private static final int SELECTION_TIME = 200;
+    private static final int SELECTION_TIME = 100;
     /**
      * Cooldown timer for menu selections.
      */
@@ -222,7 +222,8 @@ public class SignUpScreen extends Screen {
     private void drawScreen() {
         drawManager.initDrawing(this);
         drawManager.getSignUpScreenRenderer().draw(drawManager.getBackBufferGraphics(), this,
-            this.activeField, this.idInput.toString(), this.passwordInput.toString(), this.message);
+            this.activeField, this.idInput.toString(), this.passwordInput.toString(), this.message,
+            this.signUpSuccess);
         drawManager.completeDrawing(this);
     }
 }

@@ -33,7 +33,7 @@ public class LogInScreenRenderer {
      */
     public void draw(final Graphics graphics, final Screen screen,
         final int activeField, final String idInput,
-        final String passwordInput, final String message) {
+        final String passwordInput, final String message, final boolean isSuccess) {
         
         // Draw background
         graphics.setColor(Color.BLACK);
@@ -89,7 +89,11 @@ public class LogInScreenRenderer {
         
         // Draw message
         if (message != null) {
-            graphics.setColor(Color.RED);
+            if (isSuccess) {
+                graphics.setColor(Color.GREEN);
+            } else {
+                graphics.setColor(Color.RED);
+            }
             commonRenderer.drawCenteredRegularString(graphics, screen, message, buttonY + 80);
         }
     }
