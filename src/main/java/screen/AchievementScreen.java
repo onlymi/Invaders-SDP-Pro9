@@ -20,13 +20,13 @@ public class AchievementScreen extends Screen {
         this.returnCode = 3;
         
         // Start menu music loop when the achievement screen is created
-        SoundManager.playLoop("title_sound");
+        this.soundManager.playLoop("title_sound");
     }
     
     public final int run() {
         super.run();
         // Stop menu music when leaving the achievement screen
-        SoundManager.loopStop();
+        this.soundManager.loopStop();
         
         return this.returnCode;
     }

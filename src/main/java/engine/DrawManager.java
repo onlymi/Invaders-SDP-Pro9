@@ -3,6 +3,7 @@ package engine;
 import animations.Explosion;
 import engine.gameplay.item.ItemManager;
 import engine.renderer.AchievementScreenRenderer;
+import engine.renderer.AuthScreenRenderer;
 import engine.renderer.CommonRenderer;
 import engine.renderer.EntityRenderer;
 import engine.renderer.GameScreenRenderer;
@@ -11,6 +12,7 @@ import engine.renderer.PlayModeSelectionScreenRenderer;
 import engine.renderer.ScoreScreenRenderer;
 import engine.renderer.SettingScreenRenderer;
 import engine.renderer.ShipSelectionMenuRenderer;
+import engine.renderer.SignUpScreenRenderer;
 import engine.renderer.TitleScreenRenderer;
 import java.awt.Color;
 import java.awt.Font;
@@ -21,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import screen.Screen;
-
 
 /**
  * Manages screen drawing.
@@ -89,7 +90,9 @@ public final class DrawManager {
     private ShipSelectionMenuRenderer shipSelectionMenuRenderer;
     private GameScreenRenderer gameScreenRenderer;
     private ScoreScreenRenderer scoreScreenRenderer;
-
+    private AuthScreenRenderer authScreenRenderer;
+    private SignUpScreenRenderer signUpScreenRenderer;
+    
     private final List<Explosion> explosions = new ArrayList<>();
 
     /**
@@ -118,7 +121,9 @@ public final class DrawManager {
         this.gameScreenRenderer = new GameScreenRenderer(this.commonRenderer,
             ItemManager.getInstance());
         this.scoreScreenRenderer = new ScoreScreenRenderer(this.commonRenderer);
-
+        this.authScreenRenderer = new AuthScreenRenderer(this.commonRenderer);
+        this.signUpScreenRenderer = new SignUpScreenRenderer(this.commonRenderer);
+        
         fontRegular = this.assetManager.getFontRegular();
         fontBig = this.assetManager.getFontBig();
 
@@ -185,7 +190,15 @@ public final class DrawManager {
     public ScoreScreenRenderer getScoreScreenRenderer() {
         return this.scoreScreenRenderer;
     }
-
+    
+    public AuthScreenRenderer getAuthScreenRenderer() {
+        return this.authScreenRenderer;
+    }
+    
+    public SignUpScreenRenderer getSignUpScreenRenderer() {
+        return this.signUpScreenRenderer;
+    }
+    
     /**
      * Sets the frame to draw the image on.
      *
