@@ -79,6 +79,10 @@ public class GameScreen extends Screen {
      */
     private BasicGameSpace basicGameSpace;
     /**
+     * EnemyShip for Multi-hit.
+     */
+    private EnemyShip bossShip;
+    /**
      * Current difficulty level number.
      */
     private int level;
@@ -700,6 +704,27 @@ public class GameScreen extends Screen {
                             this.enemyShipSpecial.getPositionY(), true, true);
                     this.enemyShipSpecialExplosionCooldown.reset();
                     recyclable.add(bullet);
+                }
+
+                if (this.bossShip != null
+                    && !this.bossShip.isDestroyed()
+                    && checkCollision(bullet, this.bossShip)) {
+
+                    this.bossShip.hit(); // Apply damage to the boss (decrement health by 1)
+                    recyclable.add(bullet); // Recycle the bullet
+
+                    if (this.bossShip.isDestroyed()) {
+                        int points = this.bossShip.getPointValue();
+                        state.addCoins(pIdx, this.bossShip.getCoinValue());
+                        state.addScore(pIdx, points);
+                        state.incShipsDestroyed(pIdx);
+
+                        SoundManager.loopStop(); // Stop boss BGM
+                        SoundManager.playOnce("explosion");
+                        // Boss explosion is always large and final (true)
+                        drawManager.getGameScreenRenderer().triggerExplosion(this.bossShip.getPositionX(), this.bossShip.getPositionY(), true, true);
+                    }
+                    // Since the Boss is a single target, break is omitted to continue with the next bullet/enemy check.
                 }
             }
         }
