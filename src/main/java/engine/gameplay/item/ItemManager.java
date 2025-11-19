@@ -4,6 +4,7 @@ import engine.Core;
 import entity.EnemyShip;
 import entity.Item;
 import entity.ItemPool;
+import java.awt.Color;
 import java.util.Optional;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -55,19 +56,24 @@ public final class ItemManager {
     /** -------------------------- ITEM DATA -------------------------- **/
 
     /**
-     * ITEM WEIGHT
+     * ITEM Drop probability, Item Drop particle color
      **/
     public static enum DropTier {
-        //DEBUG    (500.0),
-        NONE(60.0),
-        COMMON(25.0),
-        UNCOMMON(15.0),
-        RARE(5.0);
+        // DEBUG    (500.0),
+        NONE(33.0, Color.GRAY),
+        COMMON(30.0, Color.WHITE),
+        UNCOMMON(20.0, Color.GREEN),
+        RARE(10.0, Color.BLUE),
+        EPIC(5.0, new Color(128, 0, 128)),      // (Purple)
+        LEGENDARY(2.0, new Color(255, 215, 0)); // (Gold)
+
 
         public final double tierWeight;
+        public final Color color;
 
-        DropTier(double tierWeight) {
-            this.tierWeight = Math.max(0.0, tierWeight);
+        DropTier(double weight, Color color) {
+            this.tierWeight = Math.max(0.0, weight);
+            this.color = color;
         }
     }
 
