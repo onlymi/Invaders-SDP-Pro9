@@ -20,6 +20,8 @@ public class BossShip extends EnemyShip {
      */
     private static final int BOSS_BASE_SPEED_X = 2;
     private static final int BOSS_BASE_SPEED_Y = 1;
+    private static final int TOP_BOUNDARY = 68;
+    private static final int BOSS_MAX_Y = 220;
 
     private int currentSpeedX;
     private int currentSpeedY;
@@ -29,7 +31,6 @@ public class BossShip extends EnemyShip {
 
     final int screenWidth = Core.WIDTH;
     final int screenHeight = Core.HEIGHT;
-    private static final int TOP_BOUNDARY = 68;
 
     /**
      * Constructor, establishes the boss ship's properties. Initializes with SpriteType.BossEnemy1.
@@ -69,17 +70,15 @@ public class BossShip extends EnemyShip {
         // Check Horizontal Boundary
         if (this.positionX + this.width >= screenWidth || this.positionX <= 0) {
             this.movingRight = !this.movingRight;
-            // Ensure boss is within boundary after flip
             if (this.positionX <= 0) this.positionX = 1;
             if (this.positionX + this.width >= screenWidth) this.positionX = screenWidth - this.width - 1;
         }
 
         // Check Vertical Boundary
-        if (this.positionY + this.height >= screenHeight || this.positionY <= TOP_BOUNDARY) {
+        if (this.positionY + this.height >= BOSS_MAX_Y || this.positionY <= TOP_BOUNDARY) {
             this.movingDown = !this.movingDown;
-            // Ensure boss is within boundary after flip
             if (this.positionY <= TOP_BOUNDARY) this.positionY = TOP_BOUNDARY + 1;
-            if (this.positionY + this.height >= screenHeight) this.positionY = screenHeight - this.height - 1;
+            if (this.positionY + this.height >= BOSS_MAX_Y) this.positionY = BOSS_MAX_Y - this.height - 1;
         }
 
         // Inherited from EnemyShip, checks if 500ms animation interval is finished.
