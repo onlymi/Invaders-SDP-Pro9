@@ -123,8 +123,8 @@ class AuthScreenTest {
         
         authScreen.update(); // update() 실행
         
-        // returnCode가 1이 되고, 화면이 종료(isRunning=false)되어야 함
-        assertEquals(1, authScreen.getReturnCode());
+        // returnCode가 11이 되고, 화면이 종료(isRunning=false)되어야 함
+        assertEquals(11, authScreen.getReturnCode());
         assertFalse(authScreen.getIsRunning());
     }
     

@@ -90,13 +90,13 @@ public class AuthScreen extends Screen {
                 KeyEvent.VK_ENTER)) {
                 this.soundManager.playOnce("select");
                 switch (this.menuIndex) {
-                    case 0: // "Log In"
-                        // 1: (임시) 로그인을 누르면 바로 TitleScreen으로 이동
-                        this.returnCode = 1;
+                    case 0: // Log In
+                        // 11: 로그인 화면(LogInScreen)으로 이동
+                        this.returnCode = 11;
                         this.isRunning = false;
                         break;
-                    case 1: // "Sign Up"
-                        // 10: 회원가입 화면(SignUpScreen)으로 이동 (새로운 returnCode)
+                    case 1: // Sign Up
+                        // 10: 회원가입 화면(SignUpScreen)으로 이동
                         this.returnCode = 10;
                         this.isRunning = false;
                         break;

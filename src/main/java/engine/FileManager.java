@@ -20,11 +20,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
-
-import engine.AssetManager.SpriteType;
-import engine.gameplay.achievement.Achievement;
 
 /**
  * Manages files used in the application.
@@ -37,7 +33,7 @@ public final class FileManager {
     /**
      * user account info file path.
      */
-    private static final String USER_ACCT_INFO_PATH = "src/main/resources/game_data/user_acct_info.csv";
+    private String userAccountPath = "src/main/resources/game_data/user_acct_info.csv";
     /**
      * Singleton instance of the class.
      */
@@ -46,6 +42,15 @@ public final class FileManager {
      * Application logger.
      */
     private static Logger LOGGER;
+    
+    /**
+     * Enum indicating login result status.
+     */
+    public enum LoginResult {
+        SUCCESS,
+        ID_NOT_FOUND,
+        PASSWORD_MISMATCH
+    }
     
     /**
      * private constructor.
@@ -410,7 +415,7 @@ public final class FileManager {
         String hashedPassword = hashPassword(password);
         
         // CSV 파일에 쓰기
-        try (FileWriter writer = new FileWriter(USER_ACCT_INFO_PATH, true)) {
+        try (FileWriter writer = new FileWriter(userAccountPath, true)) {
             writer.append(trimmedId);
             writer.append(',');
             writer.append(hashedPassword);
@@ -429,7 +434,7 @@ public final class FileManager {
      * @throws IOException If the file fails to read
      */
     private boolean isUserExists(final String id) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(USER_ACCT_INFO_PATH))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(userAccountPath))) {
             String line;
             reader.readLine(); // 헤더(id,password_hash) 스킵
             
@@ -441,6 +446,56 @@ public final class FileManager {
             }
         }
         return false;
+    }
+    
+    /**
+     * Setter Method for Path Change
+     *
+     * @param path File path to save
+     */
+    public void setUserAccountPath(String path) {
+        this.userAccountPath = path;
+    }
+    
+    /**
+     *
+     * @param id       ID entered by the user
+     * @param password The (unencrypted) password entered by the user
+     * @return True if login successful, False if failed
+     * @throws IOException              If the file fails to read
+     * @throws NoSuchAlgorithmException If the hashing algorithm cannot be found
+     */
+    public LoginResult validateUser(final String id, final String password)
+        throws IOException, NoSuchAlgorithmException {
+        
+        String trimmedId = id.trim();   // ID 공백 제거
+        String hashedPassword = hashPassword(password);     // password 해싱
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(userAccountPath))) {
+            String line;
+            reader.readLine();      // 헤더 스킵
+            
+            while ((line = reader.readLine()) != null) {
+                String[] values = line.split(",");
+                if (values.length < 2) {
+                    continue;   // 손상된 데이터는 스킵
+                }
+                String storedId = values[0].trim();
+                String storedHashPassword = values[1].trim();
+                
+                if (storedId.equals(trimmedId)) {   // ID가 일치하는지 확인
+                    if (storedHashPassword.equals(hashedPassword)) {    // Password가 일치하는지 확인
+                        LOGGER.info("User " + trimmedId + " is valid");
+                        return LoginResult.SUCCESS;
+                    } else {
+                        LOGGER.warning("User " + trimmedId + "'s password does not match");
+                        return LoginResult.PASSWORD_MISMATCH;
+                    }
+                }
+            }
+        }
+        LOGGER.warning("User " + trimmedId + " is not found");
+        return LoginResult.ID_NOT_FOUND;
     }
     
     /**
