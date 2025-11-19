@@ -608,17 +608,18 @@ public class GameScreen extends Screen {
                 if (ship == null) {
                     continue;
                 }
+
+                // Show cost logic
                 if (checkCollision(item, ship) && !collected.contains(item)) {
                     collected.add(item);
                     LOGGER.info(
                         "Player " + ship.getPlayerId() + " picked up item: " + item.getType());
                     SoundManager.playOnce("hover");
 
+                    ItemManager.getInstance().onPickup(item);
+
                     boolean applied = item.applyEffect(getGameState(), ship.getPlayerId());
 
-                    if (applied) {
-                        ItemManager.getInstance().onPickup(item);
-                    }
                 }
             }
         }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import engine.FileManager.LoginResult;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -20,7 +21,7 @@ import org.junit.jupiter.api.TestInstance;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FileManagerTest {
     
-    private static final String TEST_CSV_PATH = "src/main/resources/game_data/user_acct_info.csv";
+    private static final String TEST_CSV_PATH = "src/main/resources/game_data/user_acct_info_test.csv";
     
     // FileManager는 싱글톤이므로 실제 인스턴스를 가져옴
     private FileManager fileManager = FileManager.getInstance();
@@ -30,6 +31,8 @@ class FileManagerTest {
      */
     @BeforeEach
     void setUp() throws Exception {
+        // fileManager가 테스트 파일에 연결되도록 변경
+        fileManager.setUserAccountPath(TEST_CSV_PATH);
         // 기존 파일이 있다면 삭제
         Files.deleteIfExists(Paths.get(TEST_CSV_PATH));
         
@@ -90,5 +93,29 @@ class FileManagerTest {
             assertTrue(line1.startsWith("dupeUser,"));
             assertEquals(null, line2); // 두 번째 라인이 없어야 함
         }
+    }
+    
+    @Test
+    void testValidateUser_Success() throws Exception {
+        // 유저 생성
+        fileManager.saveUser("validUser", "validPass");
+        // ID/PW 검증
+        FileManager.LoginResult result = fileManager.validateUser("validUser", "validPass");
+        // 결과 확인
+        assertEquals(LoginResult.SUCCESS, result);
+    }
+    
+    @Test
+    void testValidateUser_IdNotFound() throws Exception {
+        fileManager.saveUser("validUser", "validPass");
+        FileManager.LoginResult result = fileManager.validateUser("invalidUser", "validPass");
+        assertEquals(LoginResult.ID_NOT_FOUND, result);
+    }
+    
+    @Test
+    void testValidateUser_PasswordMismatch() throws Exception {
+        fileManager.saveUser("validUser", "validPass");
+        FileManager.LoginResult result = fileManager.validateUser("validUser", "invalidPass");
+        assertEquals(LoginResult.PASSWORD_MISMATCH, result);
     }
 }

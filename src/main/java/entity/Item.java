@@ -46,7 +46,7 @@ public class Item extends Entity {
 
     public Item(String itemType, final int positionX, final int positionY, final int speed) {
 
-        super(positionX, positionY, 3 * 2, 5 * 2, Color.WHITE);
+        super(positionX, positionY, 5 * 2, 5 * 2, Color.WHITE);
 
         logger = Core.getLogger();
 
@@ -57,7 +57,7 @@ public class Item extends Entity {
     }
 
     public Item(final ItemData data, final int positionX, final int positionY, final int speed) {
-        super(positionX, positionY, 3 * 2, 5 * 2, Color.WHITE);
+        super(positionX, positionY, 5 * 2, 5 * 2, Color.WHITE);
         logger = Core.getLogger();
         this.data = data;
         this.type = (data != null) ? data.getType() : null;
@@ -74,26 +74,63 @@ public class Item extends Entity {
         if (this.data != null) {
             spriteName = this.data.getSpriteType();
         } else {
-            // fallback: legacy path that re-reads from DB using 'type'
-            ItemDB itemDB = new ItemDB();
-            ItemData d = itemDB.getItemData(this.type);
-            if (d != null) {
-                this.data = d;                 // cache it to avoid reloading later
-                spriteName = d.getSpriteType();
+            // if there is no data, load it from DB.
+            if (this.type != null) {
+                ItemDB itemDB = new ItemDB();
+                ItemData d = itemDB.getItemData(this.type);
+                if (d != null) {
+                    this.data = d;
+                    spriteName = d.getSpriteType();
+                }
             }
         }
 
-        if (spriteName != null) {
+        SpriteType resolved = null;
+
+        if (spriteName != null && !spriteName.isEmpty()) {
             try {
-                this.spriteType = SpriteType.valueOf(spriteName);
+                resolved = SpriteType.valueOf(spriteName);
             } catch (IllegalArgumentException e) {
-                this.spriteType = SpriteType.ItemScore; // safe default
-                this.logger.warning(
-                    "[Item]: Unknown sprite type: " + spriteName + ", using default.");
+                logger.warning("[Item]: Unknown sprite type in DB: "
+                    + spriteName + " for type=" + this.type);
             }
-        } else {
-            this.spriteType = SpriteType.ItemScore; // safe default if nothing found
         }
+
+        if (resolved == null) {
+            resolved = mapTypeToSprite(this.type);
+        }
+
+        this.spriteType = resolved;
+
+    }
+
+    /**
+     * Maps an item type string (e.g., "COIN", "HEAL") to its corresponding SpriteType.
+     *
+     * @param type A string representing the logical item type Must not be null. If null is
+     *             provided, a safe default sprite is used.
+     * @return The SpriteType corresponding to the given item type. If no match exists, returns a
+     * default SpriteType (ItemScore).
+     */
+    private SpriteType mapTypeToSprite(final String type) {
+        if (type == null) {
+            logger.warning("[Item]: null type, using default ItemScore sprite.");
+            return SpriteType.ItemScore;
+        }
+
+        return switch (type) {
+            case "COIN" -> SpriteType.ItemCoin;
+            case "HEAL" -> SpriteType.ItemHeal;
+            case "SCORE" -> SpriteType.ItemScore;
+            case "TRIPLESHOT" -> SpriteType.ItemTripleShot;
+            case "SCOREBOOST" -> SpriteType.ItemScoreBooster;
+            case "BULLETSPEEDUP" -> SpriteType.ItemBulletSpeedUp;
+            default -> {
+                logger.warning("[Item]: No sprite mapping for type "
+                    + type + ", using default ItemScore sprite.");
+                yield SpriteType.ItemScore;
+            }
+        };
     }
 
     /**
@@ -215,5 +252,61 @@ public class Item extends Entity {
 
     public String getDescription() {
         return (this.data != null) ? this.data.getDescription() : "";
+    }
+
+    /**
+     * Returns full description including additional info based on item cost or player
+     * affordability. - If cost == 0 → add "No cost required." - If cost > 0  → add "(Cost: X)" and
+     * possibly "Not enough coins." UI will always show this full message when the item is picked
+     * up.
+     */
+
+    public String getFullDescription(int playerCoins) {
+        ensureDataLoaded();
+        if (this.data == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        // Basic Item description
+        String base = this.data.getDescription();
+        sb.append(base != null ? base : "");
+
+        int cost = this.data.getCost();
+
+        // case: cost == 0
+        if (cost == 0) {
+            sb.append("\n No cost required.");
+        }
+
+        // case: cost > 0
+        else {
+            sb.append("\n (Cost: ").append(cost).append(")");
+
+            if (playerCoins < cost) {
+                sb.append("\nNot enough coins to activate this item.");
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private void ensureDataLoaded() {
+        if (this.data == null && this.type != null) {
+            try {
+                ItemDB itemDB = new ItemDB();
+                ItemData d = itemDB.getItemData(this.type);
+                if (d != null) {
+                    this.data = d;
+                } else {
+                    logger.warning(
+                        "[Item] ensureDataLoaded(): ItemData not found for type=" + this.type);
+                }
+            } catch (Exception e) {
+                logger.warning("[Item] ensureDataLoaded() failed for type=" + this.type
+                    + " (" + e.getMessage() + ")");
+            }
+        }
     }
 }

@@ -1,16 +1,15 @@
 package screen;
 
 import engine.Core;
+import engine.FileManager;
 import engine.InputManager;
 import engine.utils.Cooldown;
 import java.awt.event.KeyEvent;
 
 /**
- * Implements the Sign-Up screen. Handles user input for ID and Password.
- *
- * @author Seungju Yoon <yunseungju6@gmail.com>
+ * Implements the Log In screen. Handles user input for ID and Password verification.
  */
-public class SignUpScreen extends Screen {
+public class LogInScreen extends Screen {
     
     /**
      * Milliseconds between menu selection changes.
@@ -20,7 +19,6 @@ public class SignUpScreen extends Screen {
      * Cooldown timer for menu selections.
      */
     private Cooldown selectionCooldown;
-    
     /**
      * Stores the ID typed by the user.
      */
@@ -29,14 +27,12 @@ public class SignUpScreen extends Screen {
      * Stores the Password typed by the user.
      */
     private StringBuilder passwordInput;
-    
     /**
-     * Currently active field. 0: ID, 1: Password, 2: Submit, 3: Back.
+     * 0: ID, 1: Password, 2: Submit, 3: Back
      */
     private int activeField;
-    
     /**
-     * Message to display (e.g., "Sign Up Successful").
+     * Message to display (e.g., "Log In Successful").
      */
     private String message;
     /**
@@ -47,11 +43,10 @@ public class SignUpScreen extends Screen {
      * Milliseconds to display message.
      */
     private static final int MESSAGE_DURATION = 2000;
-    
     /**
-     * Save sign up success flag.
+     * Flag to save login success
      */
-    private boolean signUpSuccess = false;
+    private boolean logInSuccess = false;
     
     /**
      * Constructor, establishes the properties of the screen.
@@ -60,11 +55,11 @@ public class SignUpScreen extends Screen {
      * @param height Screen height.
      * @param fps    Frames per second, frame rate at which the game is run.
      */
-    public SignUpScreen(final int width, final int height, final int fps) {
+    public LogInScreen(int width, int height, int fps) {
         super(width, height, fps);
         this.idInput = new StringBuilder();
         this.passwordInput = new StringBuilder();
-        this.activeField = 0; // Default to ID field
+        this.activeField = 0;
         this.selectionCooldown = Core.getCooldown(SELECTION_TIME);
         this.selectionCooldown.reset();
         this.messageCooldown = Core.getCooldown(MESSAGE_DURATION);
@@ -77,14 +72,15 @@ public class SignUpScreen extends Screen {
     protected final void update() {
         super.update();
         drawScreen();
-        // Sign-up was successful and message time is over
-        if (this.signUpSuccess && this.messageCooldown.checkFinished()) {
-            this.returnCode = 9;    // AuthScreen
+        
+        // 로그인 성공 시, TitleScreen(1)으로 이동
+        if (this.logInSuccess && this.messageCooldown.checkFinished()) {
+            this.returnCode = 1;    // TitleScreen
             this.isRunning = false;
         }
         
-        // Don't process input if success message is showing
-        if (this.signUpSuccess) {
+        //  로그인 성공 시, 입력 처리 안함
+        if (this.logInSuccess) {
             return;
         }
         
@@ -118,18 +114,17 @@ public class SignUpScreen extends Screen {
         if (inputManager.isKeyDown(KeyEvent.VK_BACK_SPACE)) {
             clearFailureMessage();
             if (this.activeField == 0 && !this.idInput.isEmpty()) {
-                this.idInput.deleteCharAt(this.idInput.length() - 1);
-            } else if (this.activeField == 1 && !this.idInput.isEmpty()) {
-                this.passwordInput.deleteCharAt(this.passwordInput.length() - 1);
+                this.idInput.deleteCharAt(idInput.length() - 1);
+            } else if (this.activeField == 1 && !this.passwordInput.isEmpty()) {
+                this.passwordInput.deleteCharAt(passwordInput.length() - 1);
             }
             this.selectionCooldown.reset();
             return;
         }
         
-        // Get typed character
+        // Character 입력
         char typedChar = InputManager.getLastChar();
         if (typedChar >= ' ' && typedChar <= '~') {
-            // User restarts the input, clear the previous error message
             clearFailureMessage();
             if (this.activeField == 0) {
                 this.idInput.append(typedChar);
@@ -144,7 +139,7 @@ public class SignUpScreen extends Screen {
      * When the user restarts the input, clear the failure message.
      */
     private void clearFailureMessage() {
-        if (this.message != null && !this.signUpSuccess) {
+        if (this.message != null && !this.logInSuccess) {
             this.message = null;
         }
     }
@@ -154,15 +149,15 @@ public class SignUpScreen extends Screen {
      */
     private void handleConfirm() {
         switch (this.activeField) {
-            case 0: // ID field
-            case 1: // Password field
+            case 0:    // ID field
+            case 1:    // Password field
                 nextField();
                 break;
-            case 2: // Submit button
+            case 2:    // Submit button
                 submitForm();
                 break;
-            case 3: // Back button
-                this.returnCode = 9;
+            case 3:    // Back button
+                this.returnCode = 9;   // Auth screen
                 this.isRunning = false;
                 break;
             default:
@@ -171,33 +166,41 @@ public class SignUpScreen extends Screen {
     }
     
     /**
-     * Attempts to save the user data using FileManager.
+     * Attempts to validate the user data using FileManager.
      */
     private void submitForm() {
         String id = this.idInput.toString().trim();
         String password = this.passwordInput.toString();
         
         if (id.isEmpty() || password.isEmpty()) {
-            this.message = "ID and Password cannot be empty";
+            this.message = "ID and Password cannot be empty.";
             this.messageCooldown.reset();
             return;
         }
         
         try {
-            boolean success = this.fileManager.saveUser(id, password);
-            if (success) {
-                this.message = "Sign Up Successful! Returning to login...";
-                this.signUpSuccess = true;
-            } else {
-                this.message = "This ID already exists! Try another ID.";
-                this.idInput.setLength(0);
-                this.passwordInput.setLength(0);
+            FileManager.LoginResult result = this.fileManager.validateUser(id, password);
+            
+            switch (result) {
+                case SUCCESS:
+                    this.message = "Log In Successful! Starting game...";
+                    this.logInSuccess = true;
+                    // TODO     Core에 로그인한 계정 저장. 스탯 구매 구현 시 수정 예정
+                    break;
+                case PASSWORD_MISMATCH:
+                    this.message = "Password is incorrect!";
+                    this.passwordInput.setLength(0);
+                    break;
+                case ID_NOT_FOUND:
+                    this.message = "This ID does not exist.";
+                    this.passwordInput.setLength(0);
+                    break;
             }
         } catch (Exception e) {
-            this.message = "Sign up Failed! Could not save user";
+            this.message = "Error: Could not validate user.";
             this.idInput.setLength(0);
             this.passwordInput.setLength(0);
-            LOGGER.warning("Error saving user: " + e.getMessage());
+            LOGGER.warning("Error validating user: " + e.getMessage());
         }
         this.messageCooldown.reset();
     }
@@ -206,14 +209,14 @@ public class SignUpScreen extends Screen {
      * Moves focus to the next field.
      */
     private void nextField() {
-        this.activeField = (this.activeField + 1) % 4;
+        this.activeField = (activeField + 1) % 4;
     }
     
     /**
      * Moves focus to the previous field.
      */
     private void previousField() {
-        this.activeField = (this.activeField + 3) % 4;
+        this.activeField = (activeField + 3) % 4;
     }
     
     /**
@@ -221,9 +224,11 @@ public class SignUpScreen extends Screen {
      */
     private void drawScreen() {
         drawManager.initDrawing(this);
-        drawManager.getSignUpScreenRenderer().draw(drawManager.getBackBufferGraphics(), this,
-            this.activeField, this.idInput.toString(), this.passwordInput.toString(), this.message,
-            this.signUpSuccess);
+        drawManager.getLogInScreenRenderer().draw(
+            drawManager.getBackBufferGraphics(),
+            this,
+            this.activeField, this.idInput.toString(),
+            this.passwordInput.toString(), this.message, this.logInSuccess);
         drawManager.completeDrawing(this);
     }
 }
