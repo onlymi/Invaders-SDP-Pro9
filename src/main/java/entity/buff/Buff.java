@@ -35,7 +35,6 @@ public abstract class Buff {
         }
         if (this.timeElapsed >= this.duration) {
             this.active = false;
-            remove(gameCharacter);
         }
     }
     

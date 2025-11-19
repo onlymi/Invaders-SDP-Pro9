@@ -9,7 +9,7 @@ public class EvasionShotSkill extends Skill {
     }
     
     @Override
-    public void activate(GameCharacter attacker) {
+    public void performSkill(GameCharacter attacker) {
     
     }
 }

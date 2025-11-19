@@ -28,7 +28,7 @@ public abstract class Skill {
     
     public void activate(GameCharacter attacker) {
         if (attacker == null) {
-            LOGGER.warning("Rapid Fire Skill requires an attacker.");
+            LOGGER.warning(name + " skill requires an attacker.");
             return;
         }
         if (!canActivate(attacker)) {
@@ -49,17 +49,7 @@ public abstract class Skill {
      */
     public boolean canActivate(GameCharacter attacker) {
         boolean isCooldownReady = this.coolDown.checkFinished();
-        boolean isManaEnough = attacker.getManaPoints() >= this.manaCost;
-        
-        if (!isCooldownReady) {
-            LOGGER.warning(
-                this.name + " is not cooldown ready. Remain time (ms): "
-                    + this.coolDown.getDuration());
-        }
-        if (!isManaEnough) {
-            LOGGER.warning(this.name + " is not enough mana. Required: " + this.manaCost
-                + ", Has: " + attacker.getManaPoints());
-        }
+        boolean isManaEnough = attacker.getCurrentManaPoints() >= this.manaCost;
         
         return isCooldownReady && isManaEnough;
     }

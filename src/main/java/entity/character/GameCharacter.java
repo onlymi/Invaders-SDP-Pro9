@@ -13,9 +13,9 @@ public abstract class GameCharacter extends Entity {
     protected List<Buff> activeBuffs;
     
     protected int maxHealthPoints;
-    protected int healthPoints;
+    protected int currentHealthPoints;
     protected int maxManaPoints;
-    protected int manaPoints;
+    protected int currentManaPoints;
     protected float movementSpeed;
     
     protected int physicalDamage;
@@ -46,9 +46,9 @@ public abstract class GameCharacter extends Entity {
         HEALER(100, 200, 1.0f, 5, 30, 0.8f, 8.0f, 0.01f, 1.5f, 10, false);
         
         private final int maxHealthPoints;
-        private final int healthPoints;
+        private final int currentHealthPoints;
         private final int maxManaPoints;
-        private final int manaPoints;
+        private final int currentManaPoints;
         private final float movementSpeed;
         
         private final int physicalDamage;
@@ -68,9 +68,9 @@ public abstract class GameCharacter extends Entity {
             float critChance, float critDamageMultiplier, int physicalDefense, boolean unlocked) {
             // Initial basic stat
             this.maxHealthPoints = maxHealthPoints;
-            this.healthPoints = maxHealthPoints;
+            this.currentHealthPoints = maxHealthPoints;
             this.maxManaPoints = maxManaPoints;
-            this.manaPoints = maxManaPoints;
+            this.currentManaPoints = maxManaPoints;
             this.movementSpeed = movementSpeed;
             // Initial attack stat
             this.physicalDamage = physicalDamage;
@@ -101,9 +101,9 @@ public abstract class GameCharacter extends Entity {
         this.activeBuffs = new ArrayList<>();
         // Initial basic stat
         this.maxHealthPoints = characterType.maxHealthPoints;
-        this.healthPoints = characterType.healthPoints;
+        this.currentHealthPoints = characterType.currentHealthPoints;
         this.maxManaPoints = characterType.maxManaPoints;
-        this.manaPoints = characterType.manaPoints;
+        this.currentManaPoints = characterType.currentManaPoints;
         this.movementSpeed = characterType.movementSpeed;
         // Initial attack stat
         this.physicalDamage = characterType.physicalDamage;
@@ -148,24 +148,23 @@ public abstract class GameCharacter extends Entity {
     }
     
     public void decreaseMana(int manaCost) {
-        this.manaPoints = Math.max(0, this.manaPoints - manaCost);
+        this.currentManaPoints = Math.max(0, this.currentManaPoints - manaCost);
     }
     
-    public void increaseAttackSpeed(float multiplier) {
+    public void modifyAttackSpeed(float multiplier) {
         this.attackSpeed *= (1 + multiplier);
     }
     
-    public void decreaseAttackSpeed(float multiplier) {
+    public void resetAttackSpeed(float multiplier) {
         this.attackSpeed /= (1 + multiplier);
     }
     
-    public void decreasePhysicalDamage(float multiplier) {
-        Iterator<Buff> iterator = this.activeBuffs.iterator();
-        this.physicalDamage = (int) (this.physicalDamage * (1 - multiplier));
+    public void modifyPhysicalDamage(float multiplier) {
+        this.physicalDamage = (int) (this.physicalDamage * (1 + multiplier));
     }
     
-    public void increasePhysicalDamage(float multiplier) {
-        this.physicalDamage = (int) (this.physicalDamage / (1 - multiplier));
+    public void resetPhysicalDamage(float multiplier) {
+        this.physicalDamage = (int) (this.physicalDamage / (1 + multiplier));
     }
     
     public ArrayList<Skill> getSkills() {
@@ -176,16 +175,16 @@ public abstract class GameCharacter extends Entity {
         return this.maxHealthPoints;
     }
     
-    public int getHealthPoints() {
-        return this.healthPoints;
+    public int getCurrentHealthPoints() {
+        return this.currentHealthPoints;
     }
     
     public int getMaxManaPoints() {
         return this.maxManaPoints;
     }
     
-    public int getManaPoints() {
-        return this.manaPoints;
+    public int getCurrentManaPoints() {
+        return this.currentManaPoints;
     }
     
     public float getMovementSpeed() {

@@ -18,7 +18,7 @@ public class ArcherCharacterTest {
         ArcherCharacter character = new ArcherCharacter(0, 0);
         
         int[] expectedValue = {90, 90};
-        int[] actualValue = {character.maxHealthPoints, character.healthPoints};
+        int[] actualValue = {character.maxHealthPoints, character.currentHealthPoints};
         
         assertArrayEquals(expectedValue, actualValue,
             "Archer character health points is set incorrectly.");
@@ -29,7 +29,7 @@ public class ArcherCharacterTest {
         ArcherCharacter character = new ArcherCharacter(0, 0);
         
         int[] expectedValue = {100, 100};
-        int[] actualValue = {character.maxManaPoints, character.manaPoints};
+        int[] actualValue = {character.maxManaPoints, character.currentManaPoints};
         
         assertArrayEquals(expectedValue, actualValue,
             "Archer character mana points is set incorrectly.");
