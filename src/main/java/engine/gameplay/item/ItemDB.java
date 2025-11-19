@@ -124,8 +124,81 @@ public class ItemDB {
                     description = tokens[8].trim();
                 }
 
-                ItemData data = new ItemData(type, spriteType, dropTier, effectValue,
-                    effectDuration, cost, id, displayName, description);
+                // activationType (index 9)
+                ActivationType activationType = ActivationType.INSTANT_ON_PICKUP;
+                if (tokens.length > 9 && tokens[9] != null && !tokens[9].trim().isEmpty()) {
+                    String at = tokens[9].trim().toUpperCase();
+                    try {
+                        activationType = ActivationType.valueOf(at);
+                    } catch (IllegalArgumentException e) {
+                        logger.warning("[ItemDB] Unknown activationType for " + type + " -> '" + at
+                            + "'. Using INSTANT_ON_PICKUP.");
+                    }
+                }
+
+                // maxCharges (index 10)
+                int maxCharges = 0;
+                if (tokens.length > 10 && tokens[10] != null && !tokens[10].trim().isEmpty()) {
+                    try {
+                        maxCharges = Integer.parseInt(tokens[10].trim());
+                        if (maxCharges < 0) {
+                            logger.warning("[ItemDB] Negative maxCharges for " + type + " -> '"
+                                + tokens[10] + "'. Using 0.");
+                            maxCharges = 0;
+                        }
+                    } catch (NumberFormatException e) {
+                        logger.warning("[ItemDB] Invalid maxCharges for " + type + " -> '"
+                            + tokens[10] + "'. Using 0.");
+                    }
+                }
+
+                // cooldownSec (index 11)
+                int cooldownSec = 0;
+                if (tokens.length > 11 && tokens[11] != null && !tokens[11].trim().isEmpty()) {
+                    try {
+                        cooldownSec = Integer.parseInt(tokens[11].trim());
+                        if (cooldownSec < 0) {
+                            logger.warning("[ItemDB] Negative cooldownSec for " + type + " -> '"
+                                + tokens[11] + "'. Using 0.");
+                            cooldownSec = 0;
+                        }
+                    } catch (NumberFormatException e) {
+                        logger.warning("[ItemDB] Invalid cooldownSec for " + type + " -> '"
+                            + tokens[11] + "'. Using 0.");
+                    }
+                }
+
+                // autoUseOnPickup (index 12) - default true
+                boolean autoUseOnPickup = true;
+                if (tokens.length > 12 && tokens[12] != null && !tokens[12].trim().isEmpty()) {
+                    String v = tokens[12].trim().toLowerCase();
+                    autoUseOnPickup = v.equals("true") || v.equals("1") || v.equals("yes");
+                }
+
+                // stackable (index 13) - default false
+                boolean stackable = false;
+                if (tokens.length > 13 && tokens[13] != null && !tokens[13].trim().isEmpty()) {
+                    String v = tokens[13].trim().toLowerCase();
+                    stackable = v.equals("true") || v.equals("1") || v.equals("yes");
+                }
+
+                ItemData data = new ItemData(
+                    type,
+                    spriteType,
+                    dropTier,
+                    effectValue,
+                    effectDuration,
+                    cost,
+                    id,
+                    displayName,
+                    description,
+                    activationType,
+                    maxCharges,
+                    cooldownSec,
+                    autoUseOnPickup,
+                    stackable
+                );
+
                 itemMap.put(type, data);
             }
         } catch (FileNotFoundException e) {
