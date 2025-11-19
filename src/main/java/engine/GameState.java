@@ -1,10 +1,16 @@
 // engine/GameState.java
+
 package engine;
 
+import engine.gameplay.item.ActivationType;
+import engine.gameplay.item.ItemData;
 import engine.gameplay.item.ItemEffect;
 import engine.gameplay.item.ItemEffect.ItemEffectType;
 import engine.utils.Cooldown;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,19 +60,66 @@ public class GameState {
             this.effectValue = null;
         }
     }
-    
+
+    /**
+     * Holds a single active item instance for a player, including remaining charges and per-item
+     * cooldown.
+     */
+    private static class ActiveItemInstance {
+
+        final ItemData data;
+        int remainingCharges;
+        Cooldown cooldown;
+
+        ActiveItemInstance(final ItemData data) {
+            this.data = data;
+            int maxCharges = Math.max(0, data.getMaxCharges());
+            // 0 or negative means "no explicit limit" → treat as infinite
+            this.remainingCharges = (maxCharges == 0) ? Integer.MAX_VALUE : maxCharges;
+            this.cooldown = null;
+        }
+
+        boolean isOnCooldown() {
+            return cooldown != null && !cooldown.checkFinished();
+        }
+
+        void startCooldown() {
+            int cd = Math.max(0, data.getCooldownSec());
+            if (cd <= 0) {
+                this.cooldown = null;
+            } else {
+                this.cooldown = Core.getCooldown(cd * 1000);
+                this.cooldown.reset();
+            }
+        }
+    }
+
+    /**
+     * Per-player container for passive and active items.
+     */
+    private static class PlayerItemState {
+
+        final List<ItemData> passiveItems = new ArrayList<>();
+        final List<ActiveItemInstance> activeItems = new ArrayList<>();
+    }
+
     /**
      * Each player has all effect types always initialized (inactive at start).
      */
     private final Map<Integer, Map<ItemEffectType, EffectState>> playerEffects = new HashMap<>();
-    
+
+    /**
+     * Per-player item inventories (passive + active).
+     */
+    private final PlayerItemState[] playerItems = new PlayerItemState[NUM_PLAYERS];
+
     // 2P mode: co-op aware constructor used by the updated Core loop - livesEach
     // applies per-player; co-op uses shared pool.
     public GameState(final int level, final int livesEach, final boolean coop, final int coin) {
         this.level = level;
         this.coop = coop;
         this.coins = coin;
-        
+
         if (coop) {
             this.sharedLives = true;
             this.teamLives = Math.max(0, livesEach * NUM_PLAYERS);
@@ -78,8 +131,9 @@ public class GameState {
             // legacy: put all lives on P1
             lives[0] = Math.max(0, livesEach);
         }
-        
+
         initializeEffectStates();
+        initializePlayerItemStates();
     }
     
     // 2P mode: per-player tallies (used for stats/scoring; lives[] unused in shared
@@ -119,6 +173,7 @@ public class GameState {
         this.coop = false; // 2P: single-player mode
         
         initializeEffectStates();
+        initializePlayerItemStates();
     }
     
     /* ------- 2P mode: aggregate totals used by Core/ScoreScreen/UI------- */
@@ -210,32 +265,32 @@ public class GameState {
         coins -= amount;
         return true;
     }
-    
+
     // ===== Mode / life-pool helpers expected elsewhere =====
     public boolean isCoop() {
         return coop;
     }
-    
+
     public boolean isSharedLives() {
         return sharedLives;
     }
-    
+
     public int getTeamLives() {
         return teamLives;
     }
-    
+
     public void addTeamLife(final int n) {
         if (sharedLives) {
             teamLives = Math.min(teamLivesCap, teamLives + Math.max(0, n));
         }
     }
-    
+
     private void decTeamLife(final int n) {
         if (sharedLives) {
             teamLives = Math.max(0, teamLives - Math.max(0, n));
         }
     }
-    
+
     // 2P mode: decrement life (shared pool if enabled; otherwise per player). */
     public void decLife(final int p) {
         if (sharedLives) {
@@ -293,23 +348,32 @@ public class GameState {
             playerEffects.put(p, effectMap);
         }
     }
-    
+
+    /**
+     * Initializes per-player item inventories.
+     */
+    private void initializePlayerItemStates() {
+        for (int p = 0; p < NUM_PLAYERS; p++) {
+            playerItems[p] = new PlayerItemState();
+        }
+    }
+
     public void addEffect(int playerIndex, ItemEffectType type, Integer effectValue,
         int durationSeconds) {
         if (playerIndex < 0 || playerIndex >= NUM_PLAYERS) {
             return;
         }
-        
+
         Map<ItemEffectType, EffectState> effects = playerEffects.get(playerIndex);
         if (effects == null) {
             return;
         }
-        
+
         EffectState state = effects.get(type);
         if (state == null) {
             return;
         }
-        
+
         String valueStr = (effectValue != null) ? " (value: " + effectValue + ")" : "";
         
         if (state.active && state.cooldown != null) {
@@ -362,17 +426,17 @@ public class GameState {
         if (playerIndex < 0 || playerIndex >= NUM_PLAYERS) {
             return null;
         }
-        
+
         Map<ItemEffectType, EffectState> effects = playerEffects.get(playerIndex);
         if (effects == null) {
             return null;
         }
-        
+
         EffectState state = effects.get(type);
         if (state == null || !state.active) {
             return null;
         }
-        
+
         // Check if effect is still valid (not expired)
         if (state.cooldown != null && state.cooldown.checkFinished()) {
             return null;
@@ -380,7 +444,7 @@ public class GameState {
         
         return state.effectValue;
     }
-    
+
     /**
      * Call this each frame to clean up expired effects
      */
@@ -390,7 +454,7 @@ public class GameState {
             if (effects == null) {
                 continue;
             }
-            
+
             for (Map.Entry<ItemEffectType, EffectState> entry : effects.entrySet()) {
                 EffectState state = entry.getValue();
                 if (state.active && state.cooldown != null && state.cooldown.checkFinished()) {
@@ -402,8 +466,11 @@ public class GameState {
                 }
             }
         }
+
+        // Also update cooldowns for active items (per-player).
+        updateActiveItemCooldowns();
     }
-    
+
     /**
      * Clear all active effects for a specific player
      */
@@ -412,12 +479,12 @@ public class GameState {
         if (playerIndex < 0 || playerIndex >= NUM_PLAYERS) {
             return;
         }
-        
+
         Map<ItemEffectType, EffectState> effects = playerEffects.get(playerIndex);
         if (effects == null) {
             return;
         }
-        
+
         // for - all effect types for this player
         for (Map.Entry<ItemEffectType, EffectState> entry : effects.entrySet()) {
             // get effect state
@@ -431,13 +498,106 @@ public class GameState {
         }
         logger.info("[GameState] Player " + playerIndex + ": All effects cleared.");
     }
-    
+
     /**
      * Clear all active effects for all players
      */
     public void clearAllEffects() {
         for (int p = 0; p < NUM_PLAYERS; p++) {
             clearEffects(p);
+        }
+    }
+
+    /**
+     * Adds a passive item to the given player's inventory. Passive effects are meant to be handled
+     * by game logic / renderers using this list.
+     */
+    public void addPassiveItem(final int playerIndex, final ItemData data) {
+        if (data == null || playerIndex < 0 || playerIndex >= NUM_PLAYERS) {
+            return;
+        }
+        PlayerItemState pis = playerItems[playerIndex];
+        if (pis == null) {
+            return;
+        }
+        pis.passiveItems.add(data);
+        logger.info("[GameState] Player " + (playerIndex + 1)
+            + " gained passive item: " + data.getId());
+    }
+
+    /**
+     * Adds an active (key-activated) item instance for the given player.
+     */
+    public void addActiveItem(final int playerIndex, final ItemData data) {
+        if (data == null || playerIndex < 0 || playerIndex >= NUM_PLAYERS) {
+            return;
+        }
+
+        if (data.getActivationType() != ActivationType.ACTIVE_ON_KEY) {
+            logger.warning("[GameState] addActiveItem called with non-ACTIVE_ON_KEY item: type="
+                + data.getType() + ", activation=" + data.getActivationType());
+        }
+
+        PlayerItemState pis = playerItems[playerIndex];
+        if (pis == null) {
+            return;
+        }
+
+        pis.activeItems.add(new ActiveItemInstance(data));
+        logger.info("[GameState] Player " + (playerIndex + 1)
+            + " gained active item: " + data.getId());
+    }
+
+    /**
+     * Returns an unmodifiable view of the player's passive items.
+     */
+    public List<ItemData> getPassiveItems(final int playerIndex) {
+        if (playerIndex < 0 || playerIndex >= NUM_PLAYERS) {
+            return Collections.emptyList();
+        }
+        PlayerItemState pis = playerItems[playerIndex];
+        if (pis == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(pis.passiveItems);
+    }
+
+    /**
+     * Returns an unmodifiable view of the player's active items as ItemData list. (Internal
+     * ActiveItemInstance details are kept private to GameState.)
+     */
+    public List<ItemData> getActiveItemData(final int playerIndex) {
+        if (playerIndex < 0 || playerIndex >= NUM_PLAYERS) {
+            return Collections.emptyList();
+        }
+        PlayerItemState pis = playerItems[playerIndex];
+        if (pis == null) {
+            return Collections.emptyList();
+        }
+
+        List<ItemData> result = new ArrayList<>();
+        for (ActiveItemInstance inst : pis.activeItems) {
+            result.add(inst.data);
+        }
+        return Collections.unmodifiableList(result);
+    }
+
+    /**
+     * Updates per-item cooldowns for all active items. This can be extended later when we add
+     * "useActiveItem" logic.
+     */
+    private void updateActiveItemCooldowns() {
+        for (int p = 0; p < NUM_PLAYERS; p++) {
+            PlayerItemState pis = playerItems[p];
+            if (pis == null) {
+                continue;
+            }
+
+            for (ActiveItemInstance inst : pis.activeItems) {
+                if (inst.cooldown != null && inst.cooldown.checkFinished()) {
+                    inst.cooldown = null;
+                }
+            }
         }
     }
 }

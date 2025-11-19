@@ -13,13 +13,16 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import screen.AchievementScreen;
+import screen.AuthScreen;
 import screen.GameScreen;
 import screen.HighScoreScreen;
+import screen.LogInScreen;
 import screen.PlayModeSelectionScreen;
 import screen.ScoreScreen;
 import screen.Screen;
 import screen.SettingScreen;
 import screen.ShipSelectionScreen;
+import screen.SignUpScreen;
 import screen.TitleScreen;
 
 
@@ -84,7 +87,7 @@ public final class Core {
         GameState gameState = null;
         boolean coopSelected = false; // false = 1-player mode, true = 2-player mode
         
-        int returnCode = 1;
+        int returnCode = 9;
         
         Ship.ShipType shipTypeP1 = Ship.ShipType.NORMAL; // Player 1 Ship Type
         Ship.ShipType shipTypeP2 = Ship.ShipType.NORMAL; // Player 2 Ship Type
@@ -143,6 +146,21 @@ public final class Core {
                     // High score screen
                     returnCode = highScoreSystem(width, height);
                     LOGGER.info("Closing high score screen.");
+                    break;
+                case 9:
+                    // Auth screen (Sign up / Log in)
+                    returnCode = authSystem(width, height);
+                    LOGGER.info("Closing auth system screen.");
+                    break;
+                case 10:
+                    // Sign Up screen
+                    returnCode = signUpSystem(width, height);
+                    LOGGER.info("Closing sign up screen.");
+                    break;
+                case 11:
+                    // Log In screen
+                    returnCode = logInSystem(width, height);
+                    LOGGER.info("Closing log in system screen.");
                     break;
                 default:
                     break;
@@ -471,6 +489,48 @@ public final class Core {
         currentScreen = new HighScoreScreen(width, height, FPS);
         LOGGER.info("Starting " + WIDTH + "x" + HEIGHT
             + " high score screen at " + FPS + " fps.");
+        return frame.setScreen(currentScreen);
+    }
+    
+    /**
+     * Activate auth screen system.
+     *
+     * @param width  Auth screen contents box width
+     * @param height Auth screen contents box height
+     * @return Next return code
+     */
+    public static int authSystem(int width, int height) {
+        currentScreen = new AuthScreen(width, height, FPS);
+        LOGGER.info("Starting " + WIDTH + "x" + HEIGHT
+            + " auth screen at " + FPS + " fps.");
+        return frame.setScreen(currentScreen);
+    }
+    
+    /**
+     * Activate sign up screen system.
+     *
+     * @ param width Sign up screen contents box width.
+     * @ param height Sign up screen contents box height.
+     * @ return Next return code.
+     */
+    public static int signUpSystem(int width, int height) {
+        currentScreen = new SignUpScreen(width, height, FPS);
+        LOGGER.info("Starting " + WIDTH + "x" + HEIGHT
+            + " sign up screen at " + FPS + " fps.");
+        return frame.setScreen(currentScreen);
+    }
+    
+    /**
+     * Activate log in screen system.
+     *
+     * @param width  Log in screen contents box width.
+     * @param height Log in screen contents box height.
+     * @return Next return code.
+     */
+    private static int logInSystem(int width, int height) {
+        currentScreen = new LogInScreen(width, height, FPS);
+        LOGGER.info("Starting " + WIDTH + "x" + HEIGHT
+            + " log in screen at " + FPS + " fps.");
         return frame.setScreen(currentScreen);
     }
 }

@@ -1,5 +1,6 @@
 package engine.renderer;
 
+import animations.MenuSpace;
 import engine.AssetManager;
 import java.awt.Color;
 import java.awt.FontMetrics;
@@ -19,8 +20,6 @@ public class TitleScreenRenderer {
      */
     private static FontMetrics fontMetrics;
     
-    // 메뉴 배경 애니메이션 (원래 DrawManager에 있던 것)
-    private animations.MenuSpace menuSpace = new animations.MenuSpace(50);
     
     public TitleScreenRenderer(CommonRenderer commonRenderer) {
         this.commonRenderer = commonRenderer;
@@ -47,7 +46,7 @@ public class TitleScreenRenderer {
     /**
      * Draws the main menu stars background animation
      */
-    public void updateMenuSpace(Graphics g) {
+    public void updateMenuSpace(Graphics g, MenuSpace menuSpace) {
         menuSpace.updateStars();
         
         Graphics2D g2d = (Graphics2D) g;
@@ -104,7 +103,7 @@ public class TitleScreenRenderer {
         }
     }
     
-    public void menuHover(final int state) {
+    public void menuHover(MenuSpace menuSpace, final int state) {
         menuSpace.setColor(state);
         menuSpace.setSpeed(state == 4);
     }

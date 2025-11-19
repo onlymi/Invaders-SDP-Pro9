@@ -19,7 +19,8 @@ public class HighScoreScreen extends Screen {
     /**
      * List of past high scores.
      */
-    private List<Score> highScores1P, highScores2P;
+    private List<Score> highScores1P;
+    private List<Score> highScores2P;
     
     /**
      * Constructor, establishes the properties of the screen.
@@ -30,14 +31,14 @@ public class HighScoreScreen extends Screen {
      */
     public HighScoreScreen(final int width, final int height, final int fps) {
         super(width, height, fps);
-        SoundManager.playLoop("title_sound");
+        this.soundManager.playLoop("title_sound");
         
         this.returnCode = 1;
         
         try {
             this.highScores1P = this.fileManager.loadHighScores("1p");
             this.highScores2P = this.fileManager.loadHighScores("2p");
-            //상위 7명만 남기기
+            // 상위 7명만 남기기
             this.highScores1P.sort((a, b) -> b.getScore() - a.getScore());
             if (this.highScores1P.size() > 7) {
                 this.highScores1P = this.highScores1P.subList(0, 7);

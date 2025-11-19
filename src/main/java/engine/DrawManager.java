@@ -1,17 +1,19 @@
 package engine;
 
-import animations.BasicGameSpace;
 import animations.Explosion;
-import animations.MenuSpace;
+import engine.gameplay.item.ItemManager;
 import engine.renderer.AchievementScreenRenderer;
+import engine.renderer.AuthScreenRenderer;
 import engine.renderer.CommonRenderer;
 import engine.renderer.EntityRenderer;
 import engine.renderer.GameScreenRenderer;
 import engine.renderer.HighScoreScreenRenderer;
+import engine.renderer.LogInScreenRenderer;
 import engine.renderer.PlayModeSelectionScreenRenderer;
 import engine.renderer.ScoreScreenRenderer;
 import engine.renderer.SettingScreenRenderer;
 import engine.renderer.ShipSelectionMenuRenderer;
+import engine.renderer.SignUpScreenRenderer;
 import engine.renderer.TitleScreenRenderer;
 import java.awt.Color;
 import java.awt.Font;
@@ -89,14 +91,15 @@ public final class DrawManager {
     private ShipSelectionMenuRenderer shipSelectionMenuRenderer;
     private GameScreenRenderer gameScreenRenderer;
     private ScoreScreenRenderer scoreScreenRenderer;
+    private AuthScreenRenderer authScreenRenderer;
+    private SignUpScreenRenderer signUpScreenRenderer;
+    private LogInScreenRenderer logInScreenRenderer;
     
     private final List<Explosion> explosions = new ArrayList<>();
     
     /**
      * Stars background animations for both game and main menu Star density specified as argument.
      */
-    BasicGameSpace basicGameSpace = new BasicGameSpace(100);
-    MenuSpace menuSpace = new MenuSpace(50);
     int explosion_size = 2;
     
     /**
@@ -117,8 +120,12 @@ public final class DrawManager {
         this.playModeSelectionScreenRenderer = new PlayModeSelectionScreenRenderer(
             this.commonRenderer);
         this.shipSelectionMenuRenderer = new ShipSelectionMenuRenderer(this.commonRenderer);
-        this.gameScreenRenderer = new GameScreenRenderer(this.commonRenderer);
+        this.gameScreenRenderer = new GameScreenRenderer(this.commonRenderer,
+            ItemManager.getInstance());
         this.scoreScreenRenderer = new ScoreScreenRenderer(this.commonRenderer);
+        this.authScreenRenderer = new AuthScreenRenderer(this.commonRenderer);
+        this.signUpScreenRenderer = new SignUpScreenRenderer(this.commonRenderer);
+        this.logInScreenRenderer = new LogInScreenRenderer(this.commonRenderer);
         
         fontRegular = this.assetManager.getFontRegular();
         fontBig = this.assetManager.getFontBig();
@@ -185,6 +192,18 @@ public final class DrawManager {
     
     public ScoreScreenRenderer getScoreScreenRenderer() {
         return this.scoreScreenRenderer;
+    }
+    
+    public AuthScreenRenderer getAuthScreenRenderer() {
+        return this.authScreenRenderer;
+    }
+    
+    public SignUpScreenRenderer getSignUpScreenRenderer() {
+        return this.signUpScreenRenderer;
+    }
+    
+    public LogInScreenRenderer getLogInScreenRenderer() {
+        return this.logInScreenRenderer;
     }
     
     /**

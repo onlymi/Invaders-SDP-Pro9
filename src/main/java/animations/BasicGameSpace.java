@@ -12,17 +12,27 @@ public class BasicGameSpace {
     private int[][] positions;
     private int speed = 0;
     private int numStars;
+    private final int screenWidth;
+    private final int screenHeight;
     
-    
-    public BasicGameSpace(int numStars) {
+    /**
+     * Countdown to game start.
+     *
+     * @param numStars     Num of stars.
+     * @param screenHeight Game screen's Height.
+     * @param screenWidth  .Game screen's Width.
+     */
+    public BasicGameSpace(int numStars, int screenWidth, int screenHeight) {
         
         this.numStars = numStars;
         this.stars = new Star[this.numStars];
         this.positions = new int[this.numStars][3];
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
         
         for (int i = 0; i < this.numStars; i++) {
             
-            stars[i] = new Star(rand.nextInt(10, 448), rand.nextInt(-500, 5),
+            stars[i] = new Star(rand.nextInt(10, screenWidth), rand.nextInt(-1 * screenHeight, 5),
                 (randomSpeed()) ? 2 : 1);
             positions[i][0] = stars[i].x;
             positions[i][1] = stars[i].y;
@@ -41,7 +51,7 @@ public class BasicGameSpace {
             }
             positions[i][1] = star.y;
             
-            if (star.y >= 525) {
+            if (star.y >= screenHeight + 5) {
                 star.y = 0;
                 positions[i][1] = 0;
             }

@@ -7,12 +7,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +31,10 @@ import java.util.logging.Logger;
 public final class FileManager {
     
     /**
+     * user account info file path.
+     */
+    private String userAccountPath = "src/main/resources/game_data/user_acct_info.csv";
+    /**
      * Singleton instance of the class.
      */
     private static FileManager instance;
@@ -34,6 +42,15 @@ public final class FileManager {
      * Application logger.
      */
     private static Logger LOGGER;
+    
+    /**
+     * Enum indicating login result status.
+     */
+    public enum LoginResult {
+        SUCCESS,
+        ID_NOT_FOUND,
+        PASSWORD_MISMATCH
+    }
     
     /**
      * private constructor.
@@ -374,5 +391,142 @@ public final class FileManager {
         }
         
         return completer;
+    }
+    
+    /**
+     * Save new user at user_acct_info.csv.
+     *
+     * @param id       user ID
+     * @param password user password(not encryption)
+     * @return True if membership is successful, false if ID is duplicated
+     * @throws IOException              If file writing fails
+     * @throws NoSuchAlgorithmException If the encryption algorithm cannot be found
+     */
+    public boolean saveUser(final String id, final String password)
+        throws IOException, NoSuchAlgorithmException {
+        String trimmedId = id.trim();
+        // ID 중복 검사
+        if (isUserExists(trimmedId)) {
+            LOGGER.warning("User ID already exists: " + trimmedId);
+            return false;
+        }
+        
+        // password 해싱
+        String hashedPassword = hashPassword(password);
+        
+        // CSV 파일에 쓰기
+        try (FileWriter writer = new FileWriter(userAccountPath, true)) {
+            writer.append(trimmedId);
+            writer.append(',');
+            writer.append(hashedPassword);
+            writer.append('\n');
+            writer.flush();
+        }
+        LOGGER.info("New user " + id + " saved");
+        return true;
+    }
+    
+    /**
+     * Verify that the user with that ID already exists in CSV.
+     *
+     * @param id User ID to check
+     * @return if ID exists, return true
+     * @throws IOException If the file fails to read
+     */
+    private boolean isUserExists(final String id) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(userAccountPath))) {
+            String line;
+            reader.readLine(); // 헤더(id,password_hash) 스킵
+            
+            while ((line = reader.readLine()) != null) {
+                String[] values = line.split(",");
+                if (values.length > 0 && values[0].trim().equals(id)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Setter Method for Path Change
+     *
+     * @param path File path to save
+     */
+    public void setUserAccountPath(String path) {
+        this.userAccountPath = path;
+    }
+    
+    /**
+     *
+     * @param id       ID entered by the user
+     * @param password The (unencrypted) password entered by the user
+     * @return True if login successful, False if failed
+     * @throws IOException              If the file fails to read
+     * @throws NoSuchAlgorithmException If the hashing algorithm cannot be found
+     */
+    public LoginResult validateUser(final String id, final String password)
+        throws IOException, NoSuchAlgorithmException {
+        
+        String trimmedId = id.trim();   // ID 공백 제거
+        String hashedPassword = hashPassword(password);     // password 해싱
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(userAccountPath))) {
+            String line;
+            reader.readLine();      // 헤더 스킵
+            
+            while ((line = reader.readLine()) != null) {
+                String[] values = line.split(",");
+                if (values.length < 2) {
+                    continue;   // 손상된 데이터는 스킵
+                }
+                String storedId = values[0].trim();
+                String storedHashPassword = values[1].trim();
+                
+                if (storedId.equals(trimmedId)) {   // ID가 일치하는지 확인
+                    if (storedHashPassword.equals(hashedPassword)) {    // Password가 일치하는지 확인
+                        LOGGER.info("User " + trimmedId + " is valid");
+                        return LoginResult.SUCCESS;
+                    } else {
+                        LOGGER.warning("User " + trimmedId + "'s password does not match");
+                        return LoginResult.PASSWORD_MISMATCH;
+                    }
+                }
+            }
+        }
+        LOGGER.warning("User " + trimmedId + " is not found");
+        return LoginResult.ID_NOT_FOUND;
+    }
+    
+    /**
+     * Hashes the password SHA-256.
+     *
+     * @param password original password
+     * @return Hashed password. (Hex string)
+     * @throws NoSuchAlgorithmException If the encryption algorithm cannot be found
+     */
+    private String hashPassword(final String password) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] encodedhash = digest.digest(
+            password.getBytes(StandardCharsets.UTF_8));
+        return bytesToHex(encodedhash);
+    }
+    
+    /**
+     * Convert the byte array to a hex string.
+     *
+     * @param hash Byte array to convert
+     * @return hexadecimal string
+     */
+    private static String bytesToHex(final byte[] hash) {
+        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 }

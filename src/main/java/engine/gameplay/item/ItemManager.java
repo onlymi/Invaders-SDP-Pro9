@@ -4,6 +4,8 @@ import engine.Core;
 import entity.EnemyShip;
 import entity.Item;
 import entity.ItemPool;
+import java.awt.Color;
+import java.util.Optional;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -12,25 +14,25 @@ import java.util.logging.Logger;
  * easy access.
  */
 public final class ItemManager {
-    
+
     private static ItemManager instance;
-    
+
     /**
      * Debug logger init
      */
     private Logger logger;
-    
+
     private ItemManager() {
         logger = Core.getLogger();
     }
-    
+
     public static ItemManager getInstance() {
         if (instance == null) {
             instance = new ItemManager();
         }
         return instance;
     }
-    
+
     /**
      * Random Roll for item
      */
@@ -39,38 +41,49 @@ public final class ItemManager {
      * Counter for pity system, increases when no item is dropped.
      */
     private int pityCounter = 0;
-    
+
     /**
      * Item database loaded from CSV.
      */
     private final ItemDB itemDB = new ItemDB();
-    
+
+    // Toast state: last picked item and when it was picked
+    private Item lastPickedItem = null;
+    private long lastPickupAtMs = 0L;
+
+    // How long the toast should be visible
+    private static final long TOAST_DURATION_MS = 3000L;
     /** -------------------------- ITEM DATA -------------------------- **/
-    
+
     /**
-     * ITEM WEIGHT
+     * ITEM Drop probability, Item Drop particle color
      **/
     public static enum DropTier {
-        //DEBUG    (500.0),
-        NONE(60.0),
-        COMMON(25.0),
-        UNCOMMON(15.0),
-        RARE(5.0);
-        
+        // DEBUG    (500.0),
+        NONE(33.0, Color.GRAY),
+        COMMON(30.0, Color.WHITE),
+        UNCOMMON(20.0, Color.GREEN),
+        RARE(10.0, Color.BLUE),
+        EPIC(5.0, new Color(128, 0, 128)),      // (Purple)
+        LEGENDARY(2.0, new Color(255, 215, 0)); // (Gold)
+
+
         public final double tierWeight;
-        
-        DropTier(double tierWeight) {
-            this.tierWeight = Math.max(0.0, tierWeight);
+        public final Color color;
+
+        DropTier(double weight, Color color) {
+            this.tierWeight = Math.max(0.0, weight);
+            this.color = color;
         }
     }
-    
+
     /** -------------------------- INIT -------------------------- **/
-    
+
     /**
      * Total weight of all item tiers except NONE.
      */
     private static final double ITEM_WEIGHT;
-    
+
     static {
         double sum = 0.0;
         for (DropTier t : DropTier.values()) {
@@ -80,9 +93,9 @@ public final class ItemManager {
         }
         ITEM_WEIGHT = sum;
     }
-    
+
     /** -------------------------- MAIN -------------------------- **/
-    
+
     /**
      * Determines and returns the item dropped by the given enemy.
      *
@@ -93,42 +106,42 @@ public final class ItemManager {
         if (enemy == null) {
             return null;
         }
-        
+
         // Pity Boost
         double pityBoost = Math.min(pityCounter * 0.05, 0.5);
         double boostedNoneWeight = DropTier.NONE.tierWeight * (1.0 - pityBoost);
-        
+
         // Roll Item
         double dropRoll = itemRoll.nextDouble() * (ITEM_WEIGHT + boostedNoneWeight);
         this.logger.info(String.format("[ItemManager]: DropRoll %.1f", dropRoll));
-        
+
         DropTier chosenTier = DropTier.NONE;
         double acc = 0.0;
-        
+
         for (DropTier tier : DropTier.values()) {
             double weight = tier.tierWeight;
-            
+
             if (tier == DropTier.NONE) {
                 weight = boostedNoneWeight;
             }
-            
+
             acc += weight;
-            
+
             if (dropRoll < acc) {
                 chosenTier = tier;
                 break;
             }
         }
-        
+
         // Calculate Pity
         if (chosenTier == DropTier.NONE) {
             pityCounter++;
             logger.info(String.format("[ItemManager]: Tier=NONE (pity=%d)", pityCounter));
             return null;
         }
-        
+
         pityCounter = 0;
-        
+
         // Load item list from CSV by DropTier
         java.util.List<ItemData> candidates = new java.util.ArrayList<>();
         for (ItemData data : itemDB.getAllItems()) {
@@ -136,31 +149,58 @@ public final class ItemManager {
                 candidates.add(data);
             }
         }
-        
+
         if (candidates.isEmpty()) {
             logger.warning("[ItemManager]: No items defined for tier " + chosenTier);
             return null;
         }
-        
+
         ItemData chosenData = candidates.get(itemRoll.nextInt(candidates.size()));
-        
+
         // get spawn position / enemy death position
         int centerX = enemy.getPositionX() + enemy.getWidth() / 2;
         int centerY = enemy.getPositionY() + enemy.getHeight() / 2;
-        
+
         // Pass ItemData directly to ItemPool
         int itemSpeed = 2;
         Item drop = ItemPool.getItem(chosenData, centerX, centerY, itemSpeed);
-        
+
         if (drop == null) {
             logger.warning("[ItemManager]: Failed to create item: " + chosenData.getType());
             return null;
         }
-        
+
         this.logger.info(
             "[ItemManager]: created item " + drop.getType() + " at (" + centerX + ", " + centerY
                 + ")");
-        
+
         return drop;
+
+
+    }
+
+    /**
+     * Record the last picked item and timestamp so the renderer can show a toast.
+     */
+    public void onPickup(final Item item) {
+        if (item == null) {
+            return;
+        }
+        this.lastPickedItem = item;
+        this.lastPickupAtMs = System.currentTimeMillis();
+    }
+
+    /**
+     * Returns the last picked item if it is still within the toast window; otherwise empty.
+     */
+    public Optional<Item> getItemToDescribe() {
+        if (lastPickedItem == null) {
+            return Optional.empty();
+        }
+        long elapsed = System.currentTimeMillis() - lastPickupAtMs;
+        if (elapsed <= TOAST_DURATION_MS) {
+            return Optional.of(lastPickedItem);
+        }
+        return Optional.empty();
     }
 }

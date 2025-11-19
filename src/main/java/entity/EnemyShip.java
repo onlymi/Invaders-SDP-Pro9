@@ -40,24 +40,24 @@ public class EnemyShip extends Entity {
     /**
      * Cooldown between sprite changes.
      */
-    private Cooldown animationCooldown;
-    private Cooldown bossAnimationCooldown;
+    protected Cooldown animationCooldown;
+    protected Cooldown bossAnimationCooldown;
     /**
      * Checks if the ship has been hit by a bullet.
      */
-    private boolean isDestroyed;
+    protected boolean isDestroyed;
     /**
      * Values of the ship, in points, when destroyed.
      */
-    private int pointValue;
+    protected int pointValue;
     
-    private int coinValue;
+    protected int coinValue;
     
     /**
      * Current health of the enemy ship
      */
-    private int health;
-    private int initialHealth;
+    protected int health;
+    protected int initialHealth;
     
     /**
      * Constructor, establishes the ship's properties.
@@ -94,9 +94,9 @@ public class EnemyShip extends Entity {
                 this.coinValue = C_TYPE_COINS;
                 this.health = 1;
                 break;
-            case BossEnemy1:
-            case BossEnemy2:
-            case BossEnemy3:
+            case BossShip1:
+            case BossShip2:
+            case BossShip3:
                 this.pointValue = 1000;
                 this.coinValue = 1000;
                 this.health = 50;
@@ -158,7 +158,7 @@ public class EnemyShip extends Entity {
     /**
      * Updates attributes, mainly used for animation purposes.
      */
-    public final void update() {
+    public void update() {
         if (this.animationCooldown.checkFinished()) {
             this.animationCooldown.reset();
             
@@ -198,7 +198,7 @@ public class EnemyShip extends Entity {
      * Reduces enemy health by 1 and handles destruction or damage animation if health drops to 0
      */
     
-    public final void hit() {
+    public void hit() {
         this.health--;
         if (this.health <= 0) {
             this.isDestroyed = true;
@@ -223,13 +223,6 @@ public class EnemyShip extends Entity {
                 default:
                     break;
             }
-            Color color = this.getColor();
-            if (initialHealth != 0) {
-                int rawAlpha = (int) (70 + 150 * (float) health / initialHealth);
-                int alpha = Math.max(0, Math.min(255, rawAlpha));
-                color = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
-                changeColor(color);
-            }
         }
     }
     
@@ -251,11 +244,18 @@ public class EnemyShip extends Entity {
      *
      * @return True if the ship has been destroyed.
      */
-    public final boolean isDestroyed() {
+    public boolean isDestroyed() {
         return this.isDestroyed;
     }
     
     public int getCoinValue() {
         return this.coinValue;
+    }
+    
+    /**
+     * Returns the initial health of the enemy ship
+     */
+    public final int getInitialHealth() {
+        return this.initialHealth;
     }
 }

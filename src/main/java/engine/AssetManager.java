@@ -160,9 +160,9 @@ public final class AssetManager {
         /**
          * Boss ship.
          */
-        BossEnemy1(SourceCategory.BOSS, 21, 10),
-        BossEnemy2(SourceCategory.BOSS, 21, 10),
-        BossEnemy3(SourceCategory.BOSS, 21, 10),
+        BossShip1(SourceCategory.BOSS, 21, 10),
+        BossShip2(SourceCategory.BOSS, 21, 10),
+        BossShip3(SourceCategory.BOSS, 21, 10),
         /**
          * Destroyed enemy ship.
          */
@@ -177,7 +177,7 @@ public final class AssetManager {
         ItemScore(SourceCategory.ITEM, 5, 5),
         ItemCoin(SourceCategory.ITEM, 5, 5),
         ItemHeal(SourceCategory.ITEM, 5, 5),
-        ItemTripleShot(SourceCategory.ITEM, 5, 7),
+        ItemTripleShot(SourceCategory.ITEM, 5, 5),
         ItemScoreBooster(SourceCategory.ITEM, 5, 5),
         ItemBulletSpeedUp(SourceCategory.ITEM, 5, 5);
         

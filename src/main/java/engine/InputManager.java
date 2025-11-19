@@ -116,6 +116,17 @@ public final class InputManager implements KeyListener, MouseListener,
         return '\0';
     }
     
+    /**
+     * Returns the last character typed by the user and consumes it.
+     *
+     * @return The last typed character, or '\0' (null char) if none.
+     */
+    public static char getLastChar() {
+        char typedChar = lastCharTyped;
+        lastCharTyped = '\0';
+        return typedChar;
+    }
+    
     
     /**
      * Returns true if the provided key is currently pressed.
