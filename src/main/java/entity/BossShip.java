@@ -1,18 +1,31 @@
 package entity;
 
 import engine.AssetManager.SpriteType;
-import java.awt.Color;
+
+import java.awt.*;
 
 /**
  * Implements a boss ship, to be destroyed by the player. Extends EnemyShip with boss-specific
  * logic.
  */
 public class BossShip extends EnemyShip {
-    
+
     private static final int BOSS_INITIAL_HEALTH = 500;
     private static final int BOSS_POINTS = 5000;
     private static final int BOSS_COINS = 5000;
-    
+
+    /**
+     * Boss-specific movement properties
+     */
+    private static final int BOSS_BASE_SPEED_X = 2;
+    private static final int BOSS_BASE_SPEED_Y = 1;
+
+    private int currentSpeedX;
+    private int currentSpeedY;
+
+    private boolean movingRight;
+    private boolean movingDown;
+
     /**
      * Constructor, establishes the boss ship's properties. Initializes with SpriteType.BossEnemy1.
      *
@@ -21,21 +34,27 @@ public class BossShip extends EnemyShip {
      */
     public BossShip(final int positionX, final int positionY) {
         super(positionX, positionY, SpriteType.BossShip1);
-        
+
         // Set dimensions to match BossEnemy sprite (21x10, scaled by 2 = 42x20)
         this.width = 21 * 2;
         this.height = 10 * 2;
-        
+
         // Apply boss-specific, high stats.
         this.health = BOSS_INITIAL_HEALTH;
         this.initialHealth = BOSS_INITIAL_HEALTH;
         this.pointValue = BOSS_POINTS;
         this.coinValue = BOSS_COINS;
-        
+
         // Set a prominent default color.
         this.changeColor(Color.CYAN);
+
+        //Initialize movement state
+        this.currentSpeedX = BOSS_BASE_SPEED_X;
+        this.currentSpeedY = BOSS_BASE_SPEED_Y;
+        this.movingRight = true;
+        this.movingDown = true;
     }
-    
+
     /**
      * Updates attributes for boss movement and phases. Custom boss logic goes here.
      */
@@ -44,7 +63,7 @@ public class BossShip extends EnemyShip {
         // Inherited from EnemyShip, checks if 500ms animation interval is finished.
         if (this.bossAnimationCooldown.checkFinished()) {
             this.bossAnimationCooldown.reset();
-            
+
             // Cycles through BossShip1, BossShip2, BossShip3 for animation
             switch (this.spriteType) {
                 case BossShip1:
@@ -63,7 +82,22 @@ public class BossShip extends EnemyShip {
             }
         }
     }
-    
+
+    /**
+     * Moves the boss based on its internal speed and direction.
+     */
+    @Override
+    public final void move(final int distanceX, final int distanceY) {
+        // The distanceX/Y arguments from EnemyShipFormation are ignored.
+        // Boss moves based on its internal state.
+
+        int movementX = this.movingRight ? this.currentSpeedX : -this.currentSpeedX;
+        int movementY = this.movingDown ? this.currentSpeedY : -this.currentSpeedY;
+
+        this.positionX += movementX;
+        this.positionY += movementY;
+    }
+
     /**
      * Returns the current health of the boss ship.
      */
@@ -71,7 +105,7 @@ public class BossShip extends EnemyShip {
     public final int getHealth() {
         return this.health;
     }
-    
+
     /**
      * Reduces boss health by 1 and handles destruction or damage animation based on remaining HP.
      */
@@ -87,6 +121,6 @@ public class BossShip extends EnemyShip {
             changeColor(color);
         }
         // Note: No sprite flipping or animation logic is applied for the boss in hit().
-        
+
     }
 }
