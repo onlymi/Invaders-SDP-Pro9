@@ -17,20 +17,14 @@ import java.util.Set;
  */
 public class Ship extends Entity {
     
-    /**
-     * Bullet Variables
-     **/
-    //default bullet variables
+    // Default Bullet Variables
     private static final int BASE_BULLET_SPEED = -6;
     private static final int BASE_SHOOTING_INTERVAL = 750;
     private static final int BASE_BULLET_WIDTH = 6;  // 3 * 2
     private static final int BASE_BULLET_HEIGHT = 10;
     // special bullet variables
     private static final int DOUBLE_SHOT_OFFSET = 6;
-    
-    /**
-     * Ship Variables
-     **/
+    // Ship Variables
     private static final int BASE_SPEED = 2;
     private static final int SHIP_WIDTH = 26;  // 13 * 2
     private static final int SHIP_HEIGHT = 16;
@@ -46,9 +40,7 @@ public class Ship extends Entity {
         MOVE_FAST       // Moving speed is fast, but fire rate is slow.
     }
     
-    /**
-     * Game state and Ship type
-     **/
+    // Game state and Ship type
     private GameState gameState;
     private ShipType type;
     
@@ -59,16 +51,14 @@ public class Ship extends Entity {
     private int bulletWidth = BASE_BULLET_WIDTH;
     private int bulletHeight = BASE_BULLET_HEIGHT;
     
-    /**
-     * Cooldowns
-     */
+    // Cooldowns
     private Cooldown shootingCooldown;
     private Cooldown destructionCooldown;
     
     // Identify player in index: 0 = P1, 1 = P2
     private int playerIndex = 0;
     
-    private int Y;
+    private int y;
     private int hits;
     
     /**
@@ -94,11 +84,11 @@ public class Ship extends Entity {
         this.destructionCooldown = Core.getCooldown(DESTRUCTION_COOLDOWN);
         
         // apply entity
-        Team playerID = (team != null) ? team : Team.PLAYER1;
-        this.setTeam(playerID);
-        this.playerIndex = (playerID == Team.PLAYER1) ? 0 : (playerID == Team.PLAYER2) ? 1 : 0;
+        Team playerId = (team != null) ? team : Team.PLAYER1;
+        this.setTeam(playerId);
+        this.playerIndex = (playerId == Team.PLAYER1) ? 0 : (playerId == Team.PLAYER2) ? 1 : 0;
         
-        this.Y = positionY;
+        this.y = positionY;
         this.hits = 0;
     }
     
@@ -290,7 +280,11 @@ public class Ship extends Entity {
     }
     
     /**
-     * TRIPLESHOT effect
+     * TRIPLE SHOT effect
+     *
+     * @param bullets Bullet sets
+     * @param centerX center x position
+     * @param bulletY Bullet y position
      */
     private void shootTripleShot(final Set<Bullet> bullets, final int centerX, final int bulletY) {
         Core.getLogger().info("[Ship] Item effect: TRIPLESHOT");

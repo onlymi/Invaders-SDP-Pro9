@@ -80,8 +80,8 @@ public class HighScoreScreenRenderer {
     }
     
     public void drawNewHighScoreNotice(final Screen screen) {
-//        String message = "NEW HIGH SCORE!";
-//        backBufferGraphics.setColor(Color.YELLOW);
-//        drawCenteredBigString(screen, message, screen.getHeight() / 4);
+        String message = "NEW HIGH SCORE!";
+        // backBufferGraphics.setColor(Color.YELLOW);
+        // drawCenteredBigString(screen, message, screen.getHeight() / 4);
     }
 }
