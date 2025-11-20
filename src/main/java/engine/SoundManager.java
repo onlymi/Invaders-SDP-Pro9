@@ -83,7 +83,7 @@ public final class SoundManager {
     /**
      * Plays a .wav in a loop until {@link #loopStop()} is called.
      */
-    public void playLoop(String soundName) {
+    public static void playLoop(String soundName) {
         // 모든 기존 루프 사운드 중지
         stopAllMusic();
         try {
@@ -108,7 +108,7 @@ public final class SoundManager {
     /**
      * Stops and releases the current looped clip, if any.
      */
-    public void loopStop() {
+    public static void loopStop() {
         if (currentLoopClip != null) {
             try {
                 currentLoopClip.stop();

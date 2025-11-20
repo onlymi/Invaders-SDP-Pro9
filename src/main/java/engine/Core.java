@@ -33,9 +33,9 @@ import screen.TitleScreen;
  *
  */
 public final class Core {
-    
-    private static final int WIDTH = 1200;
-    private static final int HEIGHT = 800;
+
+    public static final int WIDTH = 1200;
+    public static final int HEIGHT = 800;
     private static final int FPS = 60;
     
     /**
@@ -520,7 +520,7 @@ public final class Core {
             + " sign up screen at " + FPS + " fps.");
         return frame.setScreen(currentScreen);
     }
-    
+
     /**
      * Activate log in screen system.
      *

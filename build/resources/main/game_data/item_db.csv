@@ -1,7 +1,0 @@
-type,spriteType,dropTier,effectValue,effectDuration,cost,id,displayName,description
-SCORE,ItemScore,COMMON,10,0,0,score1,Score,Grants 10 bonus points.
-COIN,ItemCoin,UNCOMMON,20,0,0,coin1,Coin,Grants 20 coins when collected.
-HEAL,ItemHeal,RARE,1,0,0,heal1,Heal,Restores 1 HP instantly.
-TRIPLESHOT, ItemTripleShot, RARE, 30, 3, 100,triple1,Triple Shot,Fires three bullets at once for 3s.
-SCOREBOOST, ItemScoreBooster, UNCOMMON, 2, 5, 0,scoreboost1,Score Booster,Multiplies score gain by 2x for 5s.
-BULLETSPEEDUP, ItemBulletSpeedUp, RARE, 2, 3, 75,bulletspeed1,Bullet Speed Up,Increases bullet speed for 3s.
