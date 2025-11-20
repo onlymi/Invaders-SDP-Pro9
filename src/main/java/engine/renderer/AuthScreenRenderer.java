@@ -115,7 +115,7 @@ public class AuthScreenRenderer {
         graphics.setFont(commonRenderer.getFontRegular());
         fontMetrics = graphics.getFontMetrics(commonRenderer.getFontRegular());
         
-        String[] items = {"Log In", "Sign Up"}; // 2개 버튼
+        String[] items = {"Log In", "Sign Up", "Exit"}; // 2개 버튼
         
         int baseY = screen.getHeight() / 3 * 2;
         int spacing = (int) (fontMetrics.getHeight() * 1.5);

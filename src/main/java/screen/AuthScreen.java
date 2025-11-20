@@ -100,6 +100,10 @@ public class AuthScreen extends Screen {
                         this.returnCode = 10;
                         this.isRunning = false;
                         break;
+                    case 2: // Exit
+                        this.returnCode = 0;
+                        this.isRunning = false;
+                        break;
                     default:
                         break;
                 }
@@ -111,7 +115,7 @@ public class AuthScreen extends Screen {
      * Shifts the focus to the next menu item.
      */
     private void moveToNextMenuItem() {
-        this.menuIndex = (this.menuIndex + 1) % 2; // 2개의 메뉴만 순환
+        this.menuIndex = (this.menuIndex + 1) % 3; // 3개의 메뉴만 순환
         drawManager.getAuthScreenRenderer().menuHover(this.menuSpace, this.menuIndex);
     }
     
@@ -119,7 +123,7 @@ public class AuthScreen extends Screen {
      * Shifts the focus to the previous menu item.
      */
     private void moveToPreviousMenuItem() {
-        this.menuIndex = (this.menuIndex + 1) % 2; // (0 + 1) % 2 = 1, (1 + 1) % 2 = 0
+        this.menuIndex = (this.menuIndex + 2) % 3;
         drawManager.getAuthScreenRenderer().menuHover(this.menuSpace, this.menuIndex);
     }
     
