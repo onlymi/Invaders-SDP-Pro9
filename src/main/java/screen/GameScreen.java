@@ -6,6 +6,7 @@ import engine.GameSettings;
 import engine.GameState;
 import engine.SoundManager;
 import engine.gameplay.achievement.AchievementManager;
+import engine.gameplay.item.ActivationType;
 import engine.gameplay.item.ItemManager;
 import engine.utils.Cooldown;
 import entity.Bullet;
@@ -618,8 +619,46 @@ public class GameScreen extends Screen {
 
                     ItemManager.getInstance().onPickup(item);
 
-                    boolean applied = item.applyEffect(getGameState(), ship.getPlayerId());
+                    // Convert 1-based playerId (Ship) → 0-based index (GameState).
+                    int playerIndex = ship.getPlayerId() - 1;
+                    if (playerIndex < 0 || playerIndex >= GameState.NUM_PLAYERS) {
+                        playerIndex = 0; // fallback
+                    }
 
+                    ActivationType activationType = item.getActivationType();
+                    boolean autoUseOnPickup = item.isAutoUseOnPickup();
+
+                    switch (activationType) {
+                        case INSTANT_ON_PICKUP:
+                        case TEMPORARY_BUFF:
+                            // Legacy behavior: apply the effect immediately on pickup.
+                            if (autoUseOnPickup) {
+                                boolean applied =
+                                    item.applyEffect(getGameState(), ship.getPlayerId());
+
+                                // If applied is false (e.g. not enough coins),
+                                // the item is still considered collected and removed.
+                            } else {
+                                // Store the item for a later instant use.
+                                getGameState().addActiveItem(playerIndex, item.getData());
+                            }
+                            break;
+
+                        case ACTIVE_ON_KEY:
+                            // Store as an active (key-activated) item.
+                            getGameState().addActiveItem(playerIndex, item.getData());
+                            break;
+
+                        case PASSIVE:
+                            // Register as a passive item on the player.
+                            getGameState().addPassiveItem(playerIndex, item.getData());
+                            break;
+
+                        default:
+                            // Fallback to legacy behavior if activation type is unknown.
+                            item.applyEffect(getGameState(), ship.getPlayerId());
+                            break;
+                    }
                 }
             }
         }

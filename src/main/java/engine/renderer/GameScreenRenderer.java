@@ -335,7 +335,7 @@ public class GameScreenRenderer {
 
         itemManager.getItemToDescribe().ifPresent(item -> {
             String name = item.getDisplayName();
-            String baseDesc = item.getDescription();
+            String baseDesc = item.getData().getDescription();
 
             ItemData data = item.getData();
             int cost = 0;

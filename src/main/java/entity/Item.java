@@ -3,6 +3,7 @@ package entity;
 import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.GameState;
+import engine.gameplay.item.ActivationType;
 import engine.gameplay.item.ItemDB;
 import engine.gameplay.item.ItemData;
 import engine.gameplay.item.ItemEffect;
@@ -250,8 +251,51 @@ public class Item extends Entity {
         return (this.data != null) ? this.data.getDisplayName() : this.type;
     }
 
-    public String getDescription() {
-        return (this.data != null) ? this.data.getDescription() : "";
+    /**
+     * Returns how this item is activated (instant on pickup, active on key, etc.). Falls back to
+     * INSTANT_ON_PICKUP if data is missing.
+     */
+    public ActivationType getActivationType() {
+        ensureDataLoaded();
+        if (this.data != null) {
+            return this.data.getActivationType();
+        }
+        return ActivationType.INSTANT_ON_PICKUP;
+    }
+
+    /**
+     * Whether this item should automatically be used when picked up. Uses ItemData.autoUseOnPickup
+     * when available; otherwise defaults to true to preserve legacy behavior.
+     */
+    public boolean isAutoUseOnPickup() {
+        ensureDataLoaded();
+        if (this.data != null) {
+            return this.data.isAutoUseOnPickup();
+        }
+        // 옛날 아이템처럼: 주우면 바로 쓰는게 기본
+        return true;
+    }
+
+    /**
+     * Maximum number of uses for ACTIVE_ON_KEY items. Returns 0 if not defined.
+     */
+    public int getMaxCharges() {
+        ensureDataLoaded();
+        if (this.data != null) {
+            return this.data.getMaxCharges();
+        }
+        return 0;
+    }
+
+    /**
+     * Cooldown time in seconds between uses for ACTIVE_ON_KEY items. Returns 0 if not defined.
+     */
+    public int getCooldownSec() {
+        ensureDataLoaded();
+        if (this.data != null) {
+            return this.data.getCooldownSec();
+        }
+        return 0;
     }
 
     /**
