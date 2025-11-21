@@ -1,11 +1,11 @@
 package screen;
 
+import animations.MenuSpace;
 import engine.Core;
 import engine.SoundManager;
 import engine.utils.Cooldown;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
-import animations.MenuSpace;
 
 /**
  * Implements the title screen.
@@ -101,7 +101,6 @@ public class TitleScreen extends Screen {
                         this.returnCode = 5; // go to PlayScreen
                         this.isRunning = false;
                         break;
-                    
                     case 1: // "Achievements"
                         this.returnCode = 3;
                         this.isRunning = false;
@@ -114,8 +113,11 @@ public class TitleScreen extends Screen {
                         this.returnCode = 4;
                         this.isRunning = false;
                         break;
-                    
-                    case 4: // "Quit"
+                    case 4: // "Logout"
+                        this.returnCode = 9;
+                        this.isRunning = false;
+                        break;
+                    case 5: // "Exit"
                         this.returnCode = 0;
                         this.isRunning = false;
                         break;
@@ -147,7 +149,7 @@ public class TitleScreen extends Screen {
      * Shifts the focus to the next menu item. - modified for 2P mode selection
      */
     private void nextMenuItem() {
-        this.menuIndex = (this.menuIndex + 1) % 5;
+        this.menuIndex = (this.menuIndex + 1) % 6;
         drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, this.menuIndex);
     }
     
@@ -155,16 +157,14 @@ public class TitleScreen extends Screen {
      * Shifts the focus to the previous menu item.
      */
     private void previousMenuItem() {
-        this.menuIndex = (this.menuIndex + 4)
-            % 5; // Fix : an issue where only the down arrow keys on the keyboard are entered and not up
+        this.menuIndex = (this.menuIndex + 5)
+            % 6; // Fix : an issue where only the down arrow keys on the keyboard are entered and not up
         drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, this.menuIndex);
     }
-    /**
-     * Draws the elements associated with the screen.
-     */
     
     /**
-     * Check hover based on mouse position and menu hitbox.
+     * Draws the elements associated with the screen. Check hover based on mouse position and menu
+     * hitbox.
      */
     private void draw() {
         drawManager.initDrawing(this);
@@ -215,7 +215,7 @@ public class TitleScreen extends Screen {
             
         }
         
-        //pass hoverOption for menu highlights respond to mouse hover
+        // pass hoverOption for menu highlights respond to mouse hover
         drawManager.getTitleScreenRenderer().drawTitle(drawManager.getBackBufferGraphics(), this);
         drawManager.getTitleScreenRenderer()
             .drawMenu(drawManager.getBackBufferGraphics(), this, this.menuIndex, hoverOption,
