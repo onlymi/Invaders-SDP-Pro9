@@ -24,7 +24,7 @@ public class AchievementScreenRenderer {
     public void drawAchievementMenu(Graphics g, final Screen screen, Achievement achievement,
         List<String> completer) {
         String achievementsTitle = "Achievements";
-        String instructionsString = "Press ESC to return";
+        String instructionString = "Press ESC to return";
         String playerModeString = "              1P                                      2P              ";
         String prevNextString = "PREV                                                              NEXT";
         String achievementName = achievement.getName();
@@ -43,7 +43,7 @@ public class AchievementScreenRenderer {
         commonRenderer.drawCenteredRegularString(g, screen, playerModeString,
             screen.getHeight() / 4);
         g.setColor(Color.GRAY);
-        commonRenderer.drawCenteredRegularString(g, screen, instructionsString,
+        commonRenderer.drawCenteredRegularString(g, screen, instructionString,
             (int) (screen.getHeight() * 0.9));
         
         // Starting Y position for player names

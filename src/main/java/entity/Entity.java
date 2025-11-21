@@ -51,6 +51,22 @@ public class Entity {
      * @param positionY Initial position of the entity in the Y axis.
      * @param width     Width of the entity.
      * @param height    Height of the entity.
+     */
+    public Entity(final int positionX, final int positionY, final int width,
+        final int height) {
+        this.positionX = positionX;
+        this.positionY = positionY;
+        this.width = width;
+        this.height = height;
+    }
+    
+    /**
+     * Constructor, establishes the entity's generic properties.
+     *
+     * @param positionX Initial position of the entity in the X axis.
+     * @param positionY Initial position of the entity in the Y axis.
+     * @param width     Width of the entity.
+     * @param height    Height of the entity.
      * @param color     Color of the entity.
      */
     public Entity(final int positionX, final int positionY, final int width,

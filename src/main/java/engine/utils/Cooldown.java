@@ -56,11 +56,8 @@ public class Cooldown {
      * @return Cooldown state.
      */
     public final boolean checkFinished() {
-        if ((this.time == 0)
-            || this.time + this.duration < System.currentTimeMillis()) {
-            return true;
-        }
-        return false;
+        return (this.time == 0)
+            || this.time + this.duration < System.currentTimeMillis();
     }
     
     /**

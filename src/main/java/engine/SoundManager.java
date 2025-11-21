@@ -113,7 +113,7 @@ public final class SoundManager {
             try {
                 currentLoopClip.stop();
                 currentLoopClip.setFramePosition(0);
-//                currentLoopClip.close();
+                // currentLoopClip.close();
             } catch (Exception e) {
                 LOGGER.fine("Error stopping looped sound: " + e.getMessage());
             } finally {
