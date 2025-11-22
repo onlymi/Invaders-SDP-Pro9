@@ -7,6 +7,7 @@ import engine.gameplay.item.ActivationType;
 import engine.gameplay.item.ItemDB;
 import engine.gameplay.item.ItemData;
 import engine.gameplay.item.ItemEffect;
+import engine.gameplay.item.ItemManager;
 import java.awt.Color;
 import java.util.logging.Logger;
 
@@ -63,6 +64,15 @@ public class Item extends Entity {
         this.data = data;
         this.type = (data != null) ? data.getType() : null;
         this.itemSpeed = speed;
+        if (data != null && data.getDropTier() != null) {
+            try {
+                ItemManager.DropTier tier =
+                    ItemManager.DropTier.valueOf(data.getDropTier().trim().toUpperCase());
+                this.changeColor(tier.color);
+            } catch (IllegalArgumentException e) {
+                logger.warning("[Item] Unknown dropTier: " + data.getDropTier());
+            }
+        }
         setSprite();
     }
 
@@ -126,6 +136,7 @@ public class Item extends Entity {
             case "TRIPLESHOT" -> SpriteType.ItemTripleShot;
             case "SCOREBOOST" -> SpriteType.ItemScoreBooster;
             case "BULLETSPEEDUP" -> SpriteType.ItemBulletSpeedUp;
+            case "MOVE_SPEED_UP" -> SpriteType.ItemMoveSpeedUp;
             default -> {
                 logger.warning("[Item]: No sprite mapping for type "
                     + type + ", using default ItemScore sprite.");
@@ -274,6 +285,10 @@ public class Item extends Entity {
         }
         // 옛날 아이템처럼: 주우면 바로 쓰는게 기본
         return true;
+    }
+
+    public boolean isActiveType() {
+        return this.data.getActivationType() == ActivationType.ACTIVE_ON_KEY;
     }
 
     /**
