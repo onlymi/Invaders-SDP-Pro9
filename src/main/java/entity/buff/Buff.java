@@ -1,6 +1,6 @@
 package entity.buff;
 
-import entity.character.GameCharacter;
+import entity.character.CharacterStats;
 
 public abstract class Buff {
     
@@ -14,17 +14,14 @@ public abstract class Buff {
         this.active = true;
     }
     
-    public abstract void apply(GameCharacter gameCharacter);
-    
-    public abstract void remove(GameCharacter gameCharacter);
+    public abstract void applyToStats(CharacterStats characterStats);
     
     /**
      * Check the time for each frame.
      *
-     * @param deltaTime     The time it took from the last frame to the present
-     * @param gameCharacter Buffed character
+     * @param deltaTime The time it took from the last frame to the present
      */
-    public void update(float deltaTime, GameCharacter gameCharacter) {
+    public void update(float deltaTime) {
         if (!this.active) {
             return;
         }

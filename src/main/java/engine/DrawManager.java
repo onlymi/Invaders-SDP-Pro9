@@ -10,9 +10,9 @@ import engine.renderer.GameScreenRenderer;
 import engine.renderer.HighScoreScreenRenderer;
 import engine.renderer.LogInScreenRenderer;
 import engine.renderer.PlayModeSelectionScreenRenderer;
+import engine.renderer.PlayerSelectionMenuRenderer;
 import engine.renderer.ScoreScreenRenderer;
 import engine.renderer.SettingScreenRenderer;
-import engine.renderer.ShipSelectionMenuRenderer;
 import engine.renderer.SignUpScreenRenderer;
 import engine.renderer.TitleScreenRenderer;
 import java.awt.Color;
@@ -88,7 +88,7 @@ public final class DrawManager {
     private HighScoreScreenRenderer highScoreScreenRenderer;
     private SettingScreenRenderer settingScreenRenderer;
     private PlayModeSelectionScreenRenderer playModeSelectionScreenRenderer;
-    private ShipSelectionMenuRenderer shipSelectionMenuRenderer;
+    private PlayerSelectionMenuRenderer playerSelectionMenuRenderer;
     private GameScreenRenderer gameScreenRenderer;
     private ScoreScreenRenderer scoreScreenRenderer;
     private AuthScreenRenderer authScreenRenderer;
@@ -119,7 +119,7 @@ public final class DrawManager {
         this.settingScreenRenderer = new SettingScreenRenderer(this.commonRenderer);
         this.playModeSelectionScreenRenderer = new PlayModeSelectionScreenRenderer(
             this.commonRenderer);
-        this.shipSelectionMenuRenderer = new ShipSelectionMenuRenderer(this.commonRenderer);
+        this.playerSelectionMenuRenderer = new PlayerSelectionMenuRenderer(this.commonRenderer);
         this.gameScreenRenderer = new GameScreenRenderer(this.commonRenderer,
             ItemManager.getInstance());
         this.scoreScreenRenderer = new ScoreScreenRenderer(this.commonRenderer);
@@ -182,8 +182,8 @@ public final class DrawManager {
         return this.playModeSelectionScreenRenderer;
     }
     
-    public ShipSelectionMenuRenderer getShipSelectionMenuRenderer() {
-        return this.shipSelectionMenuRenderer;
+    public PlayerSelectionMenuRenderer getShipSelectionMenuRenderer() {
+        return this.playerSelectionMenuRenderer;
     }
     
     public GameScreenRenderer getGameScreenRenderer() {

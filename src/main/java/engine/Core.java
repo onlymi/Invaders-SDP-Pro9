@@ -4,7 +4,7 @@ import engine.gameplay.achievement.AchievementManager;
 import engine.hitbox.HitboxManager;
 import engine.utils.Cooldown;
 import engine.utils.MinimalFormatter;
-import entity.Ship;
+import entity.character.CharacterType;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
@@ -18,10 +18,10 @@ import screen.GameScreen;
 import screen.HighScoreScreen;
 import screen.LogInScreen;
 import screen.PlayModeSelectionScreen;
+import screen.PlayerSelectionScreen;
 import screen.ScoreScreen;
 import screen.Screen;
 import screen.SettingScreen;
-import screen.ShipSelectionScreen;
 import screen.SignUpScreen;
 import screen.TitleScreen;
 
@@ -89,8 +89,8 @@ public final class Core {
         
         int returnCode = 9;
         
-        Ship.ShipType shipTypeP1 = Ship.ShipType.NORMAL; // Player 1 Ship Type
-        Ship.ShipType shipTypeP2 = Ship.ShipType.NORMAL; // Player 2 Ship Type
+        CharacterType characterTypeP1 = CharacterType.ARCHER; // Player 1 Ship Type
+        CharacterType characterTypeP2 = CharacterType.ARCHER; // Player 2 Ship Type
         SystemData systemData;
         do {
             // Game Start
@@ -103,11 +103,11 @@ public final class Core {
                     break;
                 case 2:
                     // In game screen
-                    systemData = gamePlaySystem(width, height, coopSelected, shipTypeP1,
-                        shipTypeP2);
+                    systemData = gamePlaySystem(width, height, coopSelected, characterTypeP1,
+                        characterTypeP2);
                     coopSelected = systemData.coopSelected;
-                    shipTypeP1 = systemData.shipTypeP1;
-                    shipTypeP2 = systemData.shipTypeP2;
+                    characterTypeP1 = systemData.characterTypeP1;
+                    characterTypeP2 = systemData.characterTypeP2;
                     returnCode = systemData.returnCode;
                     LOGGER.info("Closing game screen.");
                     break;
@@ -131,14 +131,14 @@ public final class Core {
                 case 6:
                     // Ship selection for Player 1
                     systemData = shipSelectionSystem(width, height, 1, coopSelected);
-                    shipTypeP1 = systemData.shipTypeP1;
+                    characterTypeP1 = systemData.characterTypeP1;
                     returnCode = systemData.returnCode;
                     LOGGER.info("Closing first player ship selection screen.");
                     break;
                 case 7:
                     // Ship selection for Player 2
                     systemData = shipSelectionSystem(width, height, 2, coopSelected);
-                    shipTypeP2 = systemData.shipTypeP2;
+                    characterTypeP2 = systemData.characterTypeP2;
                     returnCode = systemData.returnCode;
                     LOGGER.info("Closing second player ship selection screen.");
                     break;
@@ -177,7 +177,7 @@ public final class Core {
      * Constructor, not called.
      */
     private Core() {
-    
+        
     }
     
     /**
@@ -288,15 +288,16 @@ public final class Core {
         
         int returnCode;
         boolean coopSelected;
-        Ship.ShipType shipTypeP1;
-        Ship.ShipType shipTypeP2;
+        CharacterType characterTypeP1;
+        CharacterType characterTypeP2;
         
-        public SystemData(int returnCode, boolean coopSelected, Ship.ShipType shipTypeP1,
-            Ship.ShipType shipTypeP2) {
+        public SystemData(int returnCode, boolean coopSelected,
+            CharacterType characterTypeP1,
+            CharacterType characterTypeP2) {
             this.returnCode = returnCode;
             this.coopSelected = coopSelected;
-            this.shipTypeP1 = shipTypeP1;
-            this.shipTypeP2 = shipTypeP2;
+            this.characterTypeP1 = characterTypeP1;
+            this.characterTypeP2 = characterTypeP2;
         }
     }
     
@@ -339,16 +340,16 @@ public final class Core {
     /**
      * Activate ship selection screen system.
      *
-     * @param width        Ship selection screen contents box width
-     * @param height       Ship selection screen contents box height
-     * @param coopSelected 2 player mode or not
-     * @param shipTypeP1   Ship type of player 1
-     * @param shipTypeP2   Ship type of player 2
+     * @param width           Ship selection screen contents box width
+     * @param height          Ship selection screen contents box height
+     * @param coopSelected    2 player mode or not
+     * @param characterTypeP1 Ship type of player 1
+     * @param characterTypeP2 Ship type of player 2
      * @return Next return code and initial coop and ship type
      */
     public static SystemData gamePlaySystem(int width, int height, boolean coopSelected,
-        Ship.ShipType shipTypeP1, Ship.ShipType shipTypeP2) throws IOException {
-        SystemData systemData = new SystemData(0, coopSelected, shipTypeP1, shipTypeP2);
+        CharacterType characterTypeP1, CharacterType characterTypeP2) throws IOException {
+        SystemData systemData = new SystemData(0, coopSelected, characterTypeP1, characterTypeP2);
         GameState gameState = new GameState(1, MAX_LIVES, coopSelected, 0);
         AchievementManager achievementManager = new AchievementManager(); // 1p, 2p achievement manager
         
@@ -359,7 +360,7 @@ public final class Core {
             
             currentScreen = new GameScreen(gameState, gameSettings.get(gameState.getLevel() - 1),
                 bonusLife, width, height, FPS,
-                shipTypeP1, shipTypeP2, achievementManager);
+                characterTypeP1, characterTypeP2, achievementManager);
             
             LOGGER.info("Starting " + WIDTH + "x" + HEIGHT + " game screen at " + FPS + " fps.");
             systemData.returnCode = frame.setScreen(currentScreen);
@@ -377,8 +378,8 @@ public final class Core {
         } while (gameState.teamAlive() && gameState.getLevel() <= gameSettings.size());
         
         if (systemData.returnCode == 1) {
-            systemData.shipTypeP1 = Ship.ShipType.NORMAL;
-            systemData.shipTypeP2 = Ship.ShipType.NORMAL;
+            systemData.characterTypeP1 = CharacterType.ARCHER;
+            systemData.characterTypeP2 = CharacterType.ARCHER;
             systemData.coopSelected = false;
             return systemData;
         }
@@ -447,7 +448,7 @@ public final class Core {
         boolean coopSelected) {
         SystemData systemData = new SystemData(0, coopSelected, null, null);
         
-        currentScreen = new ShipSelectionScreen(width, height, FPS, player_num);
+        currentScreen = new PlayerSelectionScreen(width, height, FPS, player_num);
         systemData.returnCode = frame.setScreen(currentScreen);
         // Ship selection for Player 1.
         if (player_num == 1) {
@@ -456,7 +457,7 @@ public final class Core {
                 return systemData;
             }
             
-            systemData.shipTypeP1 = ((ShipSelectionScreen) currentScreen).getSelectedShipType();
+            systemData.characterTypeP1 = ((PlayerSelectionScreen) currentScreen).getSelectedPlayerType();
             if (coopSelected) {
                 systemData.returnCode = 7; // Go to Player 2 selection.
             } else {
@@ -471,7 +472,7 @@ public final class Core {
                 return systemData;
             }
             
-            systemData.shipTypeP2 = ((ShipSelectionScreen) currentScreen).getSelectedShipType();
+            systemData.characterTypeP2 = ((PlayerSelectionScreen) currentScreen).getSelectedShipType();
             systemData.returnCode = 2; // Start game.
         }
         
