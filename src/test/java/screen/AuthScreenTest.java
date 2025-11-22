@@ -96,14 +96,20 @@ class AuthScreenTest {
         // menuIndex가 0에서 1 (Sign Up)로 변경되어야 함
         assertEquals(1, authScreen.getMenuIndex());
         
-        // 3. 테스트: 메뉴 이동 (아래 - 순환)
+        // 3. 테스트: 메뉴 이동
         // 키를 뗐다가 다시 누름
         when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(false);
         authScreen.update(); // 키 떼기
         when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(true);
         authScreen.update(); // 다시 누름
+        // menuIndex가 1에서 2 (Exit)
+        assertEquals(2, authScreen.getMenuIndex());
         
-        // menuIndex가 1에서 0 (Log In)으로 순환해야 함
+        when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(false);
+        authScreen.update(); // 키 떼기
+        when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(true);
+        authScreen.update(); // 다시 누름
+        // menuIndex가 2에서 0 (Log In)
         assertEquals(0, authScreen.getMenuIndex());
         
         // 4. 테스트: 메뉴 이동 (위)
@@ -111,8 +117,8 @@ class AuthScreenTest {
         when(inputManager.isKeyDown(KeyEvent.VK_UP)).thenReturn(true);
         authScreen.update();
         
-        // menuIndex가 0에서 1 (Sign Up)로 변경되어야 함 (2개일 땐 위/아래 동일)
-        assertEquals(1, authScreen.getMenuIndex());
+        // menuIndex가 0에서 2 (Exit)
+        assertEquals(2, authScreen.getMenuIndex());
     }
     
     @Test
@@ -143,6 +149,29 @@ class AuthScreenTest {
         
         // returnCode가 10이 되고, 화면이 종료(isRunning=false)되어야 함
         assertEquals(10, authScreen.getReturnCode());
+        assertFalse(authScreen.getIsRunning());
+    }
+    
+    @Test
+    void testSelectExit() {
+        // 7. 테스트: 'Exit' 선택
+        // 7.1. Exit 메뉴(인덱스 2)로 이동
+        when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(true);
+        authScreen.update(); // 0 -> 1
+        when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(false);
+        authScreen.update();
+        when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(true);
+        authScreen.update(); // 1 -> 2
+        
+        assertEquals(2, authScreen.getMenuIndex());
+        
+        // 7.2. 스페이스바 누름 (선택)
+        when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(false);
+        when(inputManager.isKeyDown(KeyEvent.VK_SPACE)).thenReturn(true);
+        authScreen.update();
+        
+        // 7.3. 검증: returnCode는 0(종료)이어야 함
+        assertEquals(0, authScreen.getReturnCode());
         assertFalse(authScreen.getIsRunning());
     }
 }

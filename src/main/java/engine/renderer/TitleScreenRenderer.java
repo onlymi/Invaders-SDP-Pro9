@@ -91,7 +91,7 @@ public class TitleScreenRenderer {
         g.setFont(commonRenderer.getFontRegular());
         fontMetrics = g.getFontMetrics(commonRenderer.getFontRegular());
         
-        String[] items = {"Play", "Achievements", "High scores", "Settings", "Exit"};
+        String[] items = {"Play", "Achievements", "High scores", "Settings", "Logout", "Exit"};
         
         int baseY =
             screen.getHeight() / 3 * 2 - 20; // Adjust spacing due to high society button addition
