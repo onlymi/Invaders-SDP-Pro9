@@ -26,6 +26,8 @@ public class BossShip extends EnemyShip {
     private static final int SPREAD_CHARGE_TIME = 500;
     private static final int SPREAD_BULLETS = 16;
     private static final int SPREAD_SPEED = 4;
+    private static final int BOSS_BULLET_WIDTH = 20;
+    private static final int BOSS_BULLET_HEIGHT = 20;
 
     /**
      * Boss-specific movement properties
@@ -111,8 +113,8 @@ public class BossShip extends EnemyShip {
 
 
                 // Placeholder: Firing a generic bullet as a missile for now
-                Bullet missile = BulletPool.getBullet(spawnX, spawnY, MISSILE_SPEED, 6, 10,
-                    Entity.Team.ENEMY);
+                Bullet missile = BulletPool.getBullet(spawnX, spawnY,
+                    MISSILE_SPEED, BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
                 // **Needs dedicated HomingBullet type for actual tracking logic**
                 bullets.add(missile);
 
@@ -127,7 +129,8 @@ public class BossShip extends EnemyShip {
             if (this.laserChargeCooldown.checkFinished()) {
                 // Laser Fire Logic
                 // **Placeholder: Firing a wide, fast bullet as a Laser**
-                Bullet laser = BulletPool.getBullet(spawnX, spawnY, 12, 40, 15, Entity.Team.ENEMY);
+                Bullet laser = BulletPool.getBullet(spawnX, spawnY,
+                    12, BOSS_BULLET_WIDTH * 2, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
                 bullets.add(laser);
 
                 // Switch back to Homing Missile phase and reset colors
@@ -149,7 +152,7 @@ public class BossShip extends EnemyShip {
                         spawnX + speedX * 3,
                         spawnY,
                         Math.max(1, SPREAD_SPEED),
-                        6, 10, Entity.Team.ENEMY);
+                        BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
                     bullets.add(spreadBullet);
                 }
 
