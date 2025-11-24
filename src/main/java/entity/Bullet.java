@@ -15,7 +15,10 @@ public class Bullet extends Entity {
      * Speed of the bullet, positive or negative depending on direction - positive is down.
      */
     private int speed;
-    
+
+    private int speedX = 0;
+    private int speedY = 0;
+
     /**
      * 2P mode: id number to specifying who fired the bullet - 0 = enemy, 1 = P1, 2 = P2
      **/
