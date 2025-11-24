@@ -35,6 +35,10 @@ public final class FileManager {
      */
     private String userAccountPath = "src/main/resources/game_data/user_acct_info.csv";
     /**
+     * user account stats info file path.
+     */
+    private String userStatsPath = "src/main/resources/game_data/user_stats.csv";
+    /**
      * Singleton instance of the class.
      */
     private static FileManager instance;
