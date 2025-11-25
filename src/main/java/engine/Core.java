@@ -289,6 +289,10 @@ public final class Core {
         volumeLevel = Math.max(0, Math.min(100, v));
     }
     
+    public static UserStats getUserStats() {
+        return currentUserStats;
+    }
+    
     public static void setUserStats(UserStats userStats) {
         currentUserStats = userStats;
     }
@@ -544,8 +548,8 @@ public final class Core {
         return frame.setScreen(currentScreen);
     }
     
-    private static int stopSystem(int width, int height) {
-        currentScreen = new StoreScreen(width, height, FPS);
+    private static int storeSystem(int width, int height) {
+        // currentScreen = new StoreScreen(width, height, FPS);
         LOGGER.info("Starting " + WIDTH + "x" + HEIGHT
             + " store screen at " + FPS + " fps.");
         return frame.setScreen(currentScreen);
