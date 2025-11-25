@@ -16,5 +16,6 @@ public class BomberCharacter extends GameCharacter {
         super(CharacterType.BOMBER, positionX, positionY,
             SpriteType.CharacterBomberBasic.getWidth(),
             SpriteType.CharacterBomberBasic.getHeight(), team, playerId);
+        this.spriteType = SpriteType.CharacterBomberBasic;
     }
 }

@@ -14,7 +14,8 @@ public class HealerCharacter extends GameCharacter {
      */
     public HealerCharacter(int positionX, int positionY, Team team, int playerId) {
         super(CharacterType.HEALER, positionX, positionY,
-            SpriteType.CharacterArcherBasic.getWidth(),
-            SpriteType.CharacterBomberBasic.getHeight(), team, playerId);
+            SpriteType.CharacterHealerBasic.getWidth(),
+            SpriteType.CharacterHealerBasic.getHeight(), team, playerId);
+        this.spriteType = SpriteType.CharacterHealerBasic;
     }
 }

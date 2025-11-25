@@ -16,5 +16,6 @@ public class WarriorCharacter extends GameCharacter {
         super(CharacterType.WARRIOR, positionX, positionY,
             SpriteType.CharacterWarriorBasic.getWidth(),
             SpriteType.CharacterWarriorBasic.getHeight(), team, playerId);
+        this.spriteType = SpriteType.CharacterWarriorBasic;
     }
 }

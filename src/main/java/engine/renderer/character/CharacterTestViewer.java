@@ -2,6 +2,7 @@ package engine.renderer.character;
 
 import engine.AssetManager;
 import engine.AssetManager.SpriteType;
+import engine.Core;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -87,7 +88,7 @@ public class CharacterTestViewer extends JPanel implements ActionListener {
                 currentSpriteType = info.walk2;
             }
             
-            boolean[][] spriteData = AssetManager.getInstance().getSprite(currentSpriteType);
+            boolean[][] spriteData = Core.getAssetManager().getSpriteMap(currentSpriteType);
             
             if (spriteData != null) {
                 drawCharacter(g, spriteData, x, startY, this.SCALE, info.color);

@@ -16,5 +16,6 @@ public class ElectricCharacter extends GameCharacter {
         super(CharacterType.ELECTRIC, positionX, positionY,
             SpriteType.CharacterElectricBasic.getWidth(),
             SpriteType.CharacterElectricBasic.getHeight(), team, playerId);
+        this.spriteType = SpriteType.CharacterElectricBasic;
     }
 }

@@ -16,5 +16,6 @@ public class LaserCharacter extends GameCharacter {
         super(CharacterType.LASER, positionX, positionY,
             SpriteType.CharacterLaserBasic.getWidth(),
             SpriteType.CharacterLaserBasic.getHeight(), team, playerId);
+        this.spriteType = SpriteType.CharacterLaserBasic;
     }
 }

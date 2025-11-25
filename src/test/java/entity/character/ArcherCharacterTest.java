@@ -16,7 +16,7 @@ public class ArcherCharacterTest {
     
     @Test
     public void testCharacter_ArcherCharacter_healthPoints() {
-        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1);
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         int[] expectedValue = {90, 90};
         int[] actualValue = {character.getBaseStats().maxHealthPoints,
@@ -28,7 +28,7 @@ public class ArcherCharacterTest {
     
     @Test
     public void testCharacter_ArcherCharacter_manaPoints() {
-        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1);
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         int[] expectedValue = {100, 100};
         int[] actualValue = {character.getBaseStats().maxManaPoints, character.currentManaPoints};
@@ -39,7 +39,7 @@ public class ArcherCharacterTest {
     
     @Test
     public void testCharacter_ArcherCharacter_movementSpeed() {
-        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1);
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         float expectedValue = 1.2f;
         float actualValue = character.getBaseStats().movementSpeed;
@@ -50,7 +50,7 @@ public class ArcherCharacterTest {
     
     @Test
     public void testCharacter_ArcherCharacter_damage() {
-        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1);
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         int[] expectedValue = {18, 0};
         int[] actualValue = {character.getBaseStats().physicalDamage,
@@ -62,7 +62,7 @@ public class ArcherCharacterTest {
     
     @Test
     public void testCharacter_ArcherCharacter_attackSpeed() {
-        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1);
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         float expectedValue = 1.5f;
         float actualValue = character.getBaseStats().attackSpeed;
@@ -73,7 +73,7 @@ public class ArcherCharacterTest {
     
     @Test
     public void testCharacter_ArcherCharacter_attackRange() {
-        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1);
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         float expectedValue = 12.0f;
         float actualValue = character.getBaseStats().attackRange;
@@ -84,7 +84,7 @@ public class ArcherCharacterTest {
     
     @Test
     public void testCharacter_ArcherCharacter_critical() {
-        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1);
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         float[] expectedValue = {0.15f, 2.0f};
         float[] actualValue = {character.getBaseStats().critChance,
@@ -96,7 +96,7 @@ public class ArcherCharacterTest {
     
     @Test
     public void testCharacter_ArcherCharacter_physicalDefense() {
-        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1);
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         int expectedValue = 8;
         int actualValue = character.getBaseStats().physicalDefense;
@@ -107,7 +107,7 @@ public class ArcherCharacterTest {
     
     @Test
     public void testCharacter_ArcherCharacter_unlocked() {
-        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1);
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         boolean expectedValue = true;
         boolean actualValue = character.unlocked;
@@ -118,7 +118,7 @@ public class ArcherCharacterTest {
     
     @Test
     public void testCharacter_ArcherCharacter_skills() {
-        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1);
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         ArrayList<Skill> actualValue = character.skills;
         
         assertEquals(3, actualValue.size(),

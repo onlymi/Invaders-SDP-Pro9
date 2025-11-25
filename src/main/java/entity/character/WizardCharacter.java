@@ -16,5 +16,6 @@ public class WizardCharacter extends GameCharacter {
         super(CharacterType.WIZARD, positionX, positionY,
             SpriteType.CharacterWizardBasic.getWidth(),
             SpriteType.CharacterWizardBasic.getHeight(), team, playerId);
+        this.spriteType = SpriteType.CharacterWizardBasic;
     }
 }

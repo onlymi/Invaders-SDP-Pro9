@@ -53,6 +53,8 @@ public abstract class GameCharacter extends Entity {
         this.currentManaPoints = baseStats.maxManaPoints;
         // Initial character unlocked stat
         this.unlocked = type.isUnlocked();
+        
+        recalculateStats();
     }
     
     /**
@@ -101,24 +103,6 @@ public abstract class GameCharacter extends Entity {
         
         this.currentStats.attackSpeed = tempAttackSpeed;
         this.currentStats.physicalDamage = tempPhysDamage;
-    }
-    
-    /**
-     * Returns the selected character type to Core.
-     *
-     * @return The selected CharacterType enum.
-     */
-    public CharacterType getSelectedCharacterType(int index) {
-        return switch (index) {
-            // case 1 -> CharacterType.WIZARD;
-            case 2 -> CharacterType.ARCHER;
-            // case 3 -> CharacterType.WIZARD;
-            // case 4 -> CharacterType.LASER;
-            // case 5 -> CharacterType.ELECTRIC;
-            // case 6 -> CharacterType.BOMBER;
-            // case 7 -> CharacterType.HEALER;
-            default -> CharacterType.ARCHER;
-        };
     }
     
     public CharacterStats getBaseStats() {

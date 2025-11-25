@@ -87,7 +87,7 @@ public final class Core {
         GameState gameState = null;
         boolean coopSelected = false; // false = 1-player mode, true = 2-player mode
         
-        int returnCode = 9;
+        int returnCode = 6;
         
         CharacterType characterTypeP1 = CharacterType.ARCHER; // Player 1 Ship Type
         CharacterType characterTypeP2 = CharacterType.ARCHER; // Player 2 Ship Type
@@ -457,7 +457,7 @@ public final class Core {
                 return systemData;
             }
             
-            systemData.characterTypeP1 = ((PlayerSelectionScreen) currentScreen).getSelectedPlayerType();
+            systemData.characterTypeP1 = ((PlayerSelectionScreen) currentScreen).getSelectedCharacterType();
             if (coopSelected) {
                 systemData.returnCode = 7; // Go to Player 2 selection.
             } else {
@@ -472,7 +472,7 @@ public final class Core {
                 return systemData;
             }
             
-            systemData.characterTypeP2 = ((PlayerSelectionScreen) currentScreen).getSelectedShipType();
+            systemData.characterTypeP2 = ((PlayerSelectionScreen) currentScreen).getSelectedCharacterType();
             systemData.returnCode = 2; // Start game.
         }
         
