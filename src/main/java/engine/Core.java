@@ -32,7 +32,7 @@ import screen.TitleScreen;
  * @author <a href="mailto:RobertoIA1987@gmail.com">Roberto Izquierdo Amo</a>
  */
 public final class Core {
-
+    
     public static final int WIDTH = 1200;
     public static final int HEIGHT = 800;
     private static final int FPS = 60;
@@ -52,6 +52,7 @@ public final class Core {
     private static final Logger LOGGER = Logger.getLogger(Core.class.getSimpleName());
     private static Handler fileHandler;
     private static ConsoleHandler consoleHandler;
+    private static UserStats currentUserStats;
     
     /**
      * Test implementation.
@@ -161,6 +162,11 @@ public final class Core {
                     // Log In screen
                     returnCode = logInSystem(width, height);
                     LOGGER.info("Closing log in system screen.");
+                    break;
+                case 12:
+                    // Store screen
+                    returnCode = storeSystem(width, height);
+                    LOGGER.info("Closing store system screen.");
                     break;
                 default:
                     break;
@@ -281,6 +287,10 @@ public final class Core {
     
     public static void setVolumeLevel(int v) {
         volumeLevel = Math.max(0, Math.min(100, v));
+    }
+    
+    public static void setUserStats(UserStats userStats) {
+        currentUserStats = userStats;
     }
     
     // Class for screen system
@@ -519,7 +529,7 @@ public final class Core {
             + " sign up screen at " + FPS + " fps.");
         return frame.setScreen(currentScreen);
     }
-
+    
     /**
      * Activate log in screen system.
      *
@@ -531,6 +541,13 @@ public final class Core {
         currentScreen = new LogInScreen(width, height, FPS);
         LOGGER.info("Starting " + WIDTH + "x" + HEIGHT
             + " log in screen at " + FPS + " fps.");
+        return frame.setScreen(currentScreen);
+    }
+    
+    private static int stopSystem(int width, int height) {
+        currentScreen = new StoreScreen(width, height, FPS);
+        LOGGER.info("Starting " + WIDTH + "x" + HEIGHT
+            + " store screen at " + FPS + " fps.");
         return frame.setScreen(currentScreen);
     }
 }
