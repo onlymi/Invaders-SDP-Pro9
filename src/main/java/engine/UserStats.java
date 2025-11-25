@@ -1,6 +1,5 @@
 package engine;
 
-@SuppressWarnings("checkstyle:RightCurly")
 public class UserStats {
     
     private String userId;
@@ -79,8 +78,14 @@ public class UserStats {
     }
     
     public static UserStats fromCSV(String line) {
+        // 데이터 컬럼 수가 맞지 않으면 처리하지 않음
         String[] parts = line.split(",");
-        UserStats stats = new UserStats(parts[0]);
+        if (parts.length < 10) {
+            engine.Core.getLogger().warning("Invalid stats data format: " + line);
+            return null;
+        }
+        
+        UserStats stats = new UserStats(parts[0]); // ID
         stats.coin = Integer.parseInt(parts[1]);
         stats.healthLevel = Integer.parseInt(parts[2]);
         stats.manaLevel = Integer.parseInt(parts[3]);
