@@ -287,7 +287,6 @@ public class Item extends Entity {
         if (this.data != null) {
             return this.data.isAutoUseOnPickup();
         }
-        // 옛날 아이템처럼: 주우면 바로 쓰는게 기본
         return true;
     }
 
