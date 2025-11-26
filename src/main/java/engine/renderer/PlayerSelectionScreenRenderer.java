@@ -24,25 +24,25 @@ public class PlayerSelectionScreenRenderer {
         g.setColor(Color.GREEN);
         commonRenderer.drawCenteredBigString(g, screen, screenTitle, screen.getHeight() / 8);
         
-        // 2. 모든 캐릭터 순회하며 그리기
+        // 2. 모든 캐릭터 그리기
         int characterTypeCount = characterSamples.length;
         
         for (int i = 0; i < characterTypeCount; i++) {
             GameCharacter currentCharacter = characterSamples[i];
             
-            // 위치 보정: 캐릭터의 중심이 아닌 좌측 상단 좌표를 기준으로 그리기 때문에 계산 필요
-            // GameCharacter의 positionX는 이미 생성 시 gap을 고려해 설정되어 있음
-            int drawX = currentCharacter.getPositionX() - (currentCharacter.getWidth() / 2);
+            int imageScale = 2;
+            
+            System.out.println(currentCharacter.getPositionX() + " " + currentCharacter.getWidth());
+            int drawX =
+                currentCharacter.getPositionX() - (currentCharacter.getWidth() * imageScale);
             int drawY = currentCharacter.getPositionY();
             
             if (i == selectedShipIndex) {
-                // 선택된 캐릭터: 원본 색상 (Color.WHITE 또는 null)
-                // EntityRenderer.drawEntity 메서드를 통해 그리기
-                entityRenderer.drawEntity(g, currentCharacter, drawX, drawY, Color.WHITE);
+                entityRenderer.drawEntityByScale(g, currentCharacter, drawX, drawY, Color.WHITE,
+                    imageScale);
             } else {
-                // 선택되지 않은 캐릭터: 그림자/실루엣 처리 (Color.DARK_GRAY)
-                // EntityRenderer에서 DARK_GRAY일 때 어두운 마스크를 씌우도록 구현되어 있음
-                entityRenderer.drawEntity(g, currentCharacter, drawX, drawY, Color.DARK_GRAY);
+                entityRenderer.drawEntityByScale(g, currentCharacter, drawX, drawY, Color.DARK_GRAY,
+                    imageScale);
             }
         }
         
@@ -51,7 +51,7 @@ public class PlayerSelectionScreenRenderer {
         
         g.setColor(Color.WHITE);
         commonRenderer.drawCenteredRegularString(g, screen,
-            " > " + selectedCharacterName + " < ", screen.getHeight() / 2 + 100);
+            " > " + selectedCharacterName + " < ", screen.getHeight() / 3);
         
         g.setColor(Color.GRAY);
         commonRenderer.drawCenteredRegularString(g, screen, "Press SPACE to Select",

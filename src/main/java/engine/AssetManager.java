@@ -58,8 +58,16 @@ public final class AssetManager {
     /**
      * Sprite types.
      */
-    private static int characterWidth = 128;
-    private static int characterHeight = 128;
+    private static int characterWidth = 32;
+    private static int characterHeight = 32;
+    
+    public int getCharacterWidth() {
+        return characterWidth;
+    }
+    
+    public int getCharacterHeight() {
+        return characterHeight;
+    }
     
     public enum SpriteType {
         /**
@@ -133,13 +141,13 @@ public final class AssetManager {
         /**
          * Healer Character.
          */
-        CharacterHealerBasic(SourceCategory.HEALER_CHARACTER,
+        CharacterHealerBasic(SourceCategory.HEALER_CHARACTER, "healer_basic.png",
             characterWidth, characterHeight),
-        CharacterHealerAttack1(SourceCategory.HEALER_CHARACTER,
+        CharacterHealerAttack1(SourceCategory.HEALER_CHARACTER, "healer_basic.png",
             characterWidth, characterHeight),
-        CharacterHealerWalk1(SourceCategory.HEALER_CHARACTER,
+        CharacterHealerWalk1(SourceCategory.HEALER_CHARACTER, "healer_basic.png",
             characterWidth, characterHeight),
-        CharacterHealerWalk2(SourceCategory.HEALER_CHARACTER,
+        CharacterHealerWalk2(SourceCategory.HEALER_CHARACTER, "healer_basic.png",
             characterWidth, characterHeight),
         /**
          * Player ship.
@@ -274,7 +282,6 @@ public final class AssetManager {
         try {
             spriteMap = new LinkedHashMap<>();
             spriteImageMap = new LinkedHashMap<>();
-            this.loadSprite(spriteMap);
             this.loadResources();
             LOGGER.info("Finished loading the sprites.");
             
@@ -394,8 +401,7 @@ public final class AssetManager {
         try {
             // Font loading.
             inputStream = FileManager.class.getClassLoader().getResourceAsStream("font/font.ttf");
-            font = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(
-                size);
+            font = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(size);
         } finally {
             if (inputStream != null) {
                 inputStream.close();
@@ -403,46 +409,6 @@ public final class AssetManager {
         }
         
         return font;
-    }
-    
-    /**
-     * Loads sprites from disk.
-     *
-     * @param spriteMap Mapping of sprite type and empty boolean matrix that will contain the
-     *                  image.
-     * @throws IOException In case of loading problems.
-     */
-    public void loadSprite(final Map<SpriteType, boolean[][]> spriteMap) throws IOException {
-        Map<SourceCategory, InputStream> streamMap = new EnumMap<>(SourceCategory.class);
-        for (SourceCategory category : SourceCategory.values()) {
-            streamMap.put(category,
-                AssetManager.class.getClassLoader().getResourceAsStream(category.getFilePath()));
-        }
-        
-        try {
-            char c;
-            for (Map.Entry<SpriteType, boolean[][]> sprite : spriteMap.entrySet()) {
-                SpriteType type = sprite.getKey();
-                boolean[][] data = sprite.getValue();
-                InputStream selectedStream = streamMap.get(type.getCategory());
-                for (int i = 0; i < sprite.getValue().length; i++) {
-                    for (int j = 0; j < sprite.getValue()[i].length; j++) {
-                        do {
-                            c = (char) selectedStream.read();
-                        } while (c != '0' && c != '1');
-                        
-                        data[i][j] = (c == '1');
-                    }
-                }
-                LOGGER.fine("Sprite " + sprite.getKey() + " loaded.");
-            }
-        } finally {
-            for (InputStream stream : streamMap.values()) {
-                if (stream != null) {
-                    stream.close();
-                }
-            }
-        }
     }
     
     /**

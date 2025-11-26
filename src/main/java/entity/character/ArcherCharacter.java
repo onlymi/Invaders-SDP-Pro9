@@ -19,7 +19,7 @@ public class ArcherCharacter extends GameCharacter {
         super(CharacterType.ARCHER, positionX, positionY,
             SpriteType.CharacterArcherBasic.getWidth(),
             SpriteType.CharacterArcherBasic.getHeight(), team, playerId);
-        this.spriteType = SpriteType.CharacterArcherShadow;
+        this.spriteType = SpriteType.CharacterArcherBasic;
         this.skills.add(new RapidFireSkill()); // First skill
         this.skills.add(new EvasionShotSkill()); // Second skill
         this.skills.add(new PiercingArrowSkill()); // Ultimate skill

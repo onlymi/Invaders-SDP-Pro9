@@ -141,8 +141,7 @@ public class PlayerSelectionScreen extends Screen {
         
         drawManager.getShipSelectionMenuRenderer()
             .drawPlayerSelectionMenu(drawManager.getBackBufferGraphics(), this,
-                this.characterSamples,
-                this.selectedShipIndex, this.playerId);
+                this.characterSamples, this.selectedShipIndex, this.playerId);
         
         // hover highlight
         int mx = inputManager.getMouseX();

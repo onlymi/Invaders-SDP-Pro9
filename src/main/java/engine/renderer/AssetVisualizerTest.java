@@ -5,10 +5,10 @@ import engine.AssetManager.SpriteType;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import javax.swing.BorderFactory;
@@ -31,6 +31,9 @@ public class AssetVisualizerTest extends JFrame {
     private static final Color TEXT_COLOR = Color.WHITE;
     private static final Color SPRITE_COLOR = Color.GREEN; // 픽셀 아트 기본 색상
     
+    private static final int GRID_COLUMNS = 6;
+    private static final int GRID_GAP = 20;
+    
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             AssetVisualizerTest viewer = new AssetVisualizerTest();
@@ -45,7 +48,7 @@ public class AssetVisualizerTest extends JFrame {
         setLocationRelativeTo(null);
         
         // 메인 컨테이너 설정
-        JPanel mainPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 20));
+        JPanel mainPanel = new JPanel(new GridLayout(0, GRID_COLUMNS, GRID_GAP, GRID_GAP));
         mainPanel.setBackground(BACKGROUND_COLOR);
         
         // 스크롤 패널 추가
@@ -93,7 +96,7 @@ public class AssetVisualizerTest extends JFrame {
     }
     
     /**
-     * 실제 스프라이트나 이미지를 그리는 로직
+     * 실제 스프라이트나 이미지를 그리는 로직.
      */
     private void drawSprite(Graphics g, AssetManager assetManager, SpriteType type, int pWidth,
         int pHeight) {
@@ -106,7 +109,7 @@ public class AssetVisualizerTest extends JFrame {
                 // 패널 중앙에 위치 계산
                 int x = (pWidth - image.getWidth()) / 2;
                 int y = (pHeight - image.getHeight()) / 2;
-                g2d.drawImage(image, x, y, null);
+                g2d.drawImage(image, x, y, image.getWidth(), image.getHeight(), null);
             } else {
                 drawError(g2d, pWidth, pHeight);
             }
@@ -119,7 +122,7 @@ public class AssetVisualizerTest extends JFrame {
                 int spriteHeight = spriteMap[0].length;
                 
                 // 확대 배율 설정 (잘 보이도록 3배 확대)
-                int scale = 3;
+                int scale = 2;
                 
                 // 중앙 정렬을 위한 오프셋 계산
                 int drawWidth = spriteWidth * scale;

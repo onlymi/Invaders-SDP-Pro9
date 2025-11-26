@@ -26,7 +26,6 @@ public class EntityRenderer {
      */
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY) {
-        // 기존 메서드는 그대로 두고, 아래의 색상 지정 메서드를 호출하도록 위임합니다.
         drawEntity(g, entity, positionX, positionY, getEntityColor(entity));
     }
     
@@ -43,30 +42,51 @@ public class EntityRenderer {
         SpriteType type = entity.getSpriteType();
         
         if (type.isImage()) {
-            drawEntityAsImage(g, type, positionX, positionY, color);
+            drawEntityAsImage(g, entity, positionX, positionY, color, 1);
         } else {
-            drawEntityAsSprite(g, type, positionX, positionY, color);
+            drawEntityAsSprite(g, type, positionX, positionY, color, 1);
         }
     }
     
-    private void drawEntityAsImage(Graphics g, SpriteType type, int x, int y, Color color) {
-        BufferedImage image = assetManager.getSpriteImage(type);
+    public void drawEntityByScale(Graphics g, final Entity entity, final int positionX,
+        final int positionY, int scale) {
+        drawEntityByScale(g, entity, positionX, positionY, getEntityColor(entity), scale);
+    }
+    
+    public void drawEntityByScale(Graphics g, final Entity entity, final int positionX,
+        final int positionY, final Color color, final int scale) {
+        SpriteType type = entity.getSpriteType();
+        
+        if (type.isImage()) {
+            drawEntityAsImage(g, entity, positionX, positionY, color, scale);
+        } else {
+            drawEntityAsSprite(g, type, positionX, positionY, color, scale);
+        }
+    }
+    
+    private void drawEntityAsImage(Graphics g, final Entity entity, final int positionX,
+        final int positionY, Color color, final int scale) {
+        BufferedImage image = assetManager.getSpriteImage(entity.getSpriteType());
         if (image == null) {
             return;
         }
         
-        g.drawImage(image, x, y, null);
+        int entityWidth = image.getWidth() * scale;
+        int entityHeight = image.getWidth() * scale;
+        
+        g.drawImage(image, positionX, positionY, entityWidth, entityHeight, null);
         
         if (color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
-            g.fillRect(x, y, image.getWidth(), image.getHeight());
+            g.fillRect(positionX, positionY, entityWidth, entityHeight);
         }
     }
     
     /**
-     * 스프라이트(boolean 배열) 타입의 엔티티를 그립니다. (예: 픽셀 아트)
+     * 스프라이트(boolean 배열) 타입의 엔티티를 그립니다.
      */
-    private void drawEntityAsSprite(Graphics g, SpriteType type, int x, int y, Color color) {
+    private void drawEntityAsSprite(Graphics g, SpriteType type, int positionX, int positionY,
+        Color color, int scale) {
         boolean[][] spriteMap = assetManager.getSpriteMap(type);
         if (spriteMap == null) {
             return;
@@ -79,30 +99,7 @@ public class EntityRenderer {
         for (int i = 0; i < spriteWidth; i++) {
             for (int j = 0; j < spriteHeight; j++) {
                 if (spriteMap[i][j]) {
-                    g.fillRect(x + i, y + j, 1, 1);
-                }
-            }
-        }
-    }
-    
-    /**
-     * 특정 스케일로 엔티티를 그립니다. (UI 등에서 사용)
-     */
-    public void drawEntityByScale(Graphics g, Entity entity, int positionX, int positionY,
-        int scale) {
-        boolean[][] sprite = assetManager.getSpriteMap(entity.getSpriteType());
-        
-        if (sprite == null) {
-            drawMissingTexturePlaceholder(g, entity, positionX, positionY);
-            return;
-        }
-        
-        g.setColor(getEntityColor(entity));
-        for (int row = 0; row < entity.getWidth(); row++) {
-            for (int col = 0; col < entity.getHeight(); col++) {
-                if (sprite[row][col]) {
-                    // 주의: 기존 코드의 row/col 인덱스 순서 유지 (width가 row 인덱스)
-                    g.fillRect(positionX + (col * scale), positionY + (row * scale), scale, scale);
+                    g.fillRect(positionX + (i * scale), positionY + (j * scale), scale, scale);
                 }
             }
         }
