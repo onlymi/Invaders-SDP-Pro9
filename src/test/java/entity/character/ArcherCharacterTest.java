@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 public class ArcherCharacterTest {
     
     @Test
-    public void testCharacter_ArcherCharacter_healthPoints() {
+    void testCharacter_ArcherCharacter_healthPoints() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         int[] expectedValue = {90, 90};
@@ -27,7 +27,7 @@ public class ArcherCharacterTest {
     }
     
     @Test
-    public void testCharacter_ArcherCharacter_manaPoints() {
+    void testCharacter_ArcherCharacter_manaPoints() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         int[] expectedValue = {100, 100};
@@ -38,7 +38,7 @@ public class ArcherCharacterTest {
     }
     
     @Test
-    public void testCharacter_ArcherCharacter_movementSpeed() {
+    void testCharacter_ArcherCharacter_movementSpeed() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         float expectedValue = 1.2f;
@@ -49,7 +49,7 @@ public class ArcherCharacterTest {
     }
     
     @Test
-    public void testCharacter_ArcherCharacter_damage() {
+    void testCharacter_ArcherCharacter_damage() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         int[] expectedValue = {18, 0};
@@ -61,7 +61,7 @@ public class ArcherCharacterTest {
     }
     
     @Test
-    public void testCharacter_ArcherCharacter_attackSpeed() {
+    void testCharacter_ArcherCharacter_attackSpeed() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         float expectedValue = 1.5f;
@@ -72,7 +72,7 @@ public class ArcherCharacterTest {
     }
     
     @Test
-    public void testCharacter_ArcherCharacter_attackRange() {
+    void testCharacter_ArcherCharacter_attackRange() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         float expectedValue = 12.0f;
@@ -83,7 +83,7 @@ public class ArcherCharacterTest {
     }
     
     @Test
-    public void testCharacter_ArcherCharacter_critical() {
+    void testCharacter_ArcherCharacter_critical() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         float[] expectedValue = {0.15f, 2.0f};
@@ -95,7 +95,7 @@ public class ArcherCharacterTest {
     }
     
     @Test
-    public void testCharacter_ArcherCharacter_physicalDefense() {
+    void testCharacter_ArcherCharacter_physicalDefense() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         int expectedValue = 8;
@@ -106,7 +106,7 @@ public class ArcherCharacterTest {
     }
     
     @Test
-    public void testCharacter_ArcherCharacter_unlocked() {
+    void testCharacter_ArcherCharacter_unlocked() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
         boolean expectedValue = true;
@@ -117,7 +117,7 @@ public class ArcherCharacterTest {
     }
     
     @Test
-    public void testCharacter_ArcherCharacter_skills() {
+    void testCharacter_ArcherCharacter_skills() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         ArrayList<Skill> actualValue = character.skills;
         
