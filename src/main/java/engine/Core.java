@@ -23,6 +23,7 @@ import screen.Screen;
 import screen.SettingScreen;
 import screen.ShipSelectionScreen;
 import screen.SignUpScreen;
+import screen.StoreScreen;
 import screen.TitleScreen;
 
 
@@ -549,7 +550,7 @@ public final class Core {
     }
     
     private static int storeSystem(int width, int height) {
-        // currentScreen = new StoreScreen(width, height, FPS);
+        currentScreen = new StoreScreen(width, height, FPS);
         LOGGER.info("Starting " + WIDTH + "x" + HEIGHT
             + " store screen at " + FPS + " fps.");
         return frame.setScreen(currentScreen);

@@ -17,7 +17,7 @@ public class StoreScreen extends Screen {
     
     private final int MAX_LEVEL = 3;
     
-    private final int BASE_COST = 500;
+    private final int BASE_COST = 100;
     
     /**
      * Constructor, establishes the properties of the screen.
@@ -34,6 +34,14 @@ public class StoreScreen extends Screen {
         this.userStats = Core.getUserStats();
     }
     
+    public int getMaxStatLevel() {
+        return MAX_LEVEL;
+    }
+    
+    public int getBaseCost(int currentLevel) {
+        return BASE_COST * (currentLevel + 1);
+    }
+    
     public final int run() {
         super.run();
         return this.returnCode;
@@ -44,7 +52,7 @@ public class StoreScreen extends Screen {
         draw();
         
         if (this.selectionCooldown.checkFinished() && this.inputDelay.checkFinished()) {
-            if (inputManager.isKeyDown(KeyEvent.VK_LEFT)) {
+            if (inputManager.isKeyDown(KeyEvent.VK_LEFT) || inputManager.isKeyDown(KeyEvent.VK_A)) {
                 if (menuIndex > 0) {
                     menuIndex--;
                 } else {
@@ -53,7 +61,8 @@ public class StoreScreen extends Screen {
                 selectionCooldown.reset();
                 this.soundManager.playOnce("hover");
             }
-            if (inputManager.isKeyDown(KeyEvent.VK_RIGHT)) {
+            if (inputManager.isKeyDown(KeyEvent.VK_RIGHT) || inputManager.isKeyDown(
+                KeyEvent.VK_D)) {
                 if (menuIndex < statNames.length - 1) {
                     menuIndex++;
                 } else {
@@ -62,8 +71,9 @@ public class StoreScreen extends Screen {
                 selectionCooldown.reset();
                 this.soundManager.playOnce("hover");
             }
-            if (inputManager.isKeyDown(KeyEvent.VK_UP) || inputManager.isKeyDown(
-                KeyEvent.VK_DOWN)) {
+            if (inputManager.isKeyDown(KeyEvent.VK_UP) || inputManager.isKeyDown(KeyEvent.VK_W)
+                || inputManager.isKeyDown(KeyEvent.VK_DOWN) || inputManager.isKeyDown(
+                KeyEvent.VK_S)) {
                 if (menuIndex >= statNames.length / 2) {
                     menuIndex -= (statNames.length / 2);
                 } else {
@@ -89,11 +99,11 @@ public class StoreScreen extends Screen {
     
     private void tryPurchase(int menuIndex) {
         int currentLevel = userStats.getStatLevel(menuIndex);
-        if (currentLevel >= MAX_LEVEL) {
+        if (currentLevel >= getMaxStatLevel()) {
             return;
         }
         
-        int cost = BASE_COST * (currentLevel + 1);
+        int cost = getBaseCost(currentLevel);
         if (userStats.spendCoin(cost)) {
             userStats.upgradeStat(menuIndex);
             this.soundManager.playOnce("achievement");
@@ -109,7 +119,8 @@ public class StoreScreen extends Screen {
     
     private void draw() {
         drawManager.initDrawing(this);
-        // drawManager.getStoreScreenRenderer().draw(drawManager.getBackBufferGraphics(), this, userStats, menuIndex);
+        drawManager.getStoreScreenRenderer()
+            .draw(drawManager.getBackBufferGraphics(), this, userStats, menuIndex);
         drawManager.completeDrawing(this);
     }
 }
