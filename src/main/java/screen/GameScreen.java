@@ -17,7 +17,10 @@ import entity.Entity;
 import entity.Item;
 import entity.ItemPool;
 import entity.Ship;
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -381,25 +384,29 @@ public class GameScreen extends Screen {
                 }
 
                 // Special ship lifecycle
-                if (this.enemyShipSpecial != null) {
-                    if (!this.enemyShipSpecial.isDestroyed()) {
-                        this.enemyShipSpecial.move(2, 0);
-                    } else if (this.enemyShipSpecialExplosionCooldown.checkFinished()) {
-                        this.enemyShipSpecial = null;
+                if (!this.state.areEnemiesFrozen()) {
+                    if (this.enemyShipSpecial != null) {
+                        if (!this.enemyShipSpecial.isDestroyed()) {
+                            this.enemyShipSpecial.move(2, 0);
+                        } else if (this.enemyShipSpecialExplosionCooldown.checkFinished()) {
+                            this.enemyShipSpecial = null;
+                        }
                     }
-                }
-                if (this.enemyShipSpecial == null
-                    && this.enemyShipSpecialCooldown.checkFinished()) {
-                    this.enemyShipSpecial = new EnemyShip();
-                    this.enemyShipSpecialCooldown.reset();
-                    SoundManager.playLoop("special_ship_sound");
-                    this.LOGGER.info("A special ship appears");
-                }
-                if (this.enemyShipSpecial != null
-                    && this.enemyShipSpecial.getPositionX() > this.width) {
-                    this.enemyShipSpecial = null;
-                    SoundManager.loopStop();
-                    this.LOGGER.info("The special ship has escaped");
+
+                    if (this.enemyShipSpecial == null
+                        && this.enemyShipSpecialCooldown.checkFinished()) {
+                        this.enemyShipSpecial = new EnemyShip();
+                        this.enemyShipSpecialCooldown.reset();
+                        SoundManager.playLoop("special_ship_sound");
+                        this.LOGGER.info("A special ship appears");
+                    }
+
+                    if (this.enemyShipSpecial != null
+                        && this.enemyShipSpecial.getPositionX() > this.width) {
+                        this.enemyShipSpecial = null;
+                        SoundManager.loopStop();
+                        this.LOGGER.info("The special ship has escaped");
+                    }
                 }
 
                 // Update ships & enemies
@@ -411,15 +418,20 @@ public class GameScreen extends Screen {
 
                 // Update bossShip
                 if (this.bossShip != null) {
-                    this.bossShip.update();
+                    if (!this.state.areEnemiesFrozen()) {
+                        this.bossShip.update();
+                    }
                 }
 
-                this.enemyShipFormation.update();
-                int bulletsBefore = this.bullets.size();
-                this.enemyShipFormation.shoot(this.bullets);
-                if (this.bullets.size() > bulletsBefore) {
-                    // At least one enemy bullet added
-                    SoundManager.playOnce("shoot_enemies");
+                this.enemyShipFormation.update(this.state);
+                // Block enemy shooting while global freeze is active.
+                if (this.state == null || !this.state.areEnemiesFrozen()) {
+                    int bulletsBefore = this.bullets.size();
+                    this.enemyShipFormation.shoot(this.bullets);
+                    if (this.bullets.size() > bulletsBefore) {
+                        // At least one enemy bullet added
+                        SoundManager.playOnce("shoot_enemies");
+                    }
                 }
             }
 
@@ -571,6 +583,55 @@ public class GameScreen extends Screen {
             .drawAchievementToasts(drawManager.getBackBufferGraphics(), this,
                 (this.achievementManager != null) ? this.achievementManager.getActiveToasts()
                     : Collections.emptyList());
+
+        // === TIME FREEZE overlay ===
+        if (this.state.areEnemiesFrozen()) {
+            Graphics2D g2d = (Graphics2D) drawManager.getBackBufferGraphics().create();
+            try {
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
+                String text = "TIME FREEZE";
+
+                // Use CommonRenderer's big font
+                g2d.setFont(drawManager.getCommonRenderer().getFontBig());
+                FontMetrics fm = g2d.getFontMetrics();
+
+                int textWidth = fm.stringWidth(text);
+                int textHeight = fm.getHeight();
+
+                int boxWidth = textWidth + 40;
+                int boxHeight = textHeight + 20;
+
+                int x = (this.getWidth() - boxWidth) / 2;
+                int y = (this.getHeight() - boxHeight) / 2;
+
+                // Translucent black background
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f));
+                g2d.setColor(Color.BLACK);
+                g2d.fillRoundRect(x, y, boxWidth, boxHeight, 16, 16);
+
+                // Border
+                g2d.setComposite(AlphaComposite.SrcOver);
+                g2d.setColor(new Color(0, 255, 255, 140));
+                g2d.setStroke(new BasicStroke(2f));
+                g2d.drawRoundRect(x, y, boxWidth, boxHeight, 16, 16);
+
+                // Text with slight shadow
+                int textX = x + (boxWidth - textWidth) / 2;
+                int textY = y + (boxHeight + fm.getAscent()) / 2 - 4;
+
+                g2d.setColor(new Color(0, 0, 0, 40));
+                g2d.drawString(text, textX + 2, textY + 2);
+
+                g2d.setColor(new Color(200, 255, 255, 70));
+                g2d.drawString(text, textX, textY);
+
+            } finally {
+                g2d.dispose();
+            }
+        }
+
         if (this.isPaused) {
             drawManager.getCommonRenderer()
                 .drawPauseOverlay(drawManager.getBackBufferGraphics(), this);

@@ -512,7 +512,7 @@ public class GameScreenRenderer {
 
             drawOneActiveSlot(g2d, screen, gameState, 0, xP1, y, slotSize, "P1");
 
-            // --- P2 슬롯: 오른쪽 ---
+            // --- P2 slot: Right ---
             if (gameState.isCoop()) {
                 int xP2 = screen.getWidth() - margin - slotSize;
                 drawOneActiveSlot(g2d, screen, gameState, 1, xP2, y, slotSize, "P2");
@@ -526,7 +526,7 @@ public class GameScreenRenderer {
     private void drawOneActiveSlot(Graphics2D g2d, Screen screen, GameState gameState,
         int playerIndex, int x, int y, int size, String label) {
 
-        // 슬롯 박스
+        // slot box
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.55f));
         g2d.setColor(Color.BLACK);
         g2d.fillRoundRect(x, y, size, size, 8, 8);
@@ -536,12 +536,13 @@ public class GameScreenRenderer {
         g2d.setStroke(new BasicStroke(1.5f));
         g2d.drawRoundRect(x, y, size, size, 8, 8);
 
-        // 라벨 (P1/P2)
+        // guide label for press key
         g2d.setFont(commonRenderer.getFontRegular());
         g2d.setColor(Color.WHITE);
-        g2d.drawString(label, x + 4, y - 2);
+        String keyLabel = (playerIndex == 0) ? "Q" : "/";
+        g2d.drawString(keyLabel, x + 4, y - 2);
 
-        // active item 데이터 가져오기 (항상 0 or 1개만 존재하도록 너가 GameState 수정했지)
+        // active item
         List<ItemData> actives = gameState.getActiveItemData(playerIndex);
         if (actives == null || actives.isEmpty()) {
             return;
@@ -577,7 +578,6 @@ public class GameScreenRenderer {
         int h = sprite.length;
         int w = sprite[0].length;
 
-        // 한 픽셀 크기를 박스에 맞게 스케일링
         int px = Math.max(1, boxSize / Math.max(w, h));
 
         int startX = x + (boxSize - w * px) / 2;

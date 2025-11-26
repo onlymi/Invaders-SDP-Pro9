@@ -247,6 +247,27 @@ public class ItemEffect {
         return applyBulletSpeedUp(gameState, playerId, effectValue, duration, null);
     }
 
+    public static boolean applyTimeFreeze(
+        GameState gameState,
+        int playerId,
+        int value,
+        int duration,
+        int cost
+    ) {
+        if (gameState == null) {
+            return false;
+        }
+
+        // Duration is given in seconds
+        int safeDuration = Math.max(1, duration);
+        long durationMillis = safeDuration * 1000L;
+
+        // Apply freeze to the whole enemy system
+        gameState.applyGlobalFreeze(durationMillis);
+
+        return true;
+    }
+
     /**
      * Converts a playerId (unknown : 0, player1 : 1, player2 : 2) to the corresponding array
      * index.

@@ -137,6 +137,7 @@ public class Item extends Entity {
             case "SCOREBOOST" -> SpriteType.ItemScoreBooster;
             case "BULLETSPEEDUP" -> SpriteType.ItemBulletSpeedUp;
             case "MOVE_SPEED_UP" -> SpriteType.ItemMoveSpeedUp;
+            case "TIME_FREEZE" -> SpriteType.ItemTimeFreeze;
             default -> {
                 logger.warning("[Item]: No sprite mapping for type "
                     + type + ", using default ItemScore sprite.");
@@ -198,6 +199,9 @@ public class Item extends Entity {
                 break;
             case "BULLETSPEEDUP":
                 applied = ItemEffect.applyBulletSpeedUp(gameState, playerId, value, duration, cost);
+                break;
+            case "TIME_FREEZE":
+                applied = ItemEffect.applyTimeFreeze(gameState, playerId, value, duration, cost);
                 break;
             default:
                 this.logger.warning("[Item]: No ItemEffect for type " + data.getType());

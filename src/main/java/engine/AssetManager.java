@@ -180,7 +180,8 @@ public final class AssetManager {
         ItemTripleShot(SourceCategory.ITEM, 5, 5),
         ItemScoreBooster(SourceCategory.ITEM, 5, 5),
         ItemBulletSpeedUp(SourceCategory.ITEM, 5, 5),
-        ItemMoveSpeedUp(SourceCategory.ITEM, 5, 5);
+        ItemMoveSpeedUp(SourceCategory.ITEM, 5, 5),
+        ItemTimeFreeze(SourceCategory.ITEM, 5, 5);
 
         // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;

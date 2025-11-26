@@ -43,6 +43,9 @@ public class GameState {
     private int teamLives;
     private int teamLivesCap;
 
+    private boolean enemiesFrozen = false;
+    private long enemiesFrozenUntilMillis = 0;
+
     /**
      * Current coin count.
      */ // ADD THIS LINE
@@ -570,6 +573,8 @@ public class GameState {
         ItemData data = inst.data;
         String type = data.getType().toUpperCase();
 
+        boolean applied = false;
+
         switch (type) {
             case "MOVE_SPEED_UP" -> {
                 addEffect(playerIndex,
@@ -577,15 +582,39 @@ public class GameState {
                     data.getEffectValue(),
                     data.getEffectDuration());
                 logger.info("[GameState] MOVE_SPEED_UP activated!");
+                applied = true;
+            }
+
+            case "TIME_FREEZE" -> {
+                int playerId = playerIndex + 1;
+                boolean ok = ItemEffect.applyTimeFreeze(
+                    this,
+                    playerId,
+                    data.getEffectValue(),
+                    data.getEffectDuration(),
+                    data.getCost()
+                );
+                if (ok) {
+                    logger.info("[GameState] TIME_FREEZE activated by P" + playerId
+                        + " for " + data.getEffectDuration() + "s.");
+                    applied = true;
+                } else {
+                    logger.info(
+                        "[GameState] TIME_FREEZE failed to activate (maybe null GameState).");
+                }
             }
             // TODO 다른 active도 계속 추가
+            default -> logger.info("[GameState] Active item type not handled: " + type);
         }
 
-        // 사용하면 사라짐(슬롯 비움)
+        // 슬롯 비우기
         clearActiveSlot(playerIndex);
 
-        logger.info("[GameState] Player " + (playerIndex + 1)
-            + " used active item and cleared slot: " + data.getId());
+        if (applied) {
+            clearActiveSlot(playerIndex);
+            logger.info("[GameState] Player " + (playerIndex + 1)
+                + " used active item and cleared slot: " + data.getId());
+        }
     }
 
     /**
@@ -667,5 +696,30 @@ public class GameState {
             return;
         }
         pis.activeItems.clear();
+    }
+
+    /**
+     * Apply a global freeze effect that will expire after the given duration.
+     */
+    public void applyGlobalFreeze(long durationMillis) {
+        long now = System.currentTimeMillis();
+        this.enemiesFrozen = true;
+        this.enemiesFrozenUntilMillis = now + durationMillis;
+    }
+
+    /**
+     * Returns whether enemies are currently frozen. Also clears the flag automatically when time
+     * has passed.
+     */
+    public boolean areEnemiesFrozen() {
+        if (!enemiesFrozen) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        if (now >= enemiesFrozenUntilMillis) {
+            enemiesFrozen = false;
+            return false;
+        }
+        return true;
     }
 }
