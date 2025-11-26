@@ -20,7 +20,7 @@ public class PlayerSelectionScreenRenderer {
         final GameCharacter[] characterSamples, final int selectedShipIndex,
         final int playerIndex) {
         // 1. 화면 제목 출력
-        String screenTitle = "PLAYER " + playerIndex + " : CHOOSE YOUR SHIP";
+        String screenTitle = "PLAYER " + playerIndex + " : CHOOSE YOUR PLAYER";
         g.setColor(Color.GREEN);
         commonRenderer.drawCenteredBigString(g, screen, screenTitle, screen.getHeight() / 8);
         
@@ -32,7 +32,6 @@ public class PlayerSelectionScreenRenderer {
             
             int imageScale = 2;
             
-            System.out.println(currentCharacter.getPositionX() + " " + currentCharacter.getWidth());
             int drawX =
                 currentCharacter.getPositionX() - (currentCharacter.getWidth() * imageScale);
             int drawY = currentCharacter.getPositionY();
