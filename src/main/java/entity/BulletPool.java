@@ -45,11 +45,15 @@ public final class BulletPool {
             bullet.setPositionX(positionX - width / 2);
             bullet.setPositionY(positionY);
             bullet.setSpeed(speed);
+            bullet.setSpeedX(0);
+            bullet.setBossBullet(false);
             bullet.setSize(width, height);  // bullet size
             bullet.setTeam(team);    // team setting
         } else {
             bullet = new Bullet(positionX, positionY, width, height, speed);
             bullet.setPositionX(positionX - width / 2);
+            bullet.setSpeedX(0);
+            bullet.setBossBullet(false);
             bullet.setSize(width, height); // bullet size
             bullet.setTeam(team); // team setting
         }

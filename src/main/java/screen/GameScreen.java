@@ -9,6 +9,7 @@ import engine.gameplay.achievement.AchievementManager;
 import engine.gameplay.item.ActivationType;
 import engine.gameplay.item.ItemManager;
 import engine.utils.Cooldown;
+import entity.BossShip;
 import entity.Bullet;
 import entity.BulletPool;
 import entity.EnemyShip;
@@ -82,7 +83,7 @@ public class GameScreen extends Screen {
     /**
      * EnemyShip for Multi-hit.
      */
-    private EnemyShip bossShip;
+    private BossShip bossShip;
     /**
      * Current difficulty level number.
      */
@@ -228,6 +229,16 @@ public class GameScreen extends Screen {
         
         enemyShipFormation = new EnemyShipFormation(this.gameSettings);
         enemyShipFormation.attach(this);
+        
+        if (this.level == 6) {
+            this.enemyShipFormation = null;
+            this.bossShip = new BossShip(this.width / 2 - 42, 120);
+            this.LOGGER.info("Boss Stage Initialized!");
+        } else {
+            this.bossShip = null;
+            this.enemyShipFormation = new EnemyShipFormation(this.gameSettings);
+            this.enemyShipFormation.attach(this);
+        }
         
         // 2P mode: create both ships, tagged to their respective teams
         this.ships[0] = new Ship(this.width / 2 - 60, this.height - 30, Entity.Team.PLAYER1,
@@ -398,18 +409,22 @@ public class GameScreen extends Screen {
                         s.update();
                     }
                 }
-
-                // Update bossShip
+                
                 if (this.bossShip != null) {
                     this.bossShip.update();
+                    if (!this.bossShip.isDestroyed()) {
+                        this.bossShip.shoot(this.bullets);
+                    }
                 }
-
-                this.enemyShipFormation.update();
-                int bulletsBefore = this.bullets.size();
-                this.enemyShipFormation.shoot(this.bullets);
-                if (this.bullets.size() > bulletsBefore) {
-                    // At least one enemy bullet added
-                    SoundManager.playOnce("shoot_enemies");
+                
+                if (this.enemyShipFormation != null) {
+                    this.enemyShipFormation.update();
+                    int bulletsBefore = this.bullets.size();
+                    this.enemyShipFormation.shoot(this.bullets);
+                    if (this.bullets.size() > bulletsBefore) {
+                        // At least one enemy bullet added
+                        SoundManager.playOnce("shoot_enemies");
+                    }
                 }
             }
             
@@ -432,10 +447,11 @@ public class GameScreen extends Screen {
             }
 
             // Check if the boss is present and destroyed.
+            boolean formationCleared = (this.enemyShipFormation != null && this.enemyShipFormation.isEmpty());
             boolean bossDestroyed = (this.bossShip != null && this.bossShip.isDestroyed());
-
+            
             // End condition: formation cleared or TEAM lives exhausted.
-            if ((this.enemyShipFormation.isEmpty() || !state.teamAlive()) && !this.levelFinished) {
+            if ((formationCleared || bossDestroyed || !state.teamAlive()) && !this.levelFinished) {
                 // The object managed by the object pool pattern must be recycled at the end of the level.
                 BulletPool.recycle(this.bullets);
                 this.bullets.removeAll(this.bullets);
@@ -445,14 +461,17 @@ public class GameScreen extends Screen {
                 this.levelFinished = true;
                 this.screenFinishedCooldown.reset();
                 
-                if (enemyShipFormation.getShipCount() == 0 && state.getBulletsShot() > 0
+                int shipCount = (this.enemyShipFormation != null) ? enemyShipFormation.getShipCount() : 0;
+                if (bossDestroyed) shipCount = 0;
+                
+                if (shipCount == 0 && state.getBulletsShot() > 0
                     && state.getBulletsShot() == state.getShipsDestroyed()) {
                     achievementManager.unlock("Perfect Shooter");
                 }
-                if (enemyShipFormation.getShipCount() == 0 && !this.tookDamageThisLevel) {
+                if (shipCount == 0 && !this.tookDamageThisLevel) {
                     achievementManager.unlock("Survivor");
                 }
-                if (enemyShipFormation.getShipCount() == 0 & state.getLevel() == 5) {
+                if (shipCount == 0 & state.getLevel() == 5) {
                     achievementManager.unlock("Clear");
                 }
                 checkAchievement();
@@ -501,8 +520,10 @@ public class GameScreen extends Screen {
                 .drawEntity(drawManager.getBackBufferGraphics(), this.bossShip,
                     this.bossShip.getPositionX(), this.bossShip.getPositionY());
         }
-
-        enemyShipFormation.draw();
+        
+        if (this.enemyShipFormation != null) {
+            enemyShipFormation.draw();
+        }
         
         for (Bullet bullet : this.bullets) {
             drawManager.getEntityRenderer()
@@ -530,8 +551,12 @@ public class GameScreen extends Screen {
         drawManager.getCommonRenderer()
             .drawHorizontalLine(drawManager.getBackBufferGraphics(), this,
                 SEPARATION_LINE_HEIGHT - 1);
+        
+        int enemyCount = (enemyShipFormation != null) ? enemyShipFormation.getShipCount()
+            : (bossShip != null && !bossShip.isDestroyed() ? 1 : 0);
         drawManager.getGameScreenRenderer().drawShipCount(drawManager.getBackBufferGraphics(), this,
-            enemyShipFormation.getShipCount());
+            enemyCount);
+        
         drawManager.getGameScreenRenderer()
             .drawItemToast(drawManager.getBackBufferGraphics(), this);
 
@@ -707,42 +732,40 @@ public class GameScreen extends Screen {
                 final int ownerId = bullet.getOwnerPlayerId(); // 1 or 2 (0 if unset)
                 final int pIdx = (ownerId == 2) ? 1 : 0; // default to P1 when unset
                 
-                boolean finalShip = this.enemyShipFormation.lastShip();
+                boolean finalShip = (this.enemyShipFormation != null) && this.enemyShipFormation.lastShip();
                 
                 // Check collision with formation enemies
-                for (EnemyShip enemyShip : this.enemyShipFormation) {
-                    if (!enemyShip.isDestroyed() && checkCollision(bullet, enemyShip)) {
-                        recyclable.add(bullet);
-                        enemyShip.hit();
-                        
-                        if (enemyShip.isDestroyed()) {
-                            int points = enemyShip.getPointValue();
-                            state.addCoins(pIdx,
-                                enemyShip.getCoinValue()); // 2P mode: modified to per-player coins
+                if (this.enemyShipFormation != null) {
+                    for (EnemyShip enemyShip : this.enemyShipFormation) {
+                        if (!enemyShip.isDestroyed() && checkCollision(bullet, enemyShip)) {
+                            recyclable.add(bullet);
+                            enemyShip.hit();
                             
-                            drawManager.getGameScreenRenderer()
-                                .triggerExplosion(enemyShip.getPositionX(),
-                                    enemyShip.getPositionY(), true, finalShip);
-                            state.addScore(pIdx,
-                                points); // 2P mode: modified to add to P1 score for now
-                            state.incShipsDestroyed(pIdx);
-                            
-                            // obtain drop from ItemManager (may return null)
-                            Item drop = ItemManager.getInstance().obtainDrop(enemyShip);
-                            if (drop != null) {
-                                this.items.add(drop);
-                                this.LOGGER.info(
-                                    "Spawned " + drop.getType() + " at " + drop.getPositionX() + ","
-                                        + drop.getPositionY());
+                            if (enemyShip.isDestroyed()) {
+                                int points = enemyShip.getPointValue();
+                                state.addCoins(pIdx, enemyShip.getCoinValue());
+                                
+                                drawManager.getGameScreenRenderer()
+                                    .triggerExplosion(enemyShip.getPositionX(),
+                                        enemyShip.getPositionY(), true, finalShip);
+                                state.addScore(pIdx, points);
+                                state.incShipsDestroyed(pIdx);
+                                
+                                // obtain drop from ItemManager
+                                Item drop = ItemManager.getInstance().obtainDrop(enemyShip);
+                                if (drop != null) {
+                                    this.items.add(drop);
+                                    this.LOGGER.info("Spawned item.");
+                                }
+                                
+                                this.enemyShipFormation.destroy(enemyShip);
+                                SoundManager.playOnce("invader_killed");
+                                this.LOGGER.info("Hit on enemy ship.");
+                                
+                                checkAchievement();
                             }
-                            
-                            this.enemyShipFormation.destroy(enemyShip);
-                            SoundManager.playOnce("invader_killed");
-                            this.LOGGER.info("Hit on enemy ship.");
-                            
-                            checkAchievement();
+                            break;
                         }
-                        break;
                     }
                 }
                 
@@ -829,8 +852,10 @@ public class GameScreen extends Screen {
         if (state.getShipsDestroyed() == 1) {
             achievementManager.unlock("First Blood");
         }
-        // Clear
-        if (levelFinished && this.enemyShipFormation.isEmpty() && state.getLevel() == 5) {
+        
+        boolean formationCleared = (this.enemyShipFormation != null && this.enemyShipFormation.isEmpty());
+        //
+        if (levelFinished && formationCleared && state.getLevel() == 5) {
             achievementManager.unlock("Clear");
             float p1Acc = state.getBulletsShot(0) > 0 ?
                 (float) state.getShipsDestroyed(0) / state.getBulletsShot(0) * 100 : 0f;

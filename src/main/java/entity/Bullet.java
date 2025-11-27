@@ -27,6 +27,8 @@ public class Bullet extends Entity {
     // standardised for DrawManager scaling
     private int playerId = 0;
     
+    private boolean isBossBullet = false;
+    
     /**
      * Constructor, establishes the bullet's properties.
      *
@@ -52,29 +54,38 @@ public class Bullet extends Entity {
      * Sets correct sprite for the bullet, based on speed.
      */
     public final void setSprite() {
-        if (this.speed < 0) {
-            this.spriteType = SpriteType.Bullet; // player bullet fired, team remains NEUTRAL
+        if (this.isBossBullet) {
+            this.spriteType = SpriteType.BossBullet;
+        } else if (this.speed < 0) {
+            this.spriteType = SpriteType.Bullet;
         } else {
-            this.spriteType = SpriteType.EnemyBullet; // enemy fired bullet
+            this.spriteType = SpriteType.EnemyBullet;
         }
     }
     
+    public void setBossBullet(boolean isBoss) {
+        this.isBossBullet = isBoss;
+        setSprite();
+        if (isBoss) {
+            this.width = 5 * 2;
+            this.height = 5 * 2;
+        }
+    }
     /**
      * Updates the bullet's position.
      */
     public final void update() {
         this.positionY += this.speed;
+        this.positionX += this.speedX;
     }
-    
     /**
      * Setter of the speed of the bullet.
      *
-     * @param speed New speed of the bullet.
+     * @param speedX New speed of the bullet.
      */
-    public final void setSpeed(final int speed) {
-        this.speed = speed;
+    public void setSpeed(int speedX) {
+        this.speedX = speed;
     }
-    
     /**
      * Getter for the speed of the bullet.
      *
@@ -82,6 +93,14 @@ public class Bullet extends Entity {
      */
     public final int getSpeed() {
         return this.speed;
+    }
+    
+    public void setSpeedX(int speedX) {
+        this.speedX = speedX;
+    }
+    
+    public int getSpeedX() {
+        return this.speedX;
     }
     
     // 2P mode: adding owner API, standardised player API

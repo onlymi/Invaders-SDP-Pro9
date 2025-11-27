@@ -130,6 +130,10 @@ public final class AssetManager {
          */
         EnemyBullet(SourceCategory.BULLET, 3, 5),
         /**
+         * Boss bullet.
+         */
+        BossBullet(SourceCategory.BULLET, 5, 5),
+        /**
          * First enemy ship - first form.
          */
         EnemyShipA1(SourceCategory.ENEMY, 12, 8),
@@ -322,6 +326,7 @@ public final class AssetManager {
                 SpriteType type = sprite.getKey();
                 boolean[][] data = sprite.getValue();
                 InputStream selectedStream = streamMap.get(type.getCategory());
+                StringBuilder debugShape = new StringBuilder();
                 for (int i = 0; i < sprite.getValue().length; i++) {
                     for (int j = 0; j < sprite.getValue()[i].length; j++) {
                         do {
@@ -329,8 +334,10 @@ public final class AssetManager {
                         } while (c != '0' && c != '1');
                         
                         data[i][j] = (c == '1');
+                        debugShape.append(c);
                     }
                 }
+                LOGGER.info("Loaded Sprite: " + type + " -> " + debugShape.toString());
                 LOGGER.fine("Sprite " + sprite.getKey() + " loaded.");
             }
         } finally {

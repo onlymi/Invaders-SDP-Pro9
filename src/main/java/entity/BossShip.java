@@ -19,7 +19,7 @@ public class BossShip extends EnemyShip {
 
     private static final int ATTACK_HOMING_MISSILE = 1;
     private static final int ATTACK_LASER_CHARGE = 2;
-    private static final int HOMING_MISSILE_INTERVAL = 3000;
+    private static final int HOMING_MISSILE_INTERVAL = 1000;
     private static final int LASER_CHARGE_TIME = 1000;
     private static final int MISSILE_SPEED = 4;
     private static final int ATTACK_SPREAD_CHARGE = 3;
@@ -94,7 +94,7 @@ public class BossShip extends EnemyShip {
         this.spreadChargeCooldown = Core.getCooldown(SPREAD_CHARGE_TIME);
         this.laserChargeTimer = 0;
         this.spreadChargeTimer = 0;
-        this.isAttackEnabled = false;
+        this.isAttackEnabled = true;
     }
 
     /**
@@ -134,32 +134,37 @@ public class BossShip extends EnemyShip {
                 bullets.add(laser);
 
                 // Switch back to Homing Missile phase and reset colors
+                this.attackPhase = ATTACK_SPREAD_CHARGE;
+                this.spreadChargeCooldown.reset();
+                this.changeColor(Color.ORANGE);
+            }
+        } else if (this.attackPhase == ATTACK_SPREAD_CHARGE) {
+            if (this.spreadChargeCooldown.checkFinished()) {
+                
+                int bulletCount = 36;
+                int bulletSpeed = 5;
+                
+                for (int i = 0; i < bulletCount; i++) {
+                    double angle = 2 * Math.PI * i / bulletCount;
+                    
+                    int velX = (int) (bulletSpeed * Math.cos(angle));
+                    int velY = (int) (bulletSpeed * Math.sin(angle));
+                    
+                    Bullet spreadBullet = BulletPool.getBullet(
+                        spawnX,
+                        spawnY,
+                        velY,
+                        BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
+                    
+                    spreadBullet.setSpeedX(velX);
+                    spreadBullet.setBossBullet(true);
+                    
+                    bullets.add(spreadBullet);
+                }
+                
                 this.attackPhase = ATTACK_HOMING_MISSILE;
                 this.attackCooldown.reset();
                 this.changeColor(Color.CYAN);
-            }
-        } else if (this.attackPhase == ATTACK_SPREAD_CHARGE) { // [NEW PHASE 3]
-            // Spread Charge Finished
-            if (this.spreadChargeCooldown.checkFinished()) {
-                // Spread Pattern Fire Logic
-
-                // Circular Spread Pattern Implementation
-                for (int i = 0; i < SPREAD_BULLETS; i++) {
-                    double angle = 2 * Math.PI * i / SPREAD_BULLETS;
-                    int speedX = (int) (SPREAD_SPEED * Math.sin(angle));
-
-                    Bullet spreadBullet = BulletPool.getBullet(
-                        spawnX + speedX * 3,
-                        spawnY,
-                        Math.max(1, SPREAD_SPEED),
-                        BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
-                    bullets.add(spreadBullet);
-                }
-
-                // [TRANSITION] Switch back to Homing Missile phase and reset colors
-                this.attackPhase = ATTACK_HOMING_MISSILE;
-                this.attackCooldown.reset();
-                this.changeColor(Color.CYAN); // Reset to neutral color
             }
         }
     }
@@ -169,7 +174,8 @@ public class BossShip extends EnemyShip {
      */
     @Override
     public final void update() {
-
+        
+        // Use the remaining time as a wide-ranging mode.
         if (this.health <= BOSS_ATTACK_HP_THRESHOLD && !this.isAttackEnabled) {
             this.isAttackEnabled = true;
             this.attackCooldown.reset(); // Start attack cycle immediately
@@ -196,35 +202,7 @@ public class BossShip extends EnemyShip {
             if (this.positionY <= TOP_BOUNDARY) this.positionY = TOP_BOUNDARY + 1;
             if (this.positionY + this.height >= BOSS_MAX_Y) this.positionY = BOSS_MAX_Y - this.height - 1;
         }
-
-        // Attack Pattern Logic
-        if (this.attackPhase == ATTACK_HOMING_MISSILE) {
-            // Missile Interval Cooldown
-            if (this.attackCooldown.checkFinished()) {
-                // **Placeholder for Homing Missile Logic**
-
-                // Switch to Laser Charge phase
-                this.attackPhase = ATTACK_LASER_CHARGE;
-                this.laserChargeCooldown.reset();
-                this.laserChargeTimer = LASER_CHARGE_TIME; // Start charge timer
-
-                // Visual feedback for charge (changes color to RED)
-                this.changeColor(Color.RED);
-            }
-        } else if (this.attackPhase == ATTACK_LASER_CHARGE) {
-            // Update the remaining charge time for rendering the charge bar
-            this.laserChargeTimer = this.laserChargeCooldown.getDuration();
-
-            // Laser Charge Finished
-            if (this.laserChargeCooldown.checkFinished()) {
-                // **Placeholder for Laser Fire Logic**
-
-                // Switch back to Homing Missile phase and reset colors
-                this.attackPhase = ATTACK_HOMING_MISSILE;
-                this.attackCooldown.reset();
-                this.changeColor(Color.CYAN);
-            }
-        }
+        
         // Inherited from EnemyShip, checks if 500ms animation interval is finished.
         if (this.bossAnimationCooldown.checkFinished()) {
             this.bossAnimationCooldown.reset();
