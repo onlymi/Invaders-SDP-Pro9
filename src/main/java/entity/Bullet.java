@@ -81,10 +81,10 @@ public class Bullet extends Entity {
     /**
      * Setter of the speed of the bullet.
      *
-     * @param speedX New speed of the bullet.
+     * @param speed New speed of the bullet.
      */
-    public void setSpeed(int speedX) {
-        this.speedX = speed;
+    public final void setSpeed(final int speed) {
+        this.speed = speed;
     }
     /**
      * Getter for the speed of the bullet.

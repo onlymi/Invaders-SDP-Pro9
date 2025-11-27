@@ -697,7 +697,7 @@ public class GameScreen extends Screen {
     private void manageCollisions() {
         Set<Bullet> recyclable = new HashSet<Bullet>();
         for (Bullet bullet : this.bullets) {
-            if (bullet.getSpeed() > 0) {
+            if (bullet.getTeam() == Entity.Team.ENEMY) {
                 // Enemy bullet vs both players
                 
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
@@ -711,11 +711,10 @@ public class GameScreen extends Screen {
                                 state.getLivesRemaining() == 1);
                         ship.addHit();
                         
-                        ship.destroy(); // explosion/respawn handled by Ship.update()
+                        ship.destroy();
                         SoundManager.playOnce("explosion");
-                        this.state.decLife(p); // decrement shared/team lives by 1
+                        this.state.decLife(p);
                         
-                        // Record damage for Survivor achievement check
                         this.tookDamageThisLevel = true;
                         
                         this.drawManager.getGameScreenRenderer();
@@ -751,7 +750,6 @@ public class GameScreen extends Screen {
                                 state.addScore(pIdx, points);
                                 state.incShipsDestroyed(pIdx);
                                 
-                                // obtain drop from ItemManager
                                 Item drop = ItemManager.getInstance().obtainDrop(enemyShip);
                                 if (drop != null) {
                                     this.items.add(drop);

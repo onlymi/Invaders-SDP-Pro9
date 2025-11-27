@@ -145,7 +145,7 @@ public class BossShip extends EnemyShip {
                 int bulletSpeed = 5;
                 
                 for (int i = 0; i < bulletCount; i++) {
-                    double angle = 2 * Math.PI * i / bulletCount;
+                    double angle = Math.PI * i / (bulletCount - 1);
                     
                     int velX = (int) (bulletSpeed * Math.cos(angle));
                     int velY = (int) (bulletSpeed * Math.sin(angle));

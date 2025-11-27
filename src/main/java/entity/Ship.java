@@ -19,7 +19,7 @@ public class Ship extends Entity {
     
     // Default Bullet Variables
     private static final int BASE_BULLET_SPEED = -20;
-    private static final int BASE_SHOOTING_INTERVAL = 100;
+    private static final int BASE_SHOOTING_INTERVAL = 90;
     private static final int BASE_BULLET_WIDTH = 6;  // 3 * 2
     private static final int BASE_BULLET_HEIGHT = 10;
     // special bullet variables
