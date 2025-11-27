@@ -24,13 +24,11 @@ public class EntityRenderer {
      */
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY) {
-        // [수정] AssetManager 인스턴스를 직접 가져와 spriteMap을 대체합니다.
         AssetManager assetManager = AssetManager.getInstance();
         boolean[][] image = assetManager.getSprite(entity.getSpriteType());
         
-        // [추가] 스프라이트를 찾지 못했을 때 오류가 나지 않도록 방어 코드 추가
         if (image == null) {
-            g.setColor(Color.PINK); // 누락된 스프라이트를 쉽게 식별하도록 분홍색으로 표시
+            g.setColor(Color.PINK);
             g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
             System.err.println("EntityRenderer: Can't find sprite about " + entity.getSpriteType());
             return;
@@ -110,4 +108,5 @@ public class EntityRenderer {
         }
         return color;
     }
+    
 }

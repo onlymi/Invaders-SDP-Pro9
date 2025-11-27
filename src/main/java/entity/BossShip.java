@@ -2,6 +2,7 @@ package entity;
 
 import engine.AssetManager.SpriteType;
 import engine.Core;
+import engine.SoundManager;
 import engine.utils.Cooldown;
 
 import java.awt.*;
@@ -127,10 +128,26 @@ public class BossShip extends EnemyShip {
         } else if (this.attackPhase == ATTACK_LASER_CHARGE) {
             // Laser Charge Finished
             if (this.laserChargeCooldown.checkFinished()) {
+                
+                Core.getDrawManager().getGameScreenRenderer().triggerExplosion(
+                    spawnX, spawnY - 20,
+                    false, false
+                );
+                SoundManager.playOnce("laser_big");
+                
+                Bullet skull = BulletPool.getBullet(spawnX, spawnY - 40, 0, 22*2, 18*2, Entity.Team.ENEMY);
+                skull.setSpriteType(SpriteType.GasterBlaster);
+                bullets.add(skull);
+                
                 // Laser Fire Logic
                 // **Placeholder: Firing a wide, fast bullet as a Laser**
                 Bullet laser = BulletPool.getBullet(spawnX, spawnY,
-                    12, BOSS_BULLET_WIDTH * 2, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
+                    15, 11 * 4, 20 * 40, Entity.Team.ENEMY);
+                
+                laser.setBigLaser(true);
+                laser.setBossBullet(false);
+                laser.setSpeedX(0);
+                
                 bullets.add(laser);
 
                 // Switch back to Homing Missile phase and reset colors

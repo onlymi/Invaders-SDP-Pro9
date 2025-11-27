@@ -28,6 +28,7 @@ public class Bullet extends Entity {
     private int playerId = 0;
     
     private boolean isBossBullet = false;
+    private boolean isBigLaser = false;
     
     /**
      * Constructor, establishes the bullet's properties.
@@ -56,9 +57,14 @@ public class Bullet extends Entity {
     public final void setSprite() {
         if (this.isBossBullet) {
             this.spriteType = SpriteType.BossBullet;
-        } else if (this.speed < 0) {
+        }
+        
+        if (this.isBigLaser) {
+            this.spriteType = SpriteType.BigLaserBeam;
+        }
+        else if (this.speed < 0) {
             this.spriteType = SpriteType.Bullet;
-        } else {
+        } else if (!this.isBigLaser && !this.isBossBullet) {
             this.spriteType = SpriteType.EnemyBullet;
         }
     }
@@ -71,6 +77,16 @@ public class Bullet extends Entity {
             this.height = 5 * 2;
         }
     }
+    
+    public void setBigLaser(boolean isBigLaser) {
+        this.isBigLaser = isBigLaser;
+        setSprite();
+    }
+    
+    public void setSpriteType(SpriteType spriteType) {
+        this.spriteType = spriteType;
+    }
+    
     /**
      * Updates the bullet's position.
      */
@@ -120,5 +136,6 @@ public class Bullet extends Entity {
         this.playerId = playerId;
         this.ownerPlayerId = playerId; // keep them in sync
     }
+    
     
 }
