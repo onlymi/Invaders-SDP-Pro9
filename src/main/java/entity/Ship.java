@@ -18,14 +18,14 @@ import java.util.Set;
 public class Ship extends Entity {
     
     // Default Bullet Variables
-    private static final int BASE_BULLET_SPEED = -20;
-    private static final int BASE_SHOOTING_INTERVAL = 90;
+    private static final int BASE_BULLET_SPEED = -4;
+    private static final int BASE_SHOOTING_INTERVAL = 700;
     private static final int BASE_BULLET_WIDTH = 6;  // 3 * 2
     private static final int BASE_BULLET_HEIGHT = 10;
     // special bullet variables
     private static final int DOUBLE_SHOT_OFFSET = 6;
     // Ship Variables
-    private static final int BASE_SPEED = 10;
+    private static final int BASE_SPEED = 2;
     private static final int SHIP_WIDTH = 26;  // 13 * 2
     private static final int SHIP_HEIGHT = 16;
     private static final int DESTRUCTION_COOLDOWN = 1000;
