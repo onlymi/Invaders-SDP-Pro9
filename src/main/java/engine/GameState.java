@@ -608,8 +608,6 @@ public class GameState {
         }
 
         // 슬롯 비우기
-        clearActiveSlot(playerIndex);
-
         if (applied) {
             clearActiveSlot(playerIndex);
             logger.info("[GameState] Player " + (playerIndex + 1)
