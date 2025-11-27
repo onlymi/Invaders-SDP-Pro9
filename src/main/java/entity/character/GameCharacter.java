@@ -143,7 +143,7 @@ public abstract class GameCharacter extends Entity {
      * Applies stat upgrades from the user's store purchases. Upgrades are applied as percentage or
      * additive bonuses to the base stats.
      */
-    private void applyUserUpgrades() {
+    protected void applyUserUpgrades() { // Test에서 오버라이딩 및 호출이 가능하도록 protected로 변경.
         engine.UserStats stats = engine.Core.getUserStats();
         if (stats == null) {
             return;
