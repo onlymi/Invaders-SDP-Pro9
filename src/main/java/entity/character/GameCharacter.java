@@ -117,6 +117,8 @@ public abstract class GameCharacter extends Entity {
         this.physicalDefense = characterType.physicalDefense;
         // Initial character unlocked stat
         this.unlocked = characterType.unlocked;
+        // 업그레이드 스탯 적용
+        applyUserUpgrades();
     }
     
     /**
@@ -134,6 +136,60 @@ public abstract class GameCharacter extends Entity {
             if (!buff.isActive()) {
                 iterator.remove();
             }
+        }
+    }
+    
+    /**
+     * Applies stat upgrades from the user's store purchases. Upgrades are applied as percentage or
+     * additive bonuses to the base stats.
+     */
+    private void applyUserUpgrades() {
+        engine.UserStats stats = engine.Core.getUserStats();
+        if (stats == null) {
+            return;
+        }
+        // 0: Health (20% per level)
+        if (stats.getStatLevel(0) > 0) {
+            this.maxHealthPoints = (int) (this.maxHealthPoints * (1 + 0.2 * stats.getStatLevel(0)));
+            this.currentHealthPoints = this.maxHealthPoints; // Reset current HP to new max
+        }
+        
+        // 1: Mana (20% per level)
+        if (stats.getStatLevel(1) > 0) {
+            this.maxManaPoints = (int) (this.maxManaPoints * (1 + 0.2 * stats.getStatLevel(1)));
+            this.currentManaPoints = this.maxManaPoints; // Reset current MP to new max
+        }
+        
+        // 2: Speed (10% per level)
+        if (stats.getStatLevel(2) > 0) {
+            this.movementSpeed = this.movementSpeed * (1 + 0.1f * stats.getStatLevel(2));
+        }
+        
+        // 3: Damage (20% per level) - Applies to both Physical and Magical
+        if (stats.getStatLevel(3) > 0) {
+            double multiplier = 1 + 0.2 * stats.getStatLevel(3);
+            this.physicalDamage = (int) (Math.ceil(this.physicalDamage * multiplier));
+            this.magicalDamage = (int) (Math.ceil(this.magicalDamage * multiplier));
+        }
+        
+        // 4: Attack Speed (10% per level)
+        if (stats.getStatLevel(4) > 0) {
+            this.attackSpeed = this.attackSpeed * (1 + 0.1f * stats.getStatLevel(4));
+        }
+        
+        // 5: Attack Range (10% per level)
+        if (stats.getStatLevel(5) > 0) {
+            this.attackRange = this.attackRange * (1 + 0.1f * stats.getStatLevel(5));
+        }
+        
+        // 6: Critical Chance (Add 5% per level)
+        if (stats.getStatLevel(6) > 0) {
+            this.critChance += 0.05f * stats.getStatLevel(6);
+        }
+        
+        // 7: Defence (Add 2 per level)
+        if (stats.getStatLevel(7) > 0) {
+            this.physicalDefense += 2 * stats.getStatLevel(7);
         }
     }
     
