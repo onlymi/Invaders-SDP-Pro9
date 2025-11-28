@@ -486,6 +486,10 @@ public final class AssetManager {
     public boolean[][] getSpriteMap(SpriteType type) {
         return spriteMap.get(type);
     }
+
+    public boolean[][] getSprite(SpriteType type) {
+        return spriteMap.get(type);
+    }
     
     public BufferedImage getSpriteImage(SpriteType type) {
         return spriteImageMap.get(type);
