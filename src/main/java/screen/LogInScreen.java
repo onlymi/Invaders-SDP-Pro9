@@ -3,6 +3,7 @@ package screen;
 import engine.Core;
 import engine.FileManager;
 import engine.InputManager;
+import engine.UserStats;
 import engine.utils.Cooldown;
 import java.awt.event.KeyEvent;
 
@@ -185,7 +186,9 @@ public class LogInScreen extends Screen {
                 case SUCCESS:
                     this.message = "Log In Successful! Starting game...";
                     this.logInSuccess = true;
-                    // TODO     Core에 로그인한 계정 저장. 스탯 구매 구현 시 수정 예정
+                    UserStats stats = this.fileManager.loadUserStats(id);
+                    Core.setUserStats(stats);
+                    Core.getLogger().info("User stats loaded for: " + id);
                     break;
                 case PASSWORD_MISMATCH:
                     this.message = "Password is incorrect!";

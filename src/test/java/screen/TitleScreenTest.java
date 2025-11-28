@@ -151,8 +151,8 @@ class TitleScreenTest {
         titleScreen.update();
         when(inputManager.isKeyDown(KeyEvent.VK_UP)).thenReturn(false);
         
-        // menuIndex가 5(Exit)로 변경되었는지 확인
-        assertEquals(5, getMenuIndex());
+        // menuIndex가 6(Exit)로 변경되었는지 확인
+        assertEquals(6, getMenuIndex());
     }
     
     @Test
@@ -173,9 +173,10 @@ class TitleScreenTest {
         when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(true);
         titleScreen.update(); // 0 -> 1
         titleScreen.update(); // 1 -> 2
+        titleScreen.update(); // 2 -> 3
         when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(false);
         
-        assertEquals(2, getMenuIndex());
+        assertEquals(3, getMenuIndex());
         
         // 선택 (Space)
         when(inputManager.isKeyDown(KeyEvent.VK_SPACE)).thenReturn(true);
@@ -193,9 +194,10 @@ class TitleScreenTest {
         titleScreen.update(); // 0 -> 1
         titleScreen.update(); // 1 -> 2
         titleScreen.update(); // 2 -> 3
+        titleScreen.update(); // 3 -> 4
         when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(false);
         
-        assertEquals(3, getMenuIndex());
+        assertEquals(4, getMenuIndex());
         
         // 선택 (Space)
         when(inputManager.isKeyDown(KeyEvent.VK_SPACE)).thenReturn(true);
@@ -210,11 +212,11 @@ class TitleScreenTest {
     void testSelect_Logout() throws Exception { // Test 7. Logout 버튼 테스트
         // Logout(4)로 이동
         when(inputManager.isKeyDown(KeyEvent.VK_UP)).thenReturn(true);
-        titleScreen.update(); // 0 -> 5
-        titleScreen.update(); // 5 -> 4
+        titleScreen.update(); // 0 -> 6
+        titleScreen.update(); // 6 -> 5
         when(inputManager.isKeyDown(KeyEvent.VK_UP)).thenReturn(false);
         
-        assertEquals(4, getMenuIndex());
+        assertEquals(5, getMenuIndex());
         
         // 선택 (Space)
         when(inputManager.isKeyDown(KeyEvent.VK_SPACE)).thenReturn(true);
@@ -229,10 +231,10 @@ class TitleScreenTest {
     void testSelect_Exit() throws Exception { // Test 8. Exit 버튼 테스트
         // Exit(5)로 이동: 위로 1번
         when(inputManager.isKeyDown(KeyEvent.VK_UP)).thenReturn(true);
-        titleScreen.update(); // 0 -> 5
+        titleScreen.update(); // 0 -> 6
         when(inputManager.isKeyDown(KeyEvent.VK_UP)).thenReturn(false);
         
-        assertEquals(5, getMenuIndex());
+        assertEquals(6, getMenuIndex());
         
         // 선택 (Space)
         when(inputManager.isKeyDown(KeyEvent.VK_SPACE)).thenReturn(true);
