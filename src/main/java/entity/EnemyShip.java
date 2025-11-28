@@ -14,7 +14,7 @@ import java.awt.Color;
  *
  */
 public class EnemyShip extends Entity {
-    
+
     /**
      * Point value of a type A enemy.
      */
@@ -31,12 +31,12 @@ public class EnemyShip extends Entity {
      * Point value of a bonus enemy.
      */
     private static final int BONUS_TYPE_POINTS = 100;
-    
+
     private static final int A_TYPE_COINS = 2;
     private static final int B_TYPE_COINS = 3;
     private static final int C_TYPE_COINS = 5;
     private static final int BONUS_TYPE_COINS = 10;
-    
+
     /**
      * Cooldown between sprite changes.
      */
@@ -50,15 +50,15 @@ public class EnemyShip extends Entity {
      * Values of the ship, in points, when destroyed.
      */
     protected int pointValue;
-    
+
     protected int coinValue;
-    
+
     /**
      * Current health of the enemy ship
      */
     protected int health;
     protected int initialHealth;
-    
+
     /**
      * Constructor, establishes the ship's properties.
      *
@@ -69,12 +69,12 @@ public class EnemyShip extends Entity {
     public EnemyShip(final int positionX, final int positionY,
         final SpriteType spriteType) {
         super(positionX, positionY, 12 * 2, 8 * 2, Color.WHITE);
-        
+
         this.spriteType = spriteType;
         this.animationCooldown = Core.getCooldown(500);
         this.bossAnimationCooldown = Core.getCooldown(500);
         this.isDestroyed = false;
-        
+
         switch (this.spriteType) {
             case EnemyShipA1:
             case EnemyShipA2:
@@ -107,34 +107,34 @@ public class EnemyShip extends Entity {
                 this.health = 1;
                 break;
         }
-        
+
         this.initialHealth = this.health;
     }
-    
+
     public void changeShip(GameSettings.ChangeData changeData) {
         this.health *= changeData.hp;
         this.initialHealth = this.health;
-        
+
         this.changeColor(changeData.color);
-        
+
         this.pointValue *= changeData.multiplier;
         this.coinValue *= changeData.multiplier;
     }
-    
+
     /**
      * Constructor, establishes the ship's properties for a special ship, with known starting
      * properties.
      */
     public EnemyShip() {
         super(-32, 80, 16 * 2, 7 * 2, Color.RED);
-        
+
         this.spriteType = SpriteType.EnemyShipSpecial;
         this.isDestroyed = false;
         this.pointValue = BONUS_TYPE_POINTS;
         this.coinValue = BONUS_TYPE_COINS;
         this.health = 1;
     }
-    
+
     /**
      * Getter for the score bonus if this ship is destroyed.
      *
@@ -143,25 +143,25 @@ public class EnemyShip extends Entity {
     public final int getPointValue() {
         return this.pointValue;
     }
-    
+
     /**
      * Moves the ship the specified distance.
      *
      * @param distanceX Distance to move in the X axis.
      * @param distanceY Distance to move in the Y axis.
      */
-    public final void move(final int distanceX, final int distanceY) {
+    public void move(final int distanceX, final int distanceY) {
         this.positionX += distanceX;
         this.positionY += distanceY;
     }
-    
+
     /**
      * Updates attributes, mainly used for animation purposes.
      */
     public void update() {
         if (this.animationCooldown.checkFinished()) {
             this.animationCooldown.reset();
-            
+
             switch (this.spriteType) {
                 case EnemyShipA1:
                     this.spriteType = SpriteType.EnemyShipA2;
@@ -186,18 +186,32 @@ public class EnemyShip extends Entity {
             }
         }
     }
-    
+
+    /**
+     * Updates the enemy ship with support for global freeze effects. If the GameState indicates
+     * that enemies are frozen, the ship will not update.
+     */
+    public void update(engine.GameState gameState) {
+        if (gameState != null && gameState.areEnemiesFrozen()) {
+            // Skip animation update while enemies are frozen.
+            return;
+        }
+
+        // Fallback to the original update logic.
+        update();
+    }
+
     /**
      * Returns the current health of the enemy ship
      */
     public int getHealth() {
         return this.health;
     }
-    
+
     /**
      * Reduces enemy health by 1 and handles destruction or damage animation if health drops to 0
      */
-    
+
     public void hit() {
         this.health--;
         if (this.health <= 0) {
@@ -225,12 +239,12 @@ public class EnemyShip extends Entity {
             }
         }
     }
-    
+
     public final int getDamage(int dmg) {
         this.health -= dmg;
         return this.health;
     }
-    
+
     /**
      * Destroys the ship, causing an explosion.
      */
@@ -238,7 +252,7 @@ public class EnemyShip extends Entity {
         this.isDestroyed = true;
         this.spriteType = SpriteType.Explosion;
     }
-    
+
     /**
      * Checks if the ship has been destroyed.
      *
@@ -247,11 +261,11 @@ public class EnemyShip extends Entity {
     public boolean isDestroyed() {
         return this.isDestroyed;
     }
-    
+
     public int getCoinValue() {
         return this.coinValue;
     }
-    
+
     /**
      * Returns the initial health of the enemy ship
      */

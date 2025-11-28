@@ -20,7 +20,10 @@ import entity.Ship;
 import entity.character.CharacterSpawner;
 import entity.character.CharacterType;
 import entity.character.GameCharacter;
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -82,6 +85,10 @@ public class GameScreen extends Screen {
      * BasicGameSpace for screen resizing.
      */
     private BasicGameSpace basicGameSpace;
+    /**
+     * EnemyShip for Multi-hit.
+     */
+    private EnemyShip bossShip;
     /**
      * Current difficulty level number.
      */
@@ -308,10 +315,10 @@ public class GameScreen extends Screen {
             
             if (this.isPaused) {
                 // Pause game music when pausing - no sound during pause
-                this.soundManager.loopStop();
+                SoundManager.loopStop();
             } else {
                 // Resume game music when unpausing
-                this.soundManager.playLoop("game_theme");
+                SoundManager.playLoop("game_theme");
             }
         }
         
@@ -325,7 +332,9 @@ public class GameScreen extends Screen {
         
         if (!this.isPaused) {
             if (this.inputDelay.checkFinished() && !this.levelFinished) {
-                
+
+                int lastPressed = inputManager.getLastPressedKey();
+
                 // Per-player input/move/shoot
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     GameCharacter character = this.characters[p];
@@ -333,7 +342,15 @@ public class GameScreen extends Screen {
                     if (ships[p] == null || ships[p].isDestroyed()) {
                         continue;
                     }
-                    
+
+                    // === Active item use (one-press) ===
+                    if (p == 0 && lastPressed == KeyEvent.VK_Q) {
+                        state.useFirstActiveItem(0);   // P1 uses Q
+                    }
+                    if (p == 1 && lastPressed == KeyEvent.VK_SLASH) {
+                        state.useFirstActiveItem(1);   // P2 uses '/'
+                    }
+
                     boolean moveRight, moveLeft, fire;
                     // Get player key input status
                     if (p == 0) {
@@ -373,40 +390,54 @@ public class GameScreen extends Screen {
                 }
                 
                 // Special ship lifecycle
-                if (this.enemyShipSpecial != null) {
-                    if (!this.enemyShipSpecial.isDestroyed()) {
-                        this.enemyShipSpecial.move(2, 0);
-                    } else if (this.enemyShipSpecialExplosionCooldown.checkFinished()) {
+                if (!this.state.areEnemiesFrozen()) {
+                    if (this.enemyShipSpecial != null) {
+                        if (!this.enemyShipSpecial.isDestroyed()) {
+                            this.enemyShipSpecial.move(2, 0);
+                        } else if (this.enemyShipSpecialExplosionCooldown.checkFinished()) {
+                            this.enemyShipSpecial = null;
+                        }
+                    }
+
+                    if (this.enemyShipSpecial == null
+                        && this.enemyShipSpecialCooldown.checkFinished()) {
+                        this.enemyShipSpecial = new EnemyShip();
+                        this.enemyShipSpecialCooldown.reset();
+                        SoundManager.playLoop("special_ship_sound");
+                        this.LOGGER.info("A special ship appears");
+                    }
+
+                    if (this.enemyShipSpecial != null
+                        && this.enemyShipSpecial.getPositionX() > this.width) {
                         this.enemyShipSpecial = null;
+                        SoundManager.loopStop();
+                        this.LOGGER.info("The special ship has escaped");
                     }
                 }
-                if (this.enemyShipSpecial == null
-                    && this.enemyShipSpecialCooldown.checkFinished()) {
-                    this.enemyShipSpecial = new EnemyShip();
-                    this.enemyShipSpecialCooldown.reset();
-                    this.soundManager.playLoop("special_ship_sound");
-                    this.LOGGER.info("A special ship appears");
-                }
-                if (this.enemyShipSpecial != null
-                    && this.enemyShipSpecial.getPositionX() > this.width) {
-                    this.enemyShipSpecial = null;
-                    this.soundManager.loopStop();
-                    this.LOGGER.info("The special ship has escaped");
-                }
-                
+
                 // Update ships & enemies
                 for (Ship s : this.ships) {
                     if (s != null) {
                         s.update();
                     }
                 }
-                
-                this.enemyShipFormation.update();
-                int bulletsBefore = this.bullets.size();
-                this.enemyShipFormation.shoot(this.bullets);
-                if (this.bullets.size() > bulletsBefore) {
-                    // At least one enemy bullet added
-                    SoundManager.playOnce("shoot_enemies");
+
+                // Update bossShip
+                if (this.bossShip != null) {
+                    if (!this.state.areEnemiesFrozen()) {
+                        this.bossShip.update();
+                    }
+                }
+
+                this.enemyShipFormation.update(this.state);
+                // Block enemy shooting while global freeze is active.
+                if (this.state == null || !this.state.areEnemiesFrozen()) {
+                    int bulletsBefore = this.bullets.size();
+                    this.enemyShipFormation.shoot(this.bullets);
+                    if (this.bullets.size() > bulletsBefore) {
+                        // At least one enemy bullet added
+                        SoundManager.playOnce("shoot_enemies");
+                    }
                 }
             }
             
@@ -427,7 +458,10 @@ public class GameScreen extends Screen {
                 this.highScoreNotified = true;
                 this.highScoreNoticeStartTime = System.currentTimeMillis();
             }
-            
+
+            // Check if the boss is present and destroyed.
+            boolean bossDestroyed = (this.bossShip != null && this.bossShip.isDestroyed());
+
             // End condition: formation cleared or TEAM lives exhausted.
             if ((this.enemyShipFormation.isEmpty() || !state.teamAlive()) && !this.levelFinished) {
                 // The object managed by the object pool pattern must be recycled at the end of the level.
@@ -489,7 +523,13 @@ public class GameScreen extends Screen {
                 .drawEntity(drawManager.getBackBufferGraphics(), this.enemyShipSpecial,
                     this.enemyShipSpecial.getPositionX(), this.enemyShipSpecial.getPositionY());
         }
-        
+
+        if (this.bossShip != null) {
+            drawManager.getEntityRenderer()
+                .drawEntity(drawManager.getBackBufferGraphics(), this.bossShip,
+                    this.bossShip.getPositionX(), this.bossShip.getPositionY());
+        }
+
         enemyShipFormation.draw();
         
         for (Bullet bullet : this.bullets) {
@@ -522,7 +562,9 @@ public class GameScreen extends Screen {
             enemyShipFormation.getShipCount());
         drawManager.getGameScreenRenderer()
             .drawItemToast(drawManager.getBackBufferGraphics(), this);
-        
+        drawManager.getGameScreenRenderer()
+            .drawActiveItemSlots(drawManager.getBackBufferGraphics(), this, state);
+
         if (!this.inputDelay.checkFinished()) {
             int countdown = (int) ((INPUT_DELAY - (System.currentTimeMillis() - this.gameStartTime))
                 / 1000);
@@ -547,6 +589,55 @@ public class GameScreen extends Screen {
             .drawAchievementToasts(drawManager.getBackBufferGraphics(), this,
                 (this.achievementManager != null) ? this.achievementManager.getActiveToasts()
                     : Collections.emptyList());
+
+        // === TIME FREEZE overlay ===
+        if (this.state.areEnemiesFrozen()) {
+            Graphics2D g2d = (Graphics2D) drawManager.getBackBufferGraphics().create();
+            try {
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
+                String text = "TIME FREEZE";
+
+                // Use CommonRenderer's big font
+                g2d.setFont(drawManager.getCommonRenderer().getFontBig());
+                FontMetrics fm = g2d.getFontMetrics();
+
+                int textWidth = fm.stringWidth(text);
+                int textHeight = fm.getHeight();
+
+                int boxWidth = textWidth + 40;
+                int boxHeight = textHeight + 20;
+
+                int x = (this.getWidth() - boxWidth) / 2;
+                int y = (this.getHeight() - boxHeight) / 2;
+
+                // Translucent black background
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f));
+                g2d.setColor(Color.BLACK);
+                g2d.fillRoundRect(x, y, boxWidth, boxHeight, 16, 16);
+
+                // Border
+                g2d.setComposite(AlphaComposite.SrcOver);
+                g2d.setColor(new Color(0, 255, 255, 140));
+                g2d.setStroke(new BasicStroke(2f));
+                g2d.drawRoundRect(x, y, boxWidth, boxHeight, 16, 16);
+
+                // Text with slight shadow
+                int textX = x + (boxWidth - textWidth) / 2;
+                int textY = y + (boxHeight + fm.getAscent()) / 2 - 4;
+
+                g2d.setColor(new Color(0, 0, 0, 40));
+                g2d.drawString(text, textX + 2, textY + 2);
+
+                g2d.setColor(new Color(200, 255, 255, 70));
+                g2d.drawString(text, textX, textY);
+
+            } finally {
+                g2d.dispose();
+            }
+        }
+
         if (this.isPaused) {
             drawManager.getCommonRenderer()
                 .drawPauseOverlay(drawManager.getBackBufferGraphics(), this);
@@ -747,13 +838,36 @@ public class GameScreen extends Screen {
                     state.incShipsDestroyed(pIdx); // 2P mode: modified incrementing ships destroyed
                     
                     this.enemyShipSpecial.destroy();
-                    this.soundManager.loopStop();
+                    SoundManager.loopStop();
                     SoundManager.playOnce("explosion");
                     drawManager.getGameScreenRenderer()
                         .triggerExplosion(this.enemyShipSpecial.getPositionX(),
                             this.enemyShipSpecial.getPositionY(), true, true);
                     this.enemyShipSpecialExplosionCooldown.reset();
                     recyclable.add(bullet);
+                }
+
+                if (this.bossShip != null
+                    && !this.bossShip.isDestroyed()
+                    && checkCollision(bullet, this.bossShip)) {
+
+                    this.bossShip.hit(); // Apply damage to the boss (decrement health by 1)
+                    recyclable.add(bullet); // Recycle the bullet
+
+                    if (this.bossShip.isDestroyed()) {
+                        int points = this.bossShip.getPointValue();
+                        state.addCoins(pIdx, this.bossShip.getCoinValue());
+                        state.addScore(pIdx, points);
+                        state.incShipsDestroyed(pIdx);
+
+                        SoundManager.loopStop(); // Stop boss BGM
+                        SoundManager.playOnce("explosion");
+                        // Boss explosion is always large and final (true)
+                        drawManager.getGameScreenRenderer()
+                            .triggerExplosion(this.bossShip.getPositionX(),
+                                this.bossShip.getPositionY(), true, true);
+                    }
+                    // Since the Boss is a single target, break is omitted to continue with the next bullet/enemy check.
                 }
             }
         }

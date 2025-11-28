@@ -24,7 +24,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * Classes that load, store, and manage all the assets (Sprite, fonts, etc.) needed for the game.
  */
 public final class AssetManager {
-    
+
     /**
      * Enum to distinguish between graphical source files.
      */
@@ -43,18 +43,18 @@ public final class AssetManager {
         BULLET("graphics/bullet_graphics"),
         MUTUAL("graphics/mutual_graphics"),
         ITEM("graphics/item_graphics");
-        
+
         private final String filePath;
-        
+
         SourceCategory(String path) {
             this.filePath = path;
         }
-        
+
         public String getFilePath() {
             return this.filePath;
         }
     }
-    
+
     /**
      * Sprite types.
      */
@@ -221,8 +221,11 @@ public final class AssetManager {
         ItemHeal(SourceCategory.ITEM, 5, 5),
         ItemTripleShot(SourceCategory.ITEM, 5, 5),
         ItemScoreBooster(SourceCategory.ITEM, 5, 5),
-        ItemBulletSpeedUp(SourceCategory.ITEM, 5, 5);
-        
+        ItemBulletSpeedUp(SourceCategory.ITEM, 5, 5),
+        ItemMoveSpeedUp(SourceCategory.ITEM, 5, 5),
+        ItemTimeFreeze(SourceCategory.ITEM, 5, 5);
+
+        // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;
         private final String filename;
         private final int width;
@@ -248,11 +251,11 @@ public final class AssetManager {
         public SourceCategory getCategory() {
             return this.category;
         }
-        
+
         public int getWidth() {
             return this.width;
         }
-        
+
         public int getHeight() {
             return this.height;
         }
@@ -265,37 +268,37 @@ public final class AssetManager {
             return this.filename;
         }
     }
-    
+
     private static AssetManager instance;
     private static final Logger LOGGER = Core.getLogger();
     private static final FileManager fileManager = Core.getFileManager();
-    
+
     Map<SpriteType, boolean[][]> spriteMap;
     Map<SpriteType, BufferedImage> spriteImageMap;
     HashMap<String, Clip> soundMap;
     private Font fontRegular;
     private Font fontBig;
-    
+
     private AssetManager() {
         LOGGER.info("Started loading resources.");
-        
+
         try {
             spriteMap = new LinkedHashMap<>();
             spriteImageMap = new LinkedHashMap<>();
             this.loadResources();
             LOGGER.info("Finished loading the sprites.");
-            
+
             // Font loading
             fontRegular = this.loadFont(14f);
             fontBig = this.loadFont(24f);
             LOGGER.info("Finished loading the fonts.");
-            
+
         } catch (IOException e) {
             LOGGER.warning("Loading failed.");
         } catch (FontFormatException e) {
             LOGGER.warning("Font formating failed.");
         }
-        
+
         try {
             soundMap = new HashMap<String, Clip>();
             // 모든 사운드 파일을 미리 로드
@@ -313,7 +316,7 @@ public final class AssetManager {
             soundMap.put("special_ship_sound", loadSound("sound/special_ship_sound.wav"));
             soundMap.put("win", loadSound("sound/win.wav"));
             soundMap.put("lose", loadSound("sound/lose.wav"));
-            
+
             LOGGER.info("Finished loading the sounds.");
         } catch (Exception e) {
             LOGGER.warning("Sound loading failed.");
@@ -384,7 +387,7 @@ public final class AssetManager {
         }
         return instance;
     }
-    
+
     /**
      * Loads a font of a given size.
      *
@@ -397,7 +400,7 @@ public final class AssetManager {
         FontFormatException {
         InputStream inputStream = null;
         Font font;
-        
+
         try {
             // Font loading.
             inputStream = FileManager.class.getClassLoader().getResourceAsStream("font/font.ttf");
@@ -407,10 +410,10 @@ public final class AssetManager {
                 inputStream.close();
             }
         }
-        
+
         return font;
     }
-    
+
     /**
      * 지정된 리소스 경로에서 오디오 파일을 읽어와 재생 준비가 완료된 Clip 객체로 반환합니다.
      *
@@ -426,16 +429,16 @@ public final class AssetManager {
         if (audioStream == null) {
             throw new FileNotFoundException("Audio resource not found: " + resourcePath);
         }
-        
+
         audioStream = toPcmSigned(audioStream);
-        
+
         DataLine.Info info = new DataLine.Info(Clip.class, audioStream.getFormat());
         Clip clip = (Clip) AudioSystem.getLine(info);
         clip.open(audioStream);
-        
+
         return clip;
     }
-    
+
     /**
      * Opens an audio stream from classpath resources or absolute/relative file path.
      */
@@ -453,7 +456,7 @@ public final class AssetManager {
             return null;
         }
     }
-    
+
     /**
      * Ensures the audio stream is PCM_SIGNED for Clip compatibility on all JVMs.
      */
@@ -463,7 +466,7 @@ public final class AssetManager {
         if (format.getEncoding() == AudioFormat.Encoding.PCM_SIGNED) {
             return source;
         }
-        
+
         AudioFormat targetFormat = new AudioFormat(
             AudioFormat.Encoding.PCM_SIGNED,
             format.getSampleRate(),
@@ -475,7 +478,7 @@ public final class AssetManager {
         );
         return AudioSystem.getAudioInputStream(targetFormat, source);
     }
-    
+
     public Clip getSound(String soundName) {
         return soundMap.get(soundName);
     }
@@ -491,7 +494,7 @@ public final class AssetManager {
     public Font getFontRegular() {
         return fontRegular;
     }
-    
+
     public Font getFontBig() {
         return fontBig;
     }
