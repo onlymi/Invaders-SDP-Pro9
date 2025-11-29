@@ -1,6 +1,6 @@
 package entity.buff;
 
-import entity.character.GameCharacter;
+import entity.character.CharacterStats;
 
 public class RapidFireSkillBuff extends Buff {
     
@@ -12,14 +12,8 @@ public class RapidFireSkillBuff extends Buff {
     }
     
     @Override
-    public void apply(GameCharacter character) {
-        character.modifyAttackSpeed(attackSpeedMultiplier);
-        character.modifyPhysicalDamage(physicalDamageMultiplier);
-    }
-    
-    @Override
-    public void remove(GameCharacter character) {
-        character.resetAttackSpeed(attackSpeedMultiplier);
-        character.resetPhysicalDamage(physicalDamageMultiplier);
+    public void applyToStats(CharacterStats stats) {
+        stats.attackSpeed *= (1.0f + attackSpeedMultiplier);
+        stats.physicalDamage = (int) (stats.physicalDamage * (1.0f + physicalDamageMultiplier));
     }
 }
