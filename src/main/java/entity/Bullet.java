@@ -100,7 +100,6 @@ public class Bullet extends Entity {
     public final void update() {
         if (this.isHoming) {
             if (this.homingTimer != null && this.homingTimer.checkFinished()) {
-                // 화면 밖으로 보내버려서 GameScreen이 알아서 삭제하게 함 (Recycle)
                 this.positionY = 2000;
                 return;
             }
@@ -164,7 +163,7 @@ public class Bullet extends Entity {
     public void setHoming(Ship target) {
         this.target = target;
         this.isHoming = true;
-        this.homingTimer = Core.getCooldown(5000); // 5초 수명
+        this.homingTimer = Core.getCooldown(9000);
         this.homingTimer.reset();
     }
     

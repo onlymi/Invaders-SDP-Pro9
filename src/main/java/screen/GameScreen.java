@@ -230,7 +230,7 @@ public class GameScreen extends Screen {
         enemyShipFormation = new EnemyShipFormation(this.gameSettings);
         enemyShipFormation.attach(this);
         
-        if (this.level == 1) {
+        if (this.level == 6) {
             this.enemyShipFormation = null;
             this.bossShip = new BossShip(this.width / 2 - 42, 120);
             this.LOGGER.info("Boss Stage Initialized!");
@@ -390,7 +390,8 @@ public class GameScreen extends Screen {
                     }
                 }
                 if (this.enemyShipSpecial == null
-                    && this.enemyShipSpecialCooldown.checkFinished()) {
+                    && this.enemyShipSpecialCooldown.checkFinished()
+                    && this.bossShip == null) {
                     this.enemyShipSpecial = new EnemyShip();
                     this.enemyShipSpecialCooldown.reset();
                     SoundManager.playLoop("special_ship_sound");

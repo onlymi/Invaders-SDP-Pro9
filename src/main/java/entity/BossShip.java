@@ -123,104 +123,121 @@ public class BossShip extends EnemyShip {
         this.isAttackEnabled = true;
         
     }
-
+    
     /**
-     * New shoot method to manage attacks
+     * New shoot method to manage attacks.
+     * Handles the boss's attack patterns based on the current phase:
+     * 1. Homing Missile -> 2. Gaster Blaster Laser -> 3. Spread Attack.
+     *
+     * @param bullets Set of game bullets to add new projectiles to.
+     * @param players Array of player ships for targeting.
      */
     public final void shoot(final Set<Bullet> bullets, Ship[] players) {
+        // Do nothing if the boss is not in an attacking state
         if (!this.isAttackEnabled) return;
         
+        // Calculate the center position of the boss for spawning projectiles
         int spawnX = this.positionX + this.width / 2;
         int spawnY = this.positionY + this.height;
         
+        // Find the nearest player to target
         Ship target = getNearestTarget(players, spawnX, spawnY);
         
         
+        // === Phase 1: Homing Missile ===
         if (this.attackPhase == ATTACK_HOMING_MISSILE) {
-            // Missile Interval Cooldown Check
+            // Check if the cooldown between missiles has finished
             if (this.attackCooldown.checkFinished()) {
                 
+                // Create a missile projectile
                 Bullet missile = BulletPool.getBullet(spawnX, spawnY,
                     MISSILE_SPEED, BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
                 bullets.add(missile);
                 
+                // If a target exists, enable homing behavior on the missile
                 if (target != null) {
                     missile.setHoming(target);
                 }
                 
-                // Switch to Laser Charge phase
+                // Transition to the Laser Charge phase
                 this.attackPhase = ATTACK_LASER_CHARGE;
                 this.laserChargeCooldown.reset();
                 this.laserChargeTimer = LASER_CHARGE_TIME;
-                this.changeColor(Color.RED); // Visual feedback for charge
+                this.changeColor(Color.RED); // Visual indicator for charging
+                
+                // Reset laser pattern flags
                 this.hasSpawnedSkulls = false;
                 this.isFiring = false;
             }
-        } else if (this.attackPhase == ATTACK_LASER_CHARGE) {
-            // 메인 충전(빨간색)이 끝났을 때
+        }
+        // === Phase 2: Gaster Blaster Laser (Skull Laser) ===
+        else if (this.attackPhase == ATTACK_LASER_CHARGE) {
+            // Wait for the initial charge cooldown (red color phase) to finish
             if (this.laserChargeCooldown.checkFinished()) {
                 
-                int xOffset = 100;
-                int skullY = spawnY - 40; // 60 높이에 맞게 조정
-                double laserY = spawnY + (SKULL_HEIGHT / 2.0);
+                // Constants for positioning
+                int xOffset = 100; // Horizontal distance from boss center
+                int skullY = spawnY - 40; // Y position for skulls
+                double laserY = spawnY + (SKULL_HEIGHT / 2.0); // Laser origin Y (center of skull)
                 
                 
-                // --- [단계 1] 해골 소환 및 조준 (Lock-On) ---
+                // [Step 1] Spawn Skulls & Aim (Warning Phase)
                 if (!this.hasSpawnedSkulls) {
                     SoundManager.playOnce("laser_big");
                     
-                    // [수정] 1. 각도 계산을 먼저 수행합니다. (해골 회전에 쓰기 위해)
+                    // Determine target coordinates (default to bottom center if no player alive)
                     double targetX = (target != null) ? target.getPositionX() + target.getWidth() / 2.0 : spawnX;
                     double targetY = (target != null) ? target.getPositionY() + target.getHeight() / 2.0 : spawnY + 600;
                     
+                    // Calculate angle for the Left Skull to aim at the target
                     double startXLeft = (spawnX - xOffset);
                     this.lockedAngleLeft = Math.atan2(targetY - laserY, targetX - startXLeft);
                     
+                    // Calculate angle for the Right Skull to aim at the target
                     double startXRight = (spawnX + xOffset);
                     this.lockedAngleRight = Math.atan2(targetY - laserY, targetX - startXRight);
                     
                     
-                    // [수정] 2. 해골 소환 시 회전(setRotation) 적용
-                    
-                    // 왼쪽 해골
+                    // Spawn Left Skull and rotate it towards the target
                     this.activeLeftSkull = BulletPool.getBullet(spawnX - xOffset, skullY, 0, SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
                     this.activeLeftSkull.setSpriteType(SpriteType.GasterBlaster);
-                    // 플레이어를 바라보도록 회전 (스프라이트가 위쪽(90도)을 보고 있다고 가정 시 -90 보정)
                     this.activeLeftSkull.setRotation(Math.toDegrees(this.lockedAngleLeft));
                     bullets.add(this.activeLeftSkull);
                     
-                    // 오른쪽 해골
+                    // Spawn Right Skull and rotate it towards the target
                     this.activeRightSkull = BulletPool.getBullet(spawnX + xOffset, skullY, 0, SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
                     this.activeRightSkull.setSpriteType(SpriteType.GasterBlaster);
-                    // 플레이어를 바라보도록 회전
                     this.activeRightSkull.setRotation(Math.toDegrees(this.lockedAngleRight));
                     bullets.add(this.activeRightSkull);
                     
+                    // Update flags and start the delay timer before firing
                     this.hasSpawnedSkulls = true;
                     this.laserFireDelayCooldown.reset();
                 }
-                // --- [단계 2] 대기 시간 종료 후 레이저 발사 (정지 상태) ---
+                // [Step 2] Fire Lasers (Active Phase)
                 else if (!this.isFiring) {
+                    // Check if the warning delay has passed
                     if (this.laserFireDelayCooldown.checkFinished()) {
                         SoundManager.playOnce("laser_big");
                         
-                        double laserSpeed = 0;
-                        int laserLength = 2000;
+                        double laserSpeed = 0; // Static beam (speed 0)
+                        int laserLength = 2000; // Very long length to cover the screen
                         
-                        // 왼쪽 레이저 3개 중첩 생성 (정지 상태)
+                        // Create Left Lasers (Stack 3 beams for persistence against single hits)
                         double startXLeft = spawnX - xOffset;
                         for (int i = 0; i < 3; i++) {
                             Bullet leftLaser = BulletPool.getBullet((int)startXLeft, (int)laserY, 0, 11 * 4, laserLength, Entity.Team.ENEMY);
                             leftLaser.setBigLaser(true);
                             leftLaser.setBossBullet(false);
-                            leftLaser.setSpeedX(0); // 정지
-                            leftLaser.setSpeed(0);  // 정지
+                            leftLaser.setSpeedX(0); // No horizontal movement
+                            leftLaser.setSpeed(0);  // No vertical movement
+                            // Rotate laser to match the aimed angle (-90 correction for vertical sprite)
                             leftLaser.setRotation(Math.toDegrees(this.lockedAngleLeft) - 90);
                             bullets.add(leftLaser);
                             this.activeLeftLasers.add(leftLaser);
                         }
                         
-                        // 오른쪽 레이저 3개 중첩 생성 (정지 상태)
+                        // Create Right Lasers (Stack 3 beams)
                         double startXRight = spawnX + xOffset;
                         for (int i = 0; i < 3; i++) {
                             Bullet rightLaser = BulletPool.getBullet((int)startXRight, (int)laserY, 0, 11 * 4, laserLength, Entity.Team.ENEMY);
@@ -233,15 +250,17 @@ public class BossShip extends EnemyShip {
                             this.activeRightLasers.add(rightLaser);
                         }
                         
+                        // Set firing flag and start the duration timer
                         this.isFiring = true;
                         this.laserActiveCooldown.reset();
                     }
                 }
-                // --- [단계 3] 레이저 유지 시간 종료 후 삭제 ---
+                // [Step 3] Cleanup Phase
                 else {
+                    // Check if the laser duration has expired
                     if (this.laserActiveCooldown.checkFinished()) {
                         
-                        // 레이저 제거
+                        // Remove all active Left Lasers
                         for (Bullet b : this.activeLeftLasers) {
                             if (bullets.contains(b)) {
                                 bullets.remove(b);
@@ -250,6 +269,7 @@ public class BossShip extends EnemyShip {
                         }
                         this.activeLeftLasers.clear();
                         
+                        // Remove all active Right Lasers
                         for (Bullet b : this.activeRightLasers) {
                             if (bullets.contains(b)) {
                                 bullets.remove(b);
@@ -258,33 +278,37 @@ public class BossShip extends EnemyShip {
                         }
                         this.activeRightLasers.clear();
                         
-                        // 해골 제거
+                        // Remove Left Skull
                         if (this.activeLeftSkull != null) {
                             bullets.remove(this.activeLeftSkull);
                             BulletPool.recycle(java.util.Collections.singleton(this.activeLeftSkull));
                             this.activeLeftSkull = null;
                         }
+                        // Remove Right Skull
                         if (this.activeRightSkull != null) {
                             bullets.remove(this.activeRightSkull);
                             BulletPool.recycle(java.util.Collections.singleton(this.activeRightSkull));
                             this.activeRightSkull = null;
                         }
                         
-                        // 패턴 종료
+                        // Transition to the next phase (Spread Charge)
                         this.attackPhase = ATTACK_SPREAD_CHARGE;
                         this.spreadChargeCooldown.reset();
-                        this.changeColor(Color.ORANGE);
+                        this.changeColor(Color.ORANGE); // Visual indicator
                         this.hasSpawnedSkulls = false;
                         this.isFiring = false;
                     }
                 }
             }
-        } else if (this.attackPhase == ATTACK_SPREAD_CHARGE) {
+        }
+        // === Phase 3: Spread Charge (360-degree Attack) ===
+        else if (this.attackPhase == ATTACK_SPREAD_CHARGE) {
             if (this.spreadChargeCooldown.checkFinished()) {
                 
                 int bulletCount = 36;
                 int bulletSpeed = 5;
                 
+                // Fire bullets in a full circle
                 for (int i = 0; i < bulletCount; i++) {
                     double angle = Math.PI * i / (bulletCount - 1);
                     
@@ -303,6 +327,7 @@ public class BossShip extends EnemyShip {
                     bullets.add(spreadBullet);
                 }
                 
+                // Loop back to Phase 1 (Homing Missile)
                 this.attackPhase = ATTACK_HOMING_MISSILE;
                 this.attackCooldown.reset();
                 this.changeColor(Color.CYAN);
