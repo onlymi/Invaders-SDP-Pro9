@@ -81,17 +81,17 @@ class GameCharacterTest {
         TestCharacter character = new TestCharacter();
         
         // 스탯 레벨 0 Test
-        assertEquals(100, character..getBaseStats().MaxHealthPoints());
+        assertEquals(100, character.getBaseStats().MaxHealthPoints);
         assertEquals(100, character.getCurrentHealthPoints());
-        assertEquals(100, character.getBaseStats().MaxManaPoints());
-        assertEquals(100, character.getCurrentManaPoints());
-        assertEquals(1.0f, character.getBaseStats().MovementSpeed());
-        assertEquals(10, character.getBaseStats().PhysicalDamage());
-        assertEquals(10, character.getBaseStats().MagicalDamage());
-        assertEquals(1.0f, character.getBaseStats().AttackSpeed());
-        assertEquals(10.0f, character.getBaseStats().AttackRange());
-        assertEquals(0.05f, character.getBaseStats().CritChance());
-        assertEquals(0, character.getBaseStats().PhysicalDefense());
+        assertEquals(100, character.getBaseStats().MaxManaPoints);
+        assertEquals(100, character.getCurrentManaPoints);
+        assertEquals(1.0f, character.getBaseStats().MovementSpeed);
+        assertEquals(10, character.getBaseStats().PhysicalDamage);
+        assertEquals(10, character.getBaseStats().MagicalDamage);
+        assertEquals(1.0f, character.getBaseStats().AttackSpeed);
+        assertEquals(10.0f, character.getBaseStats().AttackRange);
+        assertEquals(0.05f, character.getBaseStats().CritChance);
+        assertEquals(0, character.getBaseStats().PhysicalDefense);
     }
     
     @Test
@@ -102,7 +102,7 @@ class GameCharacterTest {
         
         character.runUpgradeLogic();
         
-        assertEquals(120, character.getBaseStats().MaxHealthPoints());
+        assertEquals(120, character.getBaseStats().MaxHealthPoints);
         assertEquals(120, character.getCurrentHealthPoints());
         
         // 2레벨 증가 Test
@@ -110,14 +110,14 @@ class GameCharacterTest {
         character = new TestCharacter();
         character.runUpgradeLogic();
         
-        assertEquals(140, character.getBaseStats().MaxHealthPoints());
+        assertEquals(140, character.getBaseStats().MaxHealthPoints);
         assertEquals(140, character.getCurrentHealthPoints());
         
         // 이외의 스탯은 변경되지 않아야 함
-        assertEquals(100, character.getBaseStats().MaxManaPoints());
-        assertEquals(1.0f, character.getBaseStats().MovementSpeed());
-        assertEquals(10, character.getBaseStats().PhysicalDamage());
-        assertEquals(10, character.getBaseStats().MagicalDamage());
+        assertEquals(100, character.getBaseStats().MaxManaPoints);
+        assertEquals(1.0f, character.getBaseStats().MovementSpeed);
+        assertEquals(10, character.getBaseStats().PhysicalDamage);
+        assertEquals(10, character.getBaseStats().MagicalDamage);
     }
     
     @Test
@@ -127,7 +127,7 @@ class GameCharacterTest {
         
         character.runUpgradeLogic();
         
-        assertEquals(120, character.getBaseStats().MaxManaPoints());
+        assertEquals(120, character.getBaseStats().MaxManaPoints);
         assertEquals(120, character.getCurrentManaPoints());
         
         when(userStats.getStatLevel(1)).thenReturn(3);  // MP +60%
@@ -135,8 +135,8 @@ class GameCharacterTest {
         
         character.runUpgradeLogic();
         
-        assertEquals(160, character.getBaseStats().MaxManaPoints());
-        assertEquals(160, character.getCurrentManaPoints());
+        assertEquals(160, character.getBaseStats().MaxManaPoints);
+        assertEquals(160, character.getCurrentManaPoints);
     }
     
     @Test
@@ -148,15 +148,15 @@ class GameCharacterTest {
         
         character.runUpgradeLogic();
         
-        assertEquals(120, character.getBaseStats().MaxHealthPoints()); // HP +20%
-        assertEquals(120, character.getBaseStats().MaxManaPoints());   // MP +20%
-        assertEquals(1.1f, character.getBaseStats().MovementSpeed(), 0.001f); // Speed +10%
-        assertEquals(12, character.getBaseStats().PhysicalDamage());   // PhysicalDmg +20%
-        assertEquals(12, character.getBaseStats().MagicalDamage());    // MagicalDmg + 20%
-        assertEquals(1.1f, character.getBaseStats().AttackSpeed(), 0.001f); // AS +10%
-        assertEquals(11.0f, character.getBaseStats().AttackRange(), 0.001f); // Range +10%
-        assertEquals(0.1f, character.getBaseStats().CritChance(), 0.001f); // Crit +5%p (0.05 + 0.05)
-        assertEquals(2, character.getBaseStats().PhysicalDefense());   // Def +2
+        assertEquals(120, character.getBaseStats().MaxHealthPoints); // HP +20%
+        assertEquals(120, character.getBaseStats().MaxManaPoints);   // MP +20%
+        assertEquals(1.1f, character.getBaseStats().MovementSpeed, 0.001f); // Speed +10%
+        assertEquals(12, character.getBaseStats().PhysicalDamage);   // PhysicalDmg +20%
+        assertEquals(12, character.getBaseStats().MagicalDamage);    // MagicalDmg + 20%
+        assertEquals(1.1f, character.getBaseStats().AttackSpeed, 0.001f); // AS +10%
+        assertEquals(11.0f, character.getBaseStats().AttackRange, 0.001f); // Range +10%
+        assertEquals(0.1f, character.getBaseStats().CritChance, 0.001f); // Crit +5%p (0.05 + 0.05)
+        assertEquals(2, character.getBaseStats().PhysicalDefense);   // Def +2
     }
     
     @Test
@@ -174,7 +174,7 @@ class GameCharacterTest {
         
         // Math.ceil(1 * (1 + 0.1)) = 2.0 -> int 형변환 -> 2
         // Math.ceil(2 * (1 + 0.2)) = 3.0 -> int 형변환 -> 3
-        assertEquals(2, character.getBaseStats().PhysicalDamage());
-        assertEquals(3, character.getBaseStats().MagicalDamage());
+        assertEquals(2, character.getBaseStats().PhysicalDamage);
+        assertEquals(3, character.getBaseStats().MagicalDamage);
     }
 }
