@@ -230,7 +230,7 @@ public class GameScreen extends Screen {
         enemyShipFormation = new EnemyShipFormation(this.gameSettings);
         enemyShipFormation.attach(this);
         
-        if (this.level == 6) {
+        if (this.level == 1) {
             this.enemyShipFormation = null;
             this.bossShip = new BossShip(this.width / 2 - 42, 120);
             this.LOGGER.info("Boss Stage Initialized!");
@@ -413,7 +413,7 @@ public class GameScreen extends Screen {
                 if (this.bossShip != null) {
                     this.bossShip.update();
                     if (!this.bossShip.isDestroyed()) {
-                        this.bossShip.shoot(this.bullets);
+                        this.bossShip.shoot(this.bullets, this.ships);
                     }
                 }
                 
@@ -822,15 +822,44 @@ public class GameScreen extends Screen {
      * @return Result of the collision test.
      */
     private boolean checkCollision(final Entity a, final Entity b) {
-        int centerAX = a.getPositionX() + a.getWidth() / 2;
-        int centerAY = a.getPositionY() + a.getHeight() / 2;
-        int centerBX = b.getPositionX() + b.getWidth() / 2;
-        int centerBY = b.getPositionY() + b.getHeight() / 2;
-        int maxDistanceX = a.getWidth() / 2 + b.getWidth() / 2;
-        int maxDistanceY = a.getHeight() / 2 + b.getHeight() / 2;
-        int distanceX = Math.abs(centerAX - centerBX);
-        int distanceY = Math.abs(centerAY - centerBY);
-        return distanceX < maxDistanceX && distanceY < maxDistanceY;
+        // 1. Create a basic rectangle (based on current position and size)
+        java.awt.Rectangle r1 = new java.awt.Rectangle(a.getPositionX(), a.getPositionY(), a.getWidth(), a.getHeight());
+        java.awt.Rectangle r2 = new java.awt.Rectangle(b.getPositionX(), b.getPositionY(), b.getWidth(), b.getHeight());
+        
+        // 2. Without rotation (optimization): Perform fast quadrilateral collision detection as before.
+        if (a.getRotation() == 0 && b.getRotation() == 0) {
+            return r1.intersects(r2);
+        }
+        
+        // 3. When there is rotation: Precise shape collision detection (using Area)
+        java.awt.geom.Area areaA = new java.awt.geom.Area(r1);
+        java.awt.geom.Area areaB = new java.awt.geom.Area(r2);
+        
+        // Apply rotation to an entity (usually a laser)
+        if (a.getRotation() != 0) {
+            java.awt.geom.AffineTransform atA = new java.awt.geom.AffineTransform();
+            
+            double anchorX = r1.getCenterX();
+            double anchorY = r1.getCenterY();
+            
+            if (a.getSpriteType() == engine.AssetManager.SpriteType.BigLaserBeam) {
+                anchorY = r1.getY();
+            }
+            
+            atA.rotate(Math.toRadians(a.getRotation()), anchorX, anchorY);
+            areaA.transform(atA);
+        }
+        
+        // Apply rotation to b entity (mainly player) (possibly for scalability)
+        if (b.getRotation() != 0) {
+            java.awt.geom.AffineTransform atB = new java.awt.geom.AffineTransform();
+            atB.rotate(Math.toRadians(b.getRotation()), r2.getCenterX(), r2.getCenterY());
+            areaB.transform(atB);
+        }
+        
+        // Check if there is an intersection (overlapping area) between two shapes
+        areaA.intersect(areaB);
+        return !areaA.isEmpty();
     }
     
     /**

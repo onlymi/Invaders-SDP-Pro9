@@ -1,11 +1,14 @@
 package engine.renderer;
 
 import engine.AssetManager;
+import engine.AssetManager.SpriteType;
 import entity.Bullet;
 import entity.Entity;
 import entity.Ship;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 
 public class EntityRenderer {
     
@@ -49,23 +52,44 @@ public class EntityRenderer {
         // Calculate scaling ratios compared to original sprite
         float widthRatio = (float) entityWidth / (spriteWidth * 2);
         float heightRatio = (float) entityHeight / (spriteHeight * 2);
-        // --- End of scaling logic ---
+        Graphics2D g2d = (Graphics2D) g;
+        AffineTransform old = g2d.getTransform();
         
+        double anchorX = positionX + entityWidth / 2.0;
+        double anchorY = positionY + entityHeight / 2.0;
+        
+        if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
+            anchorY = positionY;
+        }
+        
+        if (entity.getRotation() != 0) {
+            g2d.rotate(Math.toRadians(entity.getRotation()), anchorX, anchorY);
+        }
         // Set drawing color again
         g.setColor(color);
-        // Draw the sprite with scaling applied
-        for (int i = 0; i < spriteWidth; i++) {
-            for (int j = 0; j < spriteHeight; j++) {
-                if (image[i][j]) {
-                    // Apply calculated scaling ratio to pixel positions and size
-                    g.fillRect(positionX + (int) (i * 2 * widthRatio),
-                        positionY + (int) (j * 2 * heightRatio),
-                        (int) Math.ceil(widthRatio * 2), // Adjust the width of the pixel
-                        (int) Math.ceil(heightRatio * 2) // Adjust the height of the pixel
-                    );
+        
+        
+        if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
+            g.fillRect(positionX, positionY, entityWidth, entityHeight);
+            
+            g.setColor(Color.WHITE);
+            g.fillRect(positionX + entityWidth / 4, positionY, entityWidth / 2, entityHeight);
+        }
+        else {
+            for (int i = 0; i < spriteWidth; i++) {
+                for (int j = 0; j < spriteHeight; j++) {
+                    if (image[i][j]) {
+                        g.fillRect(positionX + (int) (i * 2 * widthRatio),
+                            positionY + (int) (j * 2 * heightRatio),
+                            (int) Math.ceil(widthRatio * 2),
+                            (int) Math.ceil(heightRatio * 2)
+                        );
+                    }
                 }
             }
         }
+        
+        g2d.setTransform(old);
     }
     
     private static Color getColor(Entity entity) {

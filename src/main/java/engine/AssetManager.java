@@ -138,9 +138,13 @@ public final class AssetManager {
          */
         BigLaserBeam(SourceCategory.BULLET, 11, 20),
         /**
-         * Boss beam.
+         * Boss laser effect.
          */
-        GasterBlaster(SourceCategory.BULLET, 22, 18),
+        GasterBlaster(SourceCategory.BULLET, 128, 128),
+        /**
+         * Boss laser effect2.
+         */
+        GasterBlasterOpen(SourceCategory.BULLET, 32, 32),
         /**
          * First enemy ship - first form.
          */
