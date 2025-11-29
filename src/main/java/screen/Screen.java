@@ -171,7 +171,7 @@ public class Screen {
     }
     
     /**
-     * (for test) Getter for isRunning
+     * (for test) Getter for isRunning.
      *
      * @return isRunning
      */

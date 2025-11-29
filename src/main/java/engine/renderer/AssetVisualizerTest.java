@@ -113,9 +113,7 @@ public class AssetVisualizerTest extends JFrame {
             } else {
                 drawError(g2d, pWidth, pHeight);
             }
-        }
-        // 픽셀 아트(비트맵) 타입인 경우
-        else {
+        } else { // 픽셀 아트(비트맵) 타입인 경우
             boolean[][] spriteMap = assetManager.getSpriteMap(type);
             if (spriteMap != null) {
                 int spriteWidth = spriteMap.length;
