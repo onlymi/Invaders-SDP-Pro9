@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import engine.Core;
 import engine.UserStats;
+import entity.Entity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,8 @@ class GameCharacterTest {
         
         // 테스트용 구현체
         public TestCharacter() {
-            super(CharacterType.ARCHER, 0, 0, 10, 10, Entity.Team.PLAYER1, 1); // ARCHER 타입을 베이스로 하되 값은 검증 시 조정
+            super(CharacterType.ARCHER, 0, 0, 10, 10, Entity.Team.PLAYER1,
+                1); // ARCHER 타입을 베이스로 하되 값은 검증 시 조정
             // 강제로 기본값 재설정
             this.baseStats.maxHealthPoints = 100;
             this.baseStats.maxManaPoints = 100;
