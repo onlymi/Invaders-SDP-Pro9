@@ -1,5 +1,7 @@
 package entity.character;
 
+import engine.Core;
+import engine.UserStats;
 import entity.Entity;
 import entity.buff.Buff;
 import entity.skill.Skill;
@@ -53,7 +55,8 @@ public abstract class GameCharacter extends Entity {
         this.currentManaPoints = baseStats.maxManaPoints;
         // Initial character unlocked stat
         this.unlocked = type.isUnlocked();
-        
+        // 업그레이드 스탯 적용
+        applyUserUpgrades();
         recalculateStats();
     }
     
@@ -73,6 +76,62 @@ public abstract class GameCharacter extends Entity {
                 iterator.remove();
             }
         }
+    }
+    
+    /**
+     * Applies stat upgrades from the user's store purchases. Upgrades are applied as percentage or
+     * additive bonuses to the base stats.
+     */
+    protected void applyUserUpgrades() { // Test에서 오버라이딩 및 호출이 가능하도록 protected로 변경.
+        engine.UserStats stats = engine.Core.getUserStats();
+        if (stats == null) {
+            return;
+        }
+        // 0: Health (20% per level)
+        if (stats.getStatLevel(0) > 0) {
+            this.baseStats.maxHealthPoints = (int) (this.baseStats.maxHealthPoints * (1 + 0.2 * stats.getStatLevel(0)));
+            this.currentHealthPoints = this.baseStats.maxHealthPoints; // Reset current HP to new max
+        }
+        
+        // 1: Mana (20% per level)
+        if (stats.getStatLevel(1) > 0) {
+            this.baseStats.maxManaPoints = (int) (this.baseStats.maxManaPoints * (1 + 0.2 * stats.getStatLevel(1)));
+            this.currentManaPoints = this.baseStats.maxManaPoints; // Reset current MP to new max
+        }
+        
+        // 2: Speed (10% per level)
+        if (stats.getStatLevel(2) > 0) {
+            this.baseStats.movementSpeed = this.baseStats.movementSpeed * (1 + 0.1f * stats.getStatLevel(2));
+        }
+        
+        // 3: Damage (20% per level) - Applies to both Physical and Magical
+        if (stats.getStatLevel(3) > 0) {
+            double multiplier = 1 + 0.2 * stats.getStatLevel(3);
+            this.baseStats.physicalDamage = (int) (Math.ceil(this.baseStats.physicalDamage * multiplier));
+            this.baseStats.magicalDamage = (int) (Math.ceil(this.baseStats.magicalDamage * multiplier));
+        }
+        
+        // 4: Attack Speed (10% per level)
+        if (stats.getStatLevel(4) > 0) {
+            this.baseStats.attackSpeed = this.baseStats.attackSpeed * (1 + 0.1f * stats.getStatLevel(4));
+        }
+        
+        // 5: Attack Range (10% per level)
+        if (stats.getStatLevel(5) > 0) {
+            this.baseStats.attackRange = this.baseStats.attackRange * (1 + 0.1f * stats.getStatLevel(5));
+        }
+        
+        // 6: Critical Chance (Add 5% per level)
+        if (stats.getStatLevel(6) > 0) {
+            this.baseStats.critChance += 0.05f * stats.getStatLevel(6);
+        }
+        
+        // 7: Defence (Add 2 per level)
+        if (stats.getStatLevel(7) > 0) {
+            this.baseStats.physicalDefense += 2 * stats.getStatLevel(7);
+        }
+
+        this.currentStats = new CharacterStats(this.baseStats);
     }
     
     /**

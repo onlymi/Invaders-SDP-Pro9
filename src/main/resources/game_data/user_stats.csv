@@ -1,1 +1,4 @@
 id,coin,healthLevel,manaLevel,speedLevel,damageLevel,attackSpeedLevel,attackRangeLevel,criticalLevel,defenceLevel
+1234,0,0,1,0,0,0,0,0,0
+1,100,0,0,0,0,0,0,0,0
+2,0,0,1,0,0,0,0,0,0

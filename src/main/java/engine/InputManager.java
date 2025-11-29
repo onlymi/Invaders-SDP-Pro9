@@ -22,8 +22,8 @@ import java.io.IOException;
 
 public final class InputManager implements KeyListener, MouseListener,
     MouseMotionListener { // add MouseListener, MouseMotionListener param
-
-
+    
+    
     /**
      * Number of recognised keys.
      */
@@ -32,12 +32,12 @@ public final class InputManager implements KeyListener, MouseListener,
      * Array with the keys marked as pressed or not.
      */
     private static boolean[] keys;
-
+    
     /**
      * Mouse pressed state.
      */
     private static boolean mousePressed; // add this line
-
+    
     /**
      * Singleton instance of the class.
      */
@@ -50,38 +50,38 @@ public final class InputManager implements KeyListener, MouseListener,
      * Flag to check if a character was typed.
      */
     private static boolean charTyped;
-
+    
     // add three variable
-
+    
     private static int mouseX;
     private static int mouseY;
     private static boolean mouseClicked;
-
+    
     /**
      * Declare variables to save and return input keys
      */
     private int lastPressedKey = -1;
     private static final String KEY_CONFIG_FILE = "game_data/keyconfig.csv";
-
+    
     protected static int[] player1Keys;
     protected static int[] player2Keys;
-
+    
     public void setPlayer1Keys(int[] newKeys) {
         player1Keys = newKeys.clone();
     }
-
+    
     public int[] getPlayer1Keys() {
         return player1Keys.clone();
     }
-
+    
     public void setPlayer2Keys(int[] newKeys) {
         player2Keys = newKeys.clone();
     }
-
+    
     public int[] getPlayer2Keys() {
         return player2Keys.clone();
     }
-
+    
     /**
      * Private constructor.
      */
@@ -90,17 +90,17 @@ public final class InputManager implements KeyListener, MouseListener,
         lastCharTyped = '\0';
         charTyped = false;
     }
-
+    
     // Player 1 item use key (player1Keys[3])
     public boolean isP1UseItemPressed() {
         return isKeyDown(player1Keys[3]);
     }
-
+    
     // Player 2 item use key (player2Keys[3])
     public boolean isP2UseItemPressed() {
         return isKeyDown(player2Keys[3]);
     }
-
+    
     /**
      * Returns shared instance of InputManager.
      *
@@ -112,7 +112,7 @@ public final class InputManager implements KeyListener, MouseListener,
         }
         return instance;
     }
-
+    
     /**
      * Returns the last character typed and resets the flag.
      *
@@ -125,7 +125,7 @@ public final class InputManager implements KeyListener, MouseListener,
         }
         return '\0';
     }
-
+    
     /**
      * Returns the last character typed by the user and consumes it.
      *
@@ -136,8 +136,8 @@ public final class InputManager implements KeyListener, MouseListener,
         lastCharTyped = '\0';
         return typedChar;
     }
-
-
+    
+    
     /**
      * Returns true if the provided key is currently pressed.
      *
@@ -147,64 +147,64 @@ public final class InputManager implements KeyListener, MouseListener,
     public boolean isKeyDown(final int keyCode) {
         return keys[keyCode];
     }
-
+    
     // === PLAYER 1 CONTROLS (Existing functionality) ===
     // Player 1 uses WASD + Spacebar configuration
-
+    
     /**
      * Checks if Player 1's move left key (player1Keys[0]) is pressed.
      *
      * @return True if Player 1 is moving left
      */
-
+    
     public boolean isP1LeftPressed() {
         return isKeyDown(player1Keys[0]);
     }
-
+    
     /**
      * Checks if Player 1's move right key (player1Keys[1]) is pressed.
      *
      * @return True if Player 1 is moving right
      */
-
+    
     public boolean isP1RightPressed() {
         return isKeyDown(player1Keys[1]);
     }
-
+    
     /**
      * Checks if Player 1's shoot key (player1keys[2]) is pressed.
      *
      * @return True if Player 1 is shooting
      */
-
+    
     public boolean isP1ShootPressed() {
         return isKeyDown(player1Keys[2]);
     }
-
+    
     // ==================== PLAYER 2 CONTROLS ====================
     // Player 2 uses Arrow Keys + Enter configuration
     // Added for two-player mode implementation
-
+    
     /**
      * Checks if Player 2's move left key (player2keys[0] is pressed.
      *
      * @return True if Player 2 is moving left
      */
-
+    
     public boolean isP2LeftPressed() {
         return isKeyDown(player2Keys[0]);
     }
-
+    
     /**
      * Checks if Player 2's move right key (player2keys[1]) is pressed.
      *
      * @return True if Player 2 is moving right
      */
-
+    
     public boolean isP2RightPressed() {
         return isKeyDown(player2Keys[1]);
     }
-
+    
     /**
      * Checks if Player 2's shoot key (player2Keys[2]) is pressed.
      *
@@ -213,7 +213,7 @@ public final class InputManager implements KeyListener, MouseListener,
     public boolean isP2ShootPressed() {
         return isKeyDown(player2Keys[2]);
     }
-
+    
     /**
      * Changes the state of the key to pressed.
      *
@@ -223,15 +223,15 @@ public final class InputManager implements KeyListener, MouseListener,
     public void keyPressed(final KeyEvent key) {
         int code = key.getKeyCode();
         if (code >= 0 && code < NUM_KEYS) {
-
+            
             if (!keys[code]) {
                 lastPressedKey = code;
             }
-
+            
             keys[code] = true;
         }
     }
-
+    
     /**
      * Changes the state of the key to not pressed.
      *
@@ -243,7 +243,7 @@ public final class InputManager implements KeyListener, MouseListener,
             keys[key.getKeyCode()] = false;
         }
     }
-
+    
     /**
      * Does nothing.
      *
@@ -254,14 +254,14 @@ public final class InputManager implements KeyListener, MouseListener,
         lastCharTyped = key.getKeyChar();
         charTyped = true;
     }
-
+    
     // Save and return the last pressed key
     public int getLastPressedKey() {
         int temp = lastPressedKey;
         lastPressedKey = -1;
         return temp;
     }
-
+    
     /**
      * Clears any pending key or character input. (Prevents unintended key carry-over between
      * screens)
@@ -270,21 +270,21 @@ public final class InputManager implements KeyListener, MouseListener,
         lastCharTyped = '\0';
         charTyped = false;
     }
-
+    
     // Create and return a project path/res/keyconfig.csv file object
     private File getKeyConfigFile() {
         String projectPath = System.getProperty("user.dir");
         String filePath = projectPath + File.separator + KEY_CONFIG_FILE;
-
+        
         File file = new File(filePath);
         File folder = file.getParentFile(); // "game_data" 폴더
         if (folder != null && !folder.exists()) {
             folder.mkdirs(); // "game_data" 폴더가 없으면 생성
         }
-
+        
         return file;
     }
-
+    
     // write a key code in a keyconfig.csv file
     public void saveKeyConfig() {
         try {
@@ -293,7 +293,7 @@ public final class InputManager implements KeyListener, MouseListener,
             if (!folder.exists()) {
                 folder.mkdirs();
             }
-
+            
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                 writer.write(player1Keys[0] + "," + player1Keys[1] + "," + player1Keys[2] + ","
                     + player1Keys[3]);
@@ -305,36 +305,40 @@ public final class InputManager implements KeyListener, MouseListener,
             e.printStackTrace();
         }
     }
-
+    
     // Import a file and change the saved input key code
     public void loadKeyConfig() {
         File file = getKeyConfigFile();
-
+        
         if (!file.exists()) {
             return;
         }
-
+        
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line1 = reader.readLine();
             String line2 = reader.readLine();
             if (line1 != null) {
                 String[] parts = line1.split(",");
-                for (int i = 0; i < 4; i++) {
-                    player1Keys[i] = Integer.parseInt(parts[i]);
+                if (parts.length >= 4) {
+                    for (int i = 0; i < 4; i++) {
+                        player1Keys[i] = Integer.parseInt(parts[i]);
+                    }
                 }
             }
             if (line2 != null) {
                 String[] parts = line2.split(",");
-                for (int i = 0; i < 4; i++) {
-                    player2Keys[i] = Integer.parseInt(parts[i]);
+                if (parts.length >= 4) {
+                    for (int i = 0; i < 4; i++) {
+                        player2Keys[i] = Integer.parseInt(parts[i]);
+                    }
                 }
             }
-
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
+    
     /**
      * After setting the default, import the saved key settings from the file and cover the default values
      */
@@ -343,10 +347,10 @@ public final class InputManager implements KeyListener, MouseListener,
         player1Keys = new int[]{KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_SPACE, KeyEvent.VK_Q};
         player2Keys = new int[]{KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_ENTER,
             KeyEvent.VK_SLASH};
-
+        
         instance.loadKeyConfig();
     }
-
+    
     /**
      * Resets all key states to not pressed.
      */
@@ -355,16 +359,16 @@ public final class InputManager implements KeyListener, MouseListener,
             keys[i] = false;
         }
     }
-
-
+    
+    
     public int getMouseX() {
         return mouseX;
     } // add this function
-
+    
     public int getMouseY() {
         return mouseY;
     } // add this function
-
+    
     public boolean isMouseClicked() { // add this function
         if (mouseClicked) {
             mouseClicked = false;
@@ -372,19 +376,19 @@ public final class InputManager implements KeyListener, MouseListener,
         }
         return false;
     }
-
+    
     @Override
     public void mouseClicked(final MouseEvent e) { // add this function
         // Can be left empty or used if needed
     }
-
+    
     @Override
     public void mousePressed(final MouseEvent e) { // add this function
         mousePressed = true;
         mouseX = e.getX();
         mouseY = e.getY();
     }
-
+    
     @Override
     public void mouseReleased(final MouseEvent e) { // add this function
         mousePressed = false;
@@ -392,17 +396,17 @@ public final class InputManager implements KeyListener, MouseListener,
         mouseY = e.getY();
         mouseClicked = true;
     }
-
+    
     @Override
     public void mouseEntered(final MouseEvent e) { // add this function
-
+    
     }
-
+    
     @Override
     public void mouseExited(final MouseEvent e) { // add this function
-
+    
     }
-
+    
     /**
      * Added mouse move/drag event to update mouse position right now
      */
@@ -411,17 +415,17 @@ public final class InputManager implements KeyListener, MouseListener,
         mouseX = e.getX();
         mouseY = e.getY();
     }
-
+    
     @Override
     public void mouseDragged(final MouseEvent e) {
         mouseX = e.getX();
         mouseY = e.getY();
     }
-
+    
     public boolean isMousePressed() {
         return mousePressed;
     }
-
+    
     public String getKeyString(int keyCode) {
         switch (keyCode) {
             case KeyEvent.VK_LEFT:
@@ -470,5 +474,5 @@ public final class InputManager implements KeyListener, MouseListener,
                 return KeyEvent.getKeyText(keyCode).toUpperCase();
         }
     }
-
+    
 }
