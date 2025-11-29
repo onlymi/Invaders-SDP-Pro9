@@ -10,9 +10,9 @@ import engine.renderer.GameScreenRenderer;
 import engine.renderer.HighScoreScreenRenderer;
 import engine.renderer.LogInScreenRenderer;
 import engine.renderer.PlayModeSelectionScreenRenderer;
+import engine.renderer.PlayerSelectionScreenRenderer;
 import engine.renderer.ScoreScreenRenderer;
 import engine.renderer.SettingScreenRenderer;
-import engine.renderer.ShipSelectionMenuRenderer;
 import engine.renderer.SignUpScreenRenderer;
 import engine.renderer.StoreScreenRenderer;
 import engine.renderer.TitleScreenRenderer;
@@ -89,7 +89,7 @@ public final class DrawManager {
     private HighScoreScreenRenderer highScoreScreenRenderer;
     private SettingScreenRenderer settingScreenRenderer;
     private PlayModeSelectionScreenRenderer playModeSelectionScreenRenderer;
-    private ShipSelectionMenuRenderer shipSelectionMenuRenderer;
+    private PlayerSelectionScreenRenderer playerSelectionScreenRenderer;
     private GameScreenRenderer gameScreenRenderer;
     private ScoreScreenRenderer scoreScreenRenderer;
     private AuthScreenRenderer authScreenRenderer;
@@ -121,7 +121,7 @@ public final class DrawManager {
         this.settingScreenRenderer = new SettingScreenRenderer(this.commonRenderer);
         this.playModeSelectionScreenRenderer = new PlayModeSelectionScreenRenderer(
             this.commonRenderer);
-        this.shipSelectionMenuRenderer = new ShipSelectionMenuRenderer(this.commonRenderer);
+        this.playerSelectionScreenRenderer = new PlayerSelectionScreenRenderer(this.commonRenderer);
         this.gameScreenRenderer = new GameScreenRenderer(this.commonRenderer,
             ItemManager.getInstance());
         this.scoreScreenRenderer = new ScoreScreenRenderer(this.commonRenderer);
@@ -185,8 +185,8 @@ public final class DrawManager {
         return this.playModeSelectionScreenRenderer;
     }
     
-    public ShipSelectionMenuRenderer getShipSelectionMenuRenderer() {
-        return this.shipSelectionMenuRenderer;
+    public PlayerSelectionScreenRenderer getShipSelectionMenuRenderer() {
+        return this.playerSelectionScreenRenderer;
     }
     
     public GameScreenRenderer getGameScreenRenderer() {
