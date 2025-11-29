@@ -49,6 +49,8 @@ public final class BulletPool {
             bullet.setBossBullet(false);
             bullet.setSize(width, height);  // bullet size
             bullet.setTeam(team);    // team setting
+            bullet.setRotation(0);
+            bullet.resetHoming();
         } else {
             bullet = new Bullet(positionX, positionY, width, height, speed);
             bullet.setPositionX(positionX - width / 2);
@@ -56,6 +58,8 @@ public final class BulletPool {
             bullet.setBossBullet(false);
             bullet.setSize(width, height); // bullet size
             bullet.setTeam(team); // team setting
+            bullet.setRotation(0);
+            bullet.resetHoming();
         }
         bullet.setSprite();
         return bullet;

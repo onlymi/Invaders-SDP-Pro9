@@ -124,6 +124,8 @@ public final class AssetManager {
         /**
          * Player bullet.
          */
+        GasterBlaster(SourceCategory.BULLET, 128, 128),
+        
         Bullet(SourceCategory.BULLET, 3, 5),
         /**
          * Enemy bullet.
@@ -134,17 +136,12 @@ public final class AssetManager {
          */
         BossBullet(SourceCategory.BULLET, 5, 5),
         /**
-         * Boss flash.
+         * Boss laser.
          */
         BigLaserBeam(SourceCategory.BULLET, 11, 20),
         /**
          * Boss laser effect.
          */
-        GasterBlaster(SourceCategory.BULLET, 128, 128),
-        /**
-         * Boss laser effect2.
-         */
-        GasterBlasterOpen(SourceCategory.BULLET, 32, 32),
         /**
          * First enemy ship - first form.
          */

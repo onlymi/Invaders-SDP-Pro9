@@ -208,6 +208,7 @@ public final class Core {
         return InputManager.getInstance();
     }
     
+    
     /**
      * Controls access to the file manager.
      *

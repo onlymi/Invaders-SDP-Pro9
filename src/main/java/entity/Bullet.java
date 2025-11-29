@@ -2,6 +2,8 @@ package entity;
 
 import engine.AssetManager.SpriteType;
 import java.awt.Color;
+import engine.Core;
+import engine.utils.Cooldown;
 
 /**
  * Implements a bullet that moves vertically up or down.
@@ -18,6 +20,11 @@ public class Bullet extends Entity {
 
     private int speedX = 0;
     private int speedY = 0;
+    
+    private Ship target;
+    private boolean isHoming = false;
+    private static final double HOMING_AGILITY = 4.0;
+    private Cooldown homingTimer;
 
     /**
      * 2P mode: id number to specifying who fired the bullet - 0 = enemy, 1 = P1, 2 = P2
@@ -91,6 +98,23 @@ public class Bullet extends Entity {
      * Updates the bullet's position.
      */
     public final void update() {
+        if (this.isHoming) {
+            if (this.homingTimer != null && this.homingTimer.checkFinished()) {
+                // 화면 밖으로 보내버려서 GameScreen이 알아서 삭제하게 함 (Recycle)
+                this.positionY = 2000;
+                return;
+            }
+            
+            if (this.target != null && !this.target.isDestroyed()) {
+                double dx = (target.getPositionX() + target.getWidth() / 2.0) - (this.positionX + this.width / 2.0);
+                double dy = (target.getPositionY() + target.getHeight() / 2.0) - (this.positionY + this.height / 2.0);
+                double angle = Math.atan2(dy, dx);
+                
+                this.speedX = (int) (HOMING_AGILITY * Math.cos(angle));
+                this.speed = (int) (HOMING_AGILITY * Math.sin(angle));
+                this.rotation = Math.toDegrees(angle) - 90;
+            }
+        }
         this.positionY += this.speed;
         this.positionX += this.speedX;
     }
@@ -137,5 +161,17 @@ public class Bullet extends Entity {
         this.ownerPlayerId = playerId; // keep them in sync
     }
     
+    public void setHoming(Ship target) {
+        this.target = target;
+        this.isHoming = true;
+        this.homingTimer = Core.getCooldown(5000); // 5초 수명
+        this.homingTimer.reset();
+    }
     
+    public void resetHoming() {
+        this.target = null;
+        this.isHoming = false;
+        this.rotation = 0;
+        this.homingTimer = null;
+    }
 }
