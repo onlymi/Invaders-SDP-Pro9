@@ -257,8 +257,8 @@ public class Ship extends Entity {
         int speedMultiplier = getBulletSpeedMultiplier();
         int currentBulletSpeed = this.bulletSpeed * speedMultiplier;
         
-        Weapon weapon = WeaponPool.getWeapon(x, y, currentBulletSpeed,
-            this.bulletWidth, this.bulletHeight, this.getTeam());
+        Weapon weapon = WeaponPool.getWeapon(x, y, this.bulletWidth, this.bulletHeight,
+            currentBulletSpeed, this.getTeam());
         weapon.setOwnerPlayerId(this.getPlayerId());
         weapons.add(weapon);
     }

@@ -113,8 +113,8 @@ public class BossShip extends EnemyShip {
                 // Homing Missile Fire Logic
                 
                 // Placeholder: Firing a generic bullet as a missile for now
-                Weapon missile = WeaponPool.getWeapon(spawnX, spawnY,
-                    MISSILE_SPEED, BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
+                Weapon missile = WeaponPool.getWeapon(spawnX, spawnY, BOSS_BULLET_WIDTH,
+                    BOSS_BULLET_HEIGHT, MISSILE_SPEED, Entity.Team.ENEMY);
                 // **Needs dedicated HomingBullet type for actual tracking logic**
                 weapons.add(missile);
                 
@@ -129,8 +129,8 @@ public class BossShip extends EnemyShip {
             if (this.laserChargeCooldown.checkFinished()) {
                 // Laser Fire Logic
                 // **Placeholder: Firing a wide, fast bullet as a Laser**
-                Weapon laser = WeaponPool.getWeapon(spawnX, spawnY,
-                    12, BOSS_BULLET_WIDTH * 2, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
+                Weapon laser = WeaponPool.getWeapon(spawnX, spawnY, BOSS_BULLET_WIDTH * 2,
+                    BOSS_BULLET_HEIGHT, 12, Entity.Team.ENEMY);
                 weapons.add(laser);
                 
                 // Switch back to Homing Missile phase and reset colors
@@ -149,10 +149,8 @@ public class BossShip extends EnemyShip {
                     int speedX = (int) (SPREAD_SPEED * Math.sin(angle));
                     
                     Weapon spreadWeapon = WeaponPool.getWeapon(
-                        spawnX + speedX * 3,
-                        spawnY,
-                        Math.max(1, SPREAD_SPEED),
-                        BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
+                        spawnX + speedX * 3, spawnY, BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT,
+                        Math.max(1, SPREAD_SPEED), Entity.Team.ENEMY);
                     weapons.add(spreadWeapon);
                 }
                 
