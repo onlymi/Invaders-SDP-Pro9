@@ -91,6 +91,16 @@ public final class InputManager implements KeyListener, MouseListener,
         charTyped = false;
     }
     
+    // Player 1 item use key (player1Keys[3])
+    public boolean isP1UseItemPressed() {
+        return isKeyDown(player1Keys[3]);
+    }
+    
+    // Player 2 item use key (player2Keys[3])
+    public boolean isP2UseItemPressed() {
+        return isKeyDown(player2Keys[3]);
+    }
+    
     /**
      * Returns shared instance of InputManager.
      *
@@ -211,9 +221,14 @@ public final class InputManager implements KeyListener, MouseListener,
      */
     @Override
     public void keyPressed(final KeyEvent key) {
-        if (key.getKeyCode() >= 0 && key.getKeyCode() < NUM_KEYS) {
-            keys[key.getKeyCode()] = true;
-            lastPressedKey = key.getKeyCode();
+        int code = key.getKeyCode();
+        if (code >= 0 && code < NUM_KEYS) {
+            
+            if (!keys[code]) {
+                lastPressedKey = code;
+            }
+            
+            keys[code] = true;
         }
     }
     
@@ -280,9 +295,11 @@ public final class InputManager implements KeyListener, MouseListener,
             }
             
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                writer.write(player1Keys[0] + "," + player1Keys[1] + "," + player1Keys[2]);
+                writer.write(player1Keys[0] + "," + player1Keys[1] + "," + player1Keys[2] + ","
+                    + player1Keys[3]);
                 writer.newLine();
-                writer.write(player2Keys[0] + "," + player2Keys[1] + "," + player2Keys[2]);
+                writer.write(player2Keys[0] + "," + player2Keys[1] + "," + player2Keys[2] + ","
+                    + player2Keys[3]);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -302,14 +319,18 @@ public final class InputManager implements KeyListener, MouseListener,
             String line2 = reader.readLine();
             if (line1 != null) {
                 String[] parts = line1.split(",");
-                for (int i = 0; i < 3; i++) {
-                    player1Keys[i] = Integer.parseInt(parts[i]);
+                if (parts.length >= 4) {
+                    for (int i = 0; i < 4; i++) {
+                        player1Keys[i] = Integer.parseInt(parts[i]);
+                    }
                 }
             }
             if (line2 != null) {
                 String[] parts = line2.split(",");
-                for (int i = 0; i < 3; i++) {
-                    player2Keys[i] = Integer.parseInt(parts[i]);
+                if (parts.length >= 4) {
+                    for (int i = 0; i < 4; i++) {
+                        player2Keys[i] = Integer.parseInt(parts[i]);
+                    }
                 }
             }
             
@@ -323,8 +344,9 @@ public final class InputManager implements KeyListener, MouseListener,
      */
     static {
         instance = new InputManager();
-        player1Keys = new int[]{KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_SPACE};
-        player2Keys = new int[]{KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_ENTER};
+        player1Keys = new int[]{KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_SPACE, KeyEvent.VK_Q};
+        player2Keys = new int[]{KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_ENTER,
+            KeyEvent.VK_SLASH};
         
         instance.loadKeyConfig();
     }

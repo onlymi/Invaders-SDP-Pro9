@@ -101,23 +101,27 @@ public class TitleScreen extends Screen {
                         this.returnCode = 5; // go to PlayScreen
                         this.isRunning = false;
                         break;
-                    case 1: // "Achievements"
+                    case 1:
+                        this.returnCode = 12;
+                        this.isRunning = false;
+                        break;
+                    case 2: // "Achievements"
                         this.returnCode = 3;
                         this.isRunning = false;
                         break;
-                    case 2: // "High scores"
+                    case 3: // "High scores"
                         this.returnCode = 8;
                         this.isRunning = false;
                         break;
-                    case 3: // "Settings"
+                    case 4: // "Settings"
                         this.returnCode = 4;
                         this.isRunning = false;
                         break;
-                    case 4: // "Logout"
+                    case 5: // "Logout"
                         this.returnCode = 9;
                         this.isRunning = false;
                         break;
-                    case 5: // "Exit"
+                    case 6: // "Exit"
                         this.returnCode = 0;
                         this.isRunning = false;
                         break;
@@ -149,7 +153,7 @@ public class TitleScreen extends Screen {
      * Shifts the focus to the next menu item. - modified for 2P mode selection
      */
     private void nextMenuItem() {
-        this.menuIndex = (this.menuIndex + 1) % 6;
+        this.menuIndex = (this.menuIndex + 1) % 7;
         drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, this.menuIndex);
     }
     
@@ -157,8 +161,8 @@ public class TitleScreen extends Screen {
      * Shifts the focus to the previous menu item.
      */
     private void previousMenuItem() {
-        this.menuIndex = (this.menuIndex + 5)
-            % 6; // Fix : an issue where only the down arrow keys on the keyboard are entered and not up
+        this.menuIndex = (this.menuIndex + 6)
+            % 7; // Fix : an issue where only the down arrow keys on the keyboard are entered and not up
         drawManager.getTitleScreenRenderer().menuHover(this.menuSpace, this.menuIndex);
     }
     

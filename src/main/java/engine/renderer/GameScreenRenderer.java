@@ -3,6 +3,7 @@ package engine.renderer;
 import animations.Explosion;
 import engine.AssetManager;
 import engine.Core;
+import engine.GameState;
 import engine.gameplay.achievement.Achievement;
 import engine.gameplay.item.ItemData;
 import engine.gameplay.item.ItemManager;
@@ -31,6 +32,7 @@ public class GameScreenRenderer {
 
     // to query last picked item for toast
     private final ItemManager itemManager;
+    private final java.util.Set<String> warnedSpriteTypes = new java.util.HashSet<>();
 
     /**
      * Font properties.
@@ -509,4 +511,164 @@ public class GameScreenRenderer {
         explosions.add(new Explosion(x, y, sprite, duration));
     }
 
+    public void drawActiveItemSlots(Graphics g, final Screen screen, final GameState gameState) {
+        if (gameState == null) {
+            return;
+        }
+
+        Graphics2D g2d = (Graphics2D) g.create();
+        try {
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int slotSize = 46;
+            int padding = 10;
+            int margin = 18;
+
+            int y = screen.getHeight() - margin - slotSize;
+
+            int xP1 = screen.getWidth() - margin - slotSize * 2 - padding;
+
+            drawOneActiveSlot(g2d, screen, gameState, 0, xP1, y, slotSize, "P1");
+
+            // --- P2 slot: Right ---
+            if (gameState.isCoop()) {
+                int xP2 = screen.getWidth() - margin - slotSize;
+                drawOneActiveSlot(g2d, screen, gameState, 1, xP2, y, slotSize, "P2");
+            }
+
+        } finally {
+            g2d.dispose();
+        }
+    }
+
+    private void drawOneActiveSlot(Graphics2D g2d, Screen screen, GameState gameState,
+        int playerIndex, int x, int y, int size, String label) {
+
+        // slot box
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.55f));
+        g2d.setColor(Color.BLACK);
+        g2d.fillRoundRect(x, y, size, size, 8, 8);
+
+        g2d.setComposite(AlphaComposite.SrcOver);
+        g2d.setColor(Color.WHITE);
+        g2d.setStroke(new BasicStroke(1.5f));
+        g2d.drawRoundRect(x, y, size, size, 8, 8);
+
+        // guide label for press key
+        g2d.setFont(commonRenderer.getFontRegular());
+        g2d.setColor(Color.WHITE);
+        String keyLabel = (playerIndex == 0) ? "Q" : "/";
+        g2d.drawString(keyLabel, x + 4, y - 2);
+
+        // active item
+        List<ItemData> actives = gameState.getActiveItemData(playerIndex);
+        if (actives == null || actives.isEmpty()) {
+            return;
+        }
+
+        ItemData active = actives.get(0);
+
+        AssetManager.SpriteType st = parseSpriteType(active.getSpriteType());
+        if (st == null) {
+            return;
+        }
+
+        boolean[][] sprite = AssetManager.getInstance().getSprite(st);
+        if (sprite == null) {
+            return;
+        }
+
+        int tier = parseDropTier(active.getDropTier());
+
+        Color uiColor = colorByTier(tier);
+        drawSpriteFitBox(g2d, sprite, x, y, size, uiColor);
+    }
+
+    /**
+     * helper: draw a sprite to size box
+     */
+    private void drawSpriteFitBox(Graphics2D g2d, boolean[][] sprite,
+        int x, int y, int boxSize, Color color) {
+        if (sprite == null) {
+            return;
+        }
+
+        int h = sprite.length;
+        int w = sprite[0].length;
+
+        int px = Math.max(1, boxSize / Math.max(w, h));
+
+        int startX = x + (boxSize - w * px) / 2;
+        int startY = y + (boxSize - h * px) / 2;
+
+        g2d.setColor(color != null ? color : Color.GREEN);
+
+        for (int r = 0; r < h; r++) {
+            for (int c = 0; c < w; c++) {
+                if (sprite[r][c]) {
+                    g2d.fillRect(startX + c * px, startY + r * px, px, px);
+                }
+            }
+        }
+    }
+
+    private AssetManager.SpriteType parseSpriteType(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        raw = raw.trim();
+
+        // DEFAULT means "no sprite" for this item. We ignore it silently.
+        if (raw.equalsIgnoreCase("DEFAULT")) {
+            return null;
+        }
+
+        try {
+            return AssetManager.SpriteType.valueOf(raw);
+        } catch (IllegalArgumentException e) {
+
+            // Print the error only once to avoid spamming logs every frame.
+            if (!warnedSpriteTypes.contains(raw)) {
+                warnedSpriteTypes.add(raw);
+                System.err.println("[Renderer] Unknown SpriteType string: " + raw);
+            }
+            return null;
+        }
+    }
+
+    private int parseDropTier(String raw) {
+        if (raw == null) {
+            return 0;
+        }
+
+        String t = raw.trim().toUpperCase();
+
+        // First try numeric tier
+        try {
+            return Integer.parseInt(t);
+        } catch (NumberFormatException ignored) {
+            // Not numeric, fall through to named tiers
+        }
+
+        return switch (t) {
+            case "COMMON" -> 0;
+            case "UNCOMMON" -> 1;
+            case "RARE" -> 2;
+            case "EPIC" -> 3;
+            case "LEGENDARY" -> 4;
+            default -> 0;
+        };
+    }
+
+    private Color colorByTier(int dropTier) {
+        return switch (dropTier) {
+            case 0 -> Color.WHITE;
+            case 1 -> Color.GREEN;
+            case 2 -> Color.BLUE;
+            case 3 -> Color.MAGENTA;
+            case 4 -> Color.ORANGE;
+            default -> Color.WHITE;
+        };
+    }
 }

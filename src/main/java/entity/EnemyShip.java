@@ -4,8 +4,7 @@ import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.GameSettings;
 import engine.utils.Cooldown;
-
-import java.awt.*;
+import java.awt.Color;
 
 
 /**
@@ -68,7 +67,7 @@ public class EnemyShip extends Entity {
      * @param spriteType Sprite type, image corresponding to the ship.
      */
     public EnemyShip(final int positionX, final int positionY,
-                     final SpriteType spriteType) {
+        final SpriteType spriteType) {
         super(positionX, positionY, 12 * 2, 8 * 2, Color.WHITE);
 
         this.spriteType = spriteType;
@@ -186,6 +185,20 @@ public class EnemyShip extends Entity {
                     break;
             }
         }
+    }
+
+    /**
+     * Updates the enemy ship with support for global freeze effects. If the GameState indicates
+     * that enemies are frozen, the ship will not update.
+     */
+    public void update(engine.GameState gameState) {
+        if (gameState != null && gameState.areEnemiesFrozen()) {
+            // Skip animation update while enemies are frozen.
+            return;
+        }
+
+        // Fallback to the original update logic.
+        update();
     }
 
     /**

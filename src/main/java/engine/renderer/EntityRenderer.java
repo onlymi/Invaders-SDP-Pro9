@@ -2,34 +2,75 @@ package engine.renderer;
 
 import engine.AssetManager;
 import engine.AssetManager.SpriteType;
+import engine.Core;
 import entity.Bullet;
+import entity.EnemyShip;
 import entity.Entity;
 import entity.Ship;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 
 public class EntityRenderer {
     
     private CommonRenderer commonRenderer;
+    private AssetManager assetManager;
     
     public EntityRenderer(CommonRenderer commonRenderer) {
         this.commonRenderer = commonRenderer;
+        this.assetManager = Core.getAssetManager();
     }
     
     /**
      * Draws an entity, using the appropriate image.
-     *
-     * @param entity    Entity to be drawn.
-     * @param positionX Coordinates for the left side of the image.
-     * @param positionY Coordinates for the upper side of the image.
      */
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY) {
         AssetManager assetManager = AssetManager.getInstance();
         boolean[][] image = assetManager.getSprite(entity.getSpriteType());
+        drawEntity(g, entity, positionX, positionY, getEntityColor(entity));
+    }
+    
+    /**
+     * 지정된 색상으로 엔티티를 그립니다.
+     *
+     * @param entity    그릴 엔티티
+     * @param positionX X 좌표
+     * @param positionY Y 좌표
+     * @param color     적용할 색상
+     */
+    public void drawEntity(Graphics g, final Entity entity, final int positionX,
+        final int positionY, final Color color) {
+        SpriteType type = entity.getSpriteType();
         
+        if (type.isImage()) {
+            drawEntityAsImage(g, entity, positionX, positionY, color, 1);
+        } else {
+            drawEntityAsSprite(g, entity, positionX, positionY, color, 1);
+        }
+    }
+    
+    public void drawEntityByScale(Graphics g, final Entity entity, final int positionX,
+        final int positionY, int scale) {
+        drawEntityByScale(g, entity, positionX, positionY, getEntityColor(entity), scale);
+    }
+    
+    public void drawEntityByScale(Graphics g, final Entity entity, final int positionX,
+        final int positionY, final Color color, final int scale) {
+        SpriteType type = entity.getSpriteType();
+        
+        if (type.isImage()) {
+            drawEntityAsImage(g, entity, positionX, positionY, color, scale);
+        } else {
+            drawEntityAsSprite(g, entity, positionX, positionY, color, scale);
+        }
+    }
+    
+    private void drawEntityAsImage(Graphics g, final Entity entity, final int positionX,
+        final int positionY, Color color, final int scale) {
+        BufferedImage image = assetManager.getSpriteImage(entity.getSpriteType());
         if (image == null) {
             g.setColor(Color.PINK);
             g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
@@ -37,21 +78,37 @@ public class EntityRenderer {
             return;
         }
         
-        // 2P mode: start with the entity's own color
-        final Color color = getColor(entity);
+        int entityWidth = image.getWidth() * scale;
+        int entityHeight = image.getWidth() * scale;
         
-        // --- Scaling logic ---
-        // Original sprite dimensions
-        int spriteWidth = image.length;
-        int spriteHeight = image[0].length;
+        g.drawImage(image, positionX, positionY, entityWidth, entityHeight, null);
         
-        // Entity dimensions (modified via Bullet constructor or other entities)
+        if (color == Color.DARK_GRAY) {
+            g.setColor(new Color(0, 0, 0, 200));
+            g.fillRect(positionX, positionY, entityWidth, entityHeight);
+        }
+    }
+    
+    /**
+     * Draws an entity of the type of boulean array (Sprite).
+     */
+    private void drawEntityAsSprite(Graphics g, Entity entity, int positionX, int positionY,
+        Color color, int scale) {
+        SpriteType type = entity.getSpriteType();
+        boolean[][] spriteMap = assetManager.getSpriteMap(type);
+        if (spriteMap == null) {
+            return;
+        }
+        
+        
+        
+        // Calculate scaling ratios compared to original sprite
         int entityWidth = entity.getWidth();
         int entityHeight = entity.getHeight();
         
-        // Calculate scaling ratios compared to original sprite
-        float widthRatio = (float) entityWidth / (spriteWidth * 2);
-        float heightRatio = (float) entityHeight / (spriteHeight * 2);
+        int spriteWidth = spriteMap.length;
+        int spriteHeight = spriteMap[0].length;
+        
         Graphics2D g2d = (Graphics2D) g;
         AffineTransform old = g2d.getTransform();
         
@@ -78,12 +135,8 @@ public class EntityRenderer {
         else {
             for (int i = 0; i < spriteWidth; i++) {
                 for (int j = 0; j < spriteHeight; j++) {
-                    if (image[i][j]) {
-                        g.fillRect(positionX + (int) (i * 2 * widthRatio),
-                            positionY + (int) (j * 2 * heightRatio),
-                            (int) Math.ceil(widthRatio * 2),
-                            (int) Math.ceil(heightRatio * 2)
-                        );
+                    if (spriteMap[i][j]) {
+                        g.fillRect(positionX + (i * scale), positionY + (j * scale), scale, scale);
                     }
                 }
             }
@@ -92,45 +145,51 @@ public class EntityRenderer {
         g2d.setTransform(old);
     }
     
-    private static Color getColor(Entity entity) {
-        Color color = entity.getColor();
-        
-        // Color-code by player when applicable
-        if (entity instanceof Ship) {
-            Ship ship = (Ship) entity;
-            int pid = ship.getPlayerId(); // requires Ship.getPlayerId()
-            if (pid == 1) {
-                color = Color.BLUE; // P1 ship
-            } else if (pid == 2) {
-                color = Color.RED; // P2 ship
-            }
-            
-            // else leave default (e.g., green) for legacy/unknown
-        } else if (entity instanceof Bullet) {
-            Bullet bullet = (Bullet) entity;
-            int pid = bullet.getPlayerId(); // requires Bullet.getPlayerId()
-            if (pid == 1) {
-                color = Color.CYAN; // P1 bullet
-            } else if (pid == 2) {
-                color = Color.MAGENTA; // P2 bullet
-            }
-            // enemy bullets will keep their default color from the entity
-        }
-        
-        if (entity instanceof entity.EnemyShip) {
-            entity.EnemyShip enemy = (entity.EnemyShip) entity;
-            
-            int health = enemy.getHealth();
-            int initialHealth = enemy.getInitialHealth();
-            
-            if (health > 0 && initialHealth > 0) {
-                int rawAlpha = (int) (70 + 150 * (float) health / initialHealth);
-                int alpha = Math.max(0, Math.min(255, rawAlpha));
-                
-                return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
-            }
-        }
-        return color;
+    private void drawMissingTexturePlaceholder(Graphics g, Entity entity, int x, int y) {
+        g.setColor(Color.PINK);
+        g.fillRect(x, y, entity.getWidth(), entity.getHeight());
+        System.err.println("EntityRenderer: Can't find sprite for " + entity.getSpriteType());
     }
     
+    /**
+     * Determines the color based on the entity's status (physical strength, player ID, etc.).
+     */
+    private static Color getEntityColor(Entity entity) {
+        Color baseColor = entity.getColor();
+        
+        return switch (entity) {
+            case Ship ship -> getPlayerColor(ship.getPlayerId(), Color.BLUE, Color.RED, baseColor);
+            case Bullet bullet ->
+                getPlayerColor(bullet.getPlayerId(), Color.CYAN, Color.MAGENTA, baseColor);
+            case EnemyShip enemy -> calculateDamageAlpha(enemy, baseColor);
+            default -> baseColor;
+        };
+    }
+    
+    private static Color getPlayerColor(int playerId, Color p1Color, Color p2Color,
+        Color defaultColor) {
+        if (playerId == 1) {
+            return p1Color;
+        }
+        if (playerId == 2) {
+            return p2Color;
+        }
+        return defaultColor;
+    }
+    
+    private static Color calculateDamageAlpha(EnemyShip enemy, Color baseColor) {
+        int currentHp = enemy.getHealth();
+        int maxHp = enemy.getInitialHealth();
+        
+        if (currentHp > 0 && maxHp > 0) {
+            // 체력에 비례하여 투명도(Alpha) 조정 (체력이 낮을수록 투명해짐 혹은 그 반대 로직)
+            // 기존 로직: 70 + 150 * (비율)
+            float healthRatio = (float) currentHp / maxHp;
+            int alpha = (int) (70 + 150 * healthRatio);
+            alpha = Math.max(0, Math.min(255, alpha)); // Clamp 0~255
+            
+            return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha);
+        }
+        return baseColor;
+    }
 }

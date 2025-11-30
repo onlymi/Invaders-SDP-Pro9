@@ -10,10 +10,11 @@ import engine.renderer.GameScreenRenderer;
 import engine.renderer.HighScoreScreenRenderer;
 import engine.renderer.LogInScreenRenderer;
 import engine.renderer.PlayModeSelectionScreenRenderer;
+import engine.renderer.PlayerSelectionScreenRenderer;
 import engine.renderer.ScoreScreenRenderer;
 import engine.renderer.SettingScreenRenderer;
-import engine.renderer.ShipSelectionMenuRenderer;
 import engine.renderer.SignUpScreenRenderer;
+import engine.renderer.StoreScreenRenderer;
 import engine.renderer.TitleScreenRenderer;
 import java.awt.Color;
 import java.awt.Font;
@@ -88,12 +89,13 @@ public final class DrawManager {
     private HighScoreScreenRenderer highScoreScreenRenderer;
     private SettingScreenRenderer settingScreenRenderer;
     private PlayModeSelectionScreenRenderer playModeSelectionScreenRenderer;
-    private ShipSelectionMenuRenderer shipSelectionMenuRenderer;
+    private PlayerSelectionScreenRenderer playerSelectionScreenRenderer;
     private GameScreenRenderer gameScreenRenderer;
     private ScoreScreenRenderer scoreScreenRenderer;
     private AuthScreenRenderer authScreenRenderer;
     private SignUpScreenRenderer signUpScreenRenderer;
     private LogInScreenRenderer logInScreenRenderer;
+    private StoreScreenRenderer storeScreenRenderer;
     
     private final List<Explosion> explosions = new ArrayList<>();
     
@@ -119,13 +121,14 @@ public final class DrawManager {
         this.settingScreenRenderer = new SettingScreenRenderer(this.commonRenderer);
         this.playModeSelectionScreenRenderer = new PlayModeSelectionScreenRenderer(
             this.commonRenderer);
-        this.shipSelectionMenuRenderer = new ShipSelectionMenuRenderer(this.commonRenderer);
+        this.playerSelectionScreenRenderer = new PlayerSelectionScreenRenderer(this.commonRenderer);
         this.gameScreenRenderer = new GameScreenRenderer(this.commonRenderer,
             ItemManager.getInstance());
         this.scoreScreenRenderer = new ScoreScreenRenderer(this.commonRenderer);
         this.authScreenRenderer = new AuthScreenRenderer(this.commonRenderer);
         this.signUpScreenRenderer = new SignUpScreenRenderer(this.commonRenderer);
         this.logInScreenRenderer = new LogInScreenRenderer(this.commonRenderer);
+        this.storeScreenRenderer = new StoreScreenRenderer(this.commonRenderer);
         
         fontRegular = this.assetManager.getFontRegular();
         fontBig = this.assetManager.getFontBig();
@@ -182,8 +185,8 @@ public final class DrawManager {
         return this.playModeSelectionScreenRenderer;
     }
     
-    public ShipSelectionMenuRenderer getShipSelectionMenuRenderer() {
-        return this.shipSelectionMenuRenderer;
+    public PlayerSelectionScreenRenderer getShipSelectionMenuRenderer() {
+        return this.playerSelectionScreenRenderer;
     }
     
     public GameScreenRenderer getGameScreenRenderer() {
@@ -204,6 +207,10 @@ public final class DrawManager {
     
     public LogInScreenRenderer getLogInScreenRenderer() {
         return this.logInScreenRenderer;
+    }
+    
+    public StoreScreenRenderer getStoreScreenRenderer() {
+        return this.storeScreenRenderer;
     }
     
     /**

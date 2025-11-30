@@ -46,6 +46,10 @@ public final class FileManager {
      * Application logger.
      */
     private static Logger LOGGER;
+    /**
+     * user_stats.csv Header.
+     */
+    private static final String USER_STATS_HEADER = "id,coin,healthLevel,manaLevel,speedLevel,damageLevel,attackSpeedLevel,attackRangeLevel,criticalLevel,defenceLevel";
     
     /**
      * Enum indicating login result status.
@@ -552,6 +556,9 @@ public final class FileManager {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
+                if (line.trim().equals(USER_STATS_HEADER)) {
+                    continue;
+                }
                 if (line.startsWith(userId + ",")) {
                     return UserStats.fromCSV(line);
                 }
@@ -567,24 +574,35 @@ public final class FileManager {
     /**
      * 유저 스탯 정보를 파일에 저장(업데이트)합니다.
      *
-     * @param stats
+     * @param stats current user stats
      * @throws IOException
      */
     public void saveUserStats(UserStats stats) throws IOException {
         File file = new File(userStatsPath);
         List<String> lines = new ArrayList<>();
         boolean found = false;
+        boolean hasHeader = false;
         
         if (file.exists()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
+                    if (line.trim().equals(USER_STATS_HEADER)) {
+                        lines.add(line);
+                        hasHeader = true;
+                        continue;
+                    }
                     if (line.startsWith(stats.getUserId() + ",")) {
                         lines.add(stats.toCSV());
                         found = true;
+                    } else {
+                        lines.add(line);
                     }
                 }
             }
+        }
+        if (!hasHeader) {
+            lines.addFirst(USER_STATS_HEADER);
         }
         // 신규 유저 추가
         if (!found) {
