@@ -16,6 +16,7 @@ import entity.EnemyShipFormation;
 import entity.Entity;
 import entity.Item;
 import entity.ItemPool;
+import entity.Pet;
 import entity.Ship;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -154,6 +155,10 @@ public class GameScreen extends Screen {
     private Ship.ShipType shipTypeP1;
     private Ship.ShipType shipTypeP2;
     
+    private final java.util.Set<Pet> pets = new java.util.HashSet<>();
+    
+    private Ship shipP1;
+    private Ship shipP2;
     
     /**
      * Constructor, establishes the properties of the screen.
@@ -259,6 +264,7 @@ public class GameScreen extends Screen {
         
         // New BasicGameSpace Code
         this.basicGameSpace = new BasicGameSpace(100, this.width, this.height);
+        this.pets.clear();
         
         // Special input delay / countdown.
         this.gameStartTime = System.currentTimeMillis();
@@ -383,6 +389,9 @@ public class GameScreen extends Screen {
                     }
                 }
                 
+                // despawn based on active effect
+                updatePetsFromEffects();
+                
                 // Special ship lifecycle
                 if (!this.state.areEnemiesFrozen()) {
                     if (this.enemyShipSpecial != null) {
@@ -435,6 +444,7 @@ public class GameScreen extends Screen {
                 }
             }
             
+            updatePetsLogic();
             manageCollisions();
             cleanBullets();
             
@@ -445,7 +455,6 @@ public class GameScreen extends Screen {
             // check active item affects
             state.updateEffects();
             this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
-            draw();
             
             if (!sessionHighScoreNotified && this.state.getScore() > this.topScore) {
                 sessionHighScoreNotified = true;
@@ -510,6 +519,16 @@ public class GameScreen extends Screen {
                     .drawEntity(drawManager.getBackBufferGraphics(), s, s.getPositionX(),
                         s.getPositionY());
             }
+        }
+        
+        for (Pet pet : this.pets) {
+            if (pet.isDead() || pet.isExpired()) {
+                continue;
+            }
+            
+            drawManager.getEntityRenderer()
+                .drawEntity(drawManager.getBackBufferGraphics(), pet,
+                    pet.getPositionX(), pet.getPositionY());
         }
         
         if (this.enemyShipSpecial != null) {
@@ -747,11 +766,13 @@ public class GameScreen extends Screen {
             if (bullet.getSpeed() > 0) {
                 // Enemy bullet vs both players
                 
+                boolean hitSomething = false;
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     Ship ship = this.ships[p];
                     if (ship != null && !ship.isDestroyed()
                         && checkCollision(bullet, ship) && !this.levelFinished) {
                         recyclable.add(bullet);
+                        hitSomething = true;
                         
                         this.drawManager.getGameScreenRenderer()
                             .triggerExplosion(ship.getPositionX(), ship.getPositionY(), false,
@@ -773,6 +794,28 @@ public class GameScreen extends Screen {
                         break;
                     }
                 }
+                
+                if (hitSomething) {
+                    continue;
+                }
+                
+                for (Pet pet : pets) {
+                    if (pet.isDead() || pet.isExpired()) {
+                        continue;
+                    }
+                    
+                    if (checkCollision(bullet, pet) && !this.levelFinished) {
+                        recyclable.add(bullet);
+                        
+                        pet.takeDamage(1);
+                        
+                        this.LOGGER.info("[GameScreen] Pet hit by enemy bullet. owner="
+                            + pet.getOwnerPlayerId());
+                        
+                        break;
+                    }
+                }
+                
             } else {
                 // Player bullet vs enemies
                 // map Bullet owner id (1 or 2) to per-player index (0 or 1)
@@ -968,6 +1011,112 @@ public class GameScreen extends Screen {
             g2d.fillOval(positions[i][0] - radius / 2, positions[i][1] - radius / 2, radius,
                 radius);
             g.fillOval(positions[i][0], positions[i][1], size, size);
+        }
+    }
+    
+    /**
+     * Spawns or removes pets based on the PET_SUPPORT effect.
+     */
+    private void updatePetsFromEffects() {
+        // For now, assume at most one pet per player.
+        for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
+            Ship owner = this.ships[p];
+            if (owner == null) {
+                continue;
+            }
+            
+            boolean hasPetEffect =
+                state != null && state.hasEffect(p,
+                    engine.gameplay.item.ItemEffect.ItemEffectType.PET_SUPPORT);
+            
+            boolean hasPetEntity = hasPetForPlayer(p + 1);
+            
+            if (hasPetEffect && !hasPetEntity) {
+                spawnPetForPlayer(p + 1, owner);
+            } else if (!hasPetEffect && hasPetEntity) {
+                removePetForPlayer(p + 1);
+            }
+        }
+    }
+    
+    /**
+     * Returns true if there is a pet currently bound to the given playerId (1-based).
+     */
+    private boolean hasPetForPlayer(int playerId) {
+        for (Pet pet : pets) {
+            if (pet.getOwnerPlayerId() == playerId) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Removes all pets belonging to the given playerId (1-based).
+     */
+    private void removePetForPlayer(int playerId) {
+        java.util.Set<Pet> toRemove = new java.util.HashSet<>();
+        for (Pet pet : pets) {
+            if (pet.getOwnerPlayerId() == playerId) {
+                toRemove.add(pet);
+            }
+        }
+        pets.removeAll(toRemove);
+    }
+    
+    /**
+     * Spawns a new pet bound to the given player.
+     */
+    private void spawnPetForPlayer(int playerId, Ship owner) {
+        // Initial pet position: near the owner (slightly to the right and above)
+        int startX = owner.getPositionX() + owner.getWidth() + 10;
+        int startY = owner.getPositionY() - 10;
+        
+        int petWidth = 16;
+        int petHeight = 16;
+        Color petColor = Color.CYAN;
+        
+        long lifetimeMs = 6000L;
+        long shotIntervalMs = 1000L;
+        
+        Pet pet = new Pet(
+            startX,
+            startY,
+            petWidth,
+            petHeight,
+            petColor,
+            playerId,
+            Pet.PetKind.GUN,
+            this.state,
+            lifetimeMs,
+            shotIntervalMs
+        );
+        
+        pets.add(pet);
+        
+        Core.getLogger().info("[GameScreen] Spawned PET-GUN for player " + playerId
+            + " at (" + startX + "," + startY + ")");
+    }
+    
+    /**
+     * Updates all active pets: follow their owner and fire bullets if needed.
+     */
+    private void updatePetsLogic() {
+        for (Pet pet : pets) {
+            
+            if (pet.isDead() || pet.isExpired()) {
+                continue;
+            }
+            
+            int ownerId = pet.getOwnerPlayerId();
+            int idx = ownerId - 1;
+            Ship owner = (idx >= 0 && idx < GameState.NUM_PLAYERS) ? ships[idx] : null;
+            
+            if (owner == null || owner.isDestroyed()) {
+                continue;
+            }
+            
+            pet.update(this.bullets, owner);
         }
     }
 }

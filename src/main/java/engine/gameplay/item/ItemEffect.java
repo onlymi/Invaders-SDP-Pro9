@@ -15,7 +15,8 @@ public class ItemEffect {
         MOVE_SPEED_UP,
         ENEMY_HP_DOWN,
         TIME_SLOW,
-        DASH
+        DASH,
+        PET_SUPPORT
     }
     
     /**=========================SINGLE USE=================================**/

@@ -140,6 +140,7 @@ public class Item extends Entity {
             case "TIME_FREEZE" -> SpriteType.ItemTimeFreeze;
             case "TIME_SLOW" -> SpriteType.ItemTimeSlow;
             case "DASH" -> SpriteType.ItemDash;
+            case "PET_GUN" -> SpriteType.ItemPetGun;
             default -> {
                 logger.warning("[Item]: No sprite mapping for type "
                     + type + ", using default ItemScore sprite.");

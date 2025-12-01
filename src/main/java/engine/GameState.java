@@ -637,11 +637,26 @@ public class GameState {
                 }
             }
             
-            default -> logger.info("[GameState] Active item type not handled: " + type);
+            default -> {
+                // Handle PET_* family
+                if (type.startsWith("PET_")) {
+                    addEffect(
+                        playerIndex,
+                        ItemEffectType.PET_SUPPORT,
+                        data.getEffectValue(),
+                        data.getEffectDuration()
+                    );
+                    logger.info("[GameState] PET item activated: " + type
+                        + " (value=" + data.getEffectValue()
+                        + ", duration=" + data.getEffectDuration() + "s)");
+                    applied = true;
+                } else {
+                    logger.info("[GameState] Active item type not handled: " + type);
+                }
+            }
         }
         // TODO: 다른 active 아이템들 추가 예정
         
-        // 슬롯 비우기
         if (applied) {
             clearActiveSlot(playerIndex);
             logger.info("[GameState] Player " + (playerIndex + 1)

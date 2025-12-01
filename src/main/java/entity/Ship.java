@@ -34,6 +34,11 @@ public class Ship extends Entity {
     // Tracks previous DASH effect state to trigger dash only once.
     private boolean dashActivePrev = false;
     
+    // 나중에 생길 상하좌우 로직에 맞춰서 enum 수정할 예정.
+    public enum Facing {
+        UP, DOWN, LEFT, RIGHT
+    }
+    
     /**
      * Types of ships.
      */
@@ -64,6 +69,8 @@ public class Ship extends Entity {
     
     private int y;
     private int hits;
+    
+    private Facing facing = Facing.UP;
     
     /**
      * Constructor, establishes the ship's properties.
@@ -355,5 +362,23 @@ public class Ship extends Entity {
         }
         
         return speed;
+    }
+    
+    public Facing getFacing() {
+        return facing;
+    }
+    
+    public void setFacing(Facing facing) {
+        this.facing = (facing != null) ? facing : Facing.UP;
+    }
+    
+    public final void moveUp() {
+        this.facing = Facing.UP;
+        this.positionY -= effectiveMoveSpeed();
+    }
+    
+    public final void moveDown() {
+        this.facing = Facing.DOWN;
+        this.positionY += effectiveMoveSpeed();
     }
 }
