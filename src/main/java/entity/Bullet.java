@@ -15,10 +15,11 @@ public class Bullet extends Entity {
      * Speed of the bullet, positive or negative depending on direction - positive is down.
      */
     private int speed;
-
+    private int damage;
+    
     private int speedX = 0;
     private int speedY = 0;
-
+    
     /**
      * 2P mode: id number to specifying who fired the bullet - 0 = enemy, 1 = P1, 2 = P2
      **/
@@ -40,6 +41,8 @@ public class Bullet extends Entity {
         final int speed) {
         super(positionX, positionY, 0, 0, Color.WHITE);
         this.speed = speed;
+        this.damage = 1;
+        setSprite();
     }
     
     // reset the size when recycling bullets
@@ -102,4 +105,11 @@ public class Bullet extends Entity {
         this.ownerPlayerId = playerId; // keep them in sync
     }
     
+    public int getDamage() {
+        return this.damage;
+    }
+    
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
 }

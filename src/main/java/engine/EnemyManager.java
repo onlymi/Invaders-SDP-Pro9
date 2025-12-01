@@ -1,10 +1,12 @@
 package engine;
 
+import engine.AssetManager.SpriteType;
 import engine.utils.Cooldown;
 import entity.EnemyShip;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import screen.GameScreen;
 
 /**
@@ -12,18 +14,20 @@ import screen.GameScreen;
  */
 public class EnemyManager {
     
-    private static final int SPAWN_INTERVAL = 2000; // 2초마다 적 생성 (테스트용)
+    private static final int SPAWN_INTERVAL = 1000; // 2초마다 적 생성 (테스트용)
     private static final int SPAWN_VARIANCE = 1000;
     
     private GameScreen gameScreen;
     private List<EnemyShip> enemies;
     private Cooldown spawnCooldown;
+    private Random random;
     
     public EnemyManager(GameScreen gameScreen) {
         this.gameScreen = gameScreen;
         this.enemies = new ArrayList<>();
         this.spawnCooldown = Core.getVariableCooldown(SPAWN_INTERVAL, SPAWN_VARIANCE);
         this.spawnCooldown.reset();
+        this.random = new Random();
     }
     
     /**
@@ -53,12 +57,29 @@ public class EnemyManager {
      * Spawns a random enemy at a random X position.
      */
     private void spawnEnemy() {
-        // 화면 너비 내에서 랜덤 X 좌표 (여백 50px 제외)
-        int x = 50 + (int) (Math.random() * (gameScreen.getWidth() - 100));
-        int y = -50; // 화면 위쪽에서 시작
+        // 화면 너비 내에서 랜덤 X 좌표
+        int x = 50 + random.nextInt(gameScreen.getWidth() - 100);
+        int uiLine = gameScreen.getSeparationLineHeight();
+        int minY = uiLine + 50; // UI 제외
+        int maxY = gameScreen.getHeight() - 200; // 플레이어 근처 제외
+        // 화면 너비 내에서 랜덤 Y 좌표
+        int y = minY + random.nextInt(maxY - minY);
         
-        // 현재는 기본 생성자 사용 (나중에 타입별 생성 로직 추가)
-        EnemyShip enemy = new EnemyShip();
+        EnemyShip enemy;
+        int type = random.nextInt(3);
+        GameState gameState = gameScreen.getGameState();
+        switch (type) { // TODO: enemy 타입 만든 후 수정 예정
+            case 0:
+                enemy = new EnemyShip(x, y, SpriteType.EnemyShipA1);
+                break;
+            case 1:
+                enemy = new EnemyShip(x, y, SpriteType.EnemyShipB1);
+                break;
+            case 2:
+            default:
+                enemy = new EnemyShip(x, y, SpriteType.EnemyShipC1);
+                break;
+        }
         this.enemies.add(enemy);
     }
     
