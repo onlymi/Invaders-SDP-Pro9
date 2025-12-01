@@ -18,9 +18,12 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Logger;
 import screen.Screen;
 
@@ -32,13 +35,13 @@ public class GameScreenRenderer {
     
     // to query last picked item for toast
     private final ItemManager itemManager;
-    private final java.util.Set<String> warnedSpriteTypes = new java.util.HashSet<>();
+    private final Set<String> warnedSpriteTypes = new HashSet<>();
     
     /**
      * Font properties.
      */
     private static FontMetrics fontMetrics;
-    private final List<Explosion> explosions = new java.util.ArrayList<>();
+    private final List<Explosion> explosions = new ArrayList<>();
     
     public GameScreenRenderer(CommonRenderer commonRenderer, ItemManager itemManager) {
         LOGGER = Core.getLogger();
@@ -191,15 +194,15 @@ public class GameScreenRenderer {
             g.drawString(Integer.toString(lives), 20, 25);
             for (int i = 0; i < lives; i++) {
                 if (i < 3) {
-                    entityRenderer.drawEntity(g, heart, 40 + 35 * i, 9);
+                    entityRenderer.drawEntityByScale(g, heart, 40 + 35 * i, 9, 2);
                 } else {
-                    entityRenderer.drawEntity(g, heart, 40 + 35 * (i - 3), 9 + 25);
+                    entityRenderer.drawEntityByScale(g, heart, 40 + 35 * (i - 3), 9 + 25, 2);
                 }
             }
         } else {
             g.drawString(Integer.toString(lives), 20, 40);
             for (int i = 0; i < lives; i++) {
-                entityRenderer.drawEntity(g, heart, 40 + 35 * i, 23);
+                entityRenderer.drawEntityByScale(g, heart, 40 + 35 * i, 23, 2);
             }
         }
     }
@@ -240,7 +243,7 @@ public class GameScreenRenderer {
         };
         int iconX = screen.getWidth() - 252;
         int iconY = 37;
-        entityRenderer.drawEntity(g, enemyIcon, iconX, iconY);
+        entityRenderer.drawEntityByScale(g, enemyIcon, iconX, iconY, 2);
         String shipString = ": " + shipCount;
         g.drawString(shipString, iconX + 30, 52);
     }

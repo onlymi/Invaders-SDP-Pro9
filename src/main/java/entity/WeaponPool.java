@@ -53,6 +53,7 @@ public final class WeaponPool {
             weapon.setSize(width, height); // weapon size
             weapon.setTeam(team); // team setting
         }
+        weapon.setCharacter(null);
         weapon.setSpriteMap();
         return weapon;
     }
@@ -86,6 +87,7 @@ public final class WeaponPool {
             weapon = new Weapon(positionX - width / 2, positionY, width, height, speed, damage);
             weapon.setTeam(team); // team setting
         }
+        weapon.setCharacter(null);
         weapon.setSpriteMap();
         return weapon;
     }

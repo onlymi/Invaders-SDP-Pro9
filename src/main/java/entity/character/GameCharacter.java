@@ -56,6 +56,10 @@ public abstract class GameCharacter extends Entity {
     protected int projectileHeight;
     protected int projectileSpeed;
     
+    protected final int MOVEMENT_SPEED_FACTOR = 150;
+    protected final int ATTACK_SPEED_FACTOR = 10;
+    protected final int SHOOTING_COOLDOWN_FACTOR = 500;
+    
     /**
      * Constructor, establishes the entity's generic properties.
      *
@@ -101,14 +105,15 @@ public abstract class GameCharacter extends Entity {
         this.isFacingBack = false;
         
         // Reset cool time
-        this.shootingCooldown = Core.getCooldown((int) this.currentStats.attackSpeed * 500);
+        this.shootingCooldown = Core.getCooldown(
+            (int) this.currentStats.attackSpeed * SHOOTING_COOLDOWN_FACTOR);
         this.shootingCooldown.reset();
         this.destructionCooldown = Core.getCooldown(DESTRUCTION_COOLDOWN);
         
         this.projectileSpriteType = SpriteType.PlayerBullet;
         this.projectileWidth = 3;
         this.projectileHeight = 5;
-        this.projectileSpeed = -6;
+        this.projectileSpeed = 6;
     }
     
     /**
@@ -267,7 +272,7 @@ public abstract class GameCharacter extends Entity {
             }
             
             // 프레임 단위 이동 거리 계산
-            float speed = this.currentStats.movementSpeed * 150 * deltaTime;
+            float speed = this.currentStats.movementSpeed * MOVEMENT_SPEED_FACTOR * deltaTime;
             int movementX = Math.round(dx * speed);
             int movementY = Math.round(dy * speed);
             
@@ -295,18 +300,18 @@ public abstract class GameCharacter extends Entity {
         }
         
         if (inputManager.isKeyDown(this.defaultAttackKey)) {
-            return shoot(weapons);
+            return launchBasicAttack(weapons);
         }
         return false;
     }
     
     /**
-     * Shoots a weapon.
+     * Launch a basic attack.
      *
      * @param weapons The set of weapons to add the new weapon to.
      * @return True if a weapon was fired, false if on cooldown.
      */
-    public boolean shoot(Set<Weapon> weapons) {
+    public boolean launchBasicAttack(Set<Weapon> weapons) {
         if (this.shootingCooldown.checkFinished()) {
             this.shootingCooldown.reset();
             
@@ -315,6 +320,7 @@ public abstract class GameCharacter extends Entity {
             
             Weapon weapon = WeaponPool.getWeapon(launchX, launchY,
                 this.projectileWidth, this.projectileHeight, this.projectileSpeed, this.team);
+            weapon.setCharacter(this);
             
             weapon.setSpriteImage(this.projectileSpriteType);
             weapon.setOwnerPlayerId(this.playerId);

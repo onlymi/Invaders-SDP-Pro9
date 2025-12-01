@@ -97,7 +97,7 @@ public class BossShip extends EnemyShip {
     }
     
     /**
-     * New shoot method to manage attacks
+     * New shoot method to manage attacks.
      */
     public final void shoot(final Set<Weapon> weapons) {
         if (!this.isAttackEnabled) {

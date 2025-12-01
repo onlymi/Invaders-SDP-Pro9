@@ -1,6 +1,7 @@
 package entity;
 
 import engine.AssetManager.SpriteType;
+import entity.character.GameCharacter;
 import java.awt.Color;
 
 /**
@@ -14,10 +15,10 @@ public class Weapon extends Entity {
     /**
      * Speed of the bullet, positive or negative depending on direction - positive is down.
      */
+    private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
     private int speed;
-    
-    private int speedX = 0;
-    private int speedY = 0;
+    private int velocityX = 0;
+    private int velocityY = 0;
     
     /**
      * 2P mode: id number to specifying who fired the bullet - 0 = enemy, 1 = P1, 2 = P2.
@@ -28,6 +29,8 @@ public class Weapon extends Entity {
     private int playerId = 0;
     
     private int damage = 0;
+    
+    private GameCharacter character = null;
     
     /**
      * Constructor, establishes the bullet's properties.
@@ -41,6 +44,8 @@ public class Weapon extends Entity {
         final int speed) {
         super(positionX, positionY, width, height, Color.WHITE);
         this.speed = speed;
+        this.velocityX = 0;
+        this.velocityY = speed;
     }
     
     /**
@@ -56,6 +61,42 @@ public class Weapon extends Entity {
         super(positionX, positionY, width, height, Color.WHITE);
         this.speed = speed;
         this.damage = damage;
+        this.velocityX = 0;
+        this.velocityY = speed;
+    }
+    
+    public final void setCharacter(GameCharacter character) {
+        this.character = character;
+        if (this.character != null) {
+            this.velocityX = 0;
+            this.velocityY = 0;
+            
+            if (this.character.isFacingLeft()) {
+                this.velocityX = -this.speed;
+            } else if (this.character.isFacingRight()) {
+                this.velocityX = this.speed;
+            }
+            
+            if (this.character.isFacingFront()) { // 아래쪽
+                this.velocityY = this.speed;
+            } else if (this.character.isFacingBack()) { // 위쪽
+                this.velocityY = -this.speed;
+            }
+            
+            if (this.velocityX == 0 && this.velocityY == 0) {
+                // 기본값 (위로 발사)
+                this.velocityY = -this.speed;
+            }
+            
+            if (this.velocityX != 0 && this.velocityY != 0) {
+                this.velocityX = (int) (this.velocityX * DIAGONAL_CORRECTION_FACTOR);
+                this.velocityY = (int) (this.velocityY * DIAGONAL_CORRECTION_FACTOR);
+            }
+        } else {
+            // 캐릭터가 null이면(적 총알 등), 기본 수직 속도로 초기화
+            this.velocityX = 0;
+            this.velocityY = this.speed;
+        }
     }
     
     // reset the size when recycling weapons
@@ -68,10 +109,10 @@ public class Weapon extends Entity {
      * Sets correct sprite for the weapon, based on speed.
      */
     public final void setSpriteMap() {
-        if (this.speed < 0) {
-            this.spriteType = SpriteType.PlayerBullet; // player bullet fired, team remains NEUTRAL
-        } else {
+        if (this.playerId == 0) {
             this.spriteType = SpriteType.EnemyBullet; // enemy fired bullet
+        } else {
+            this.spriteType = SpriteType.PlayerBullet; // player bullet fired, team remains NEUTRAL
         }
     }
     
@@ -90,7 +131,8 @@ public class Weapon extends Entity {
      * Updates the weapon's position.
      */
     public final void update() {
-        this.positionY += this.speed;
+        this.positionX += this.velocityX;
+        this.positionY += this.velocityY;
     }
     
     /**
@@ -100,6 +142,10 @@ public class Weapon extends Entity {
      */
     public final void setSpeed(final int speed) {
         this.speed = speed;
+        if (this.character == null) {
+            this.velocityY = speed;
+            this.velocityX = 0;
+        }
     }
     
     /**
@@ -113,6 +159,9 @@ public class Weapon extends Entity {
     
     public final void setOwnerPlayerId(final int ownerPlayerId) {
         this.ownerPlayerId = ownerPlayerId;
+        if (ownerPlayerId == 0) {
+            removeCharacter();
+        }
     }
     
     // 2P mode: adding owner API, standardised player API
@@ -123,6 +172,9 @@ public class Weapon extends Entity {
     public void setPlayerId(int playerId) {
         this.playerId = playerId;
         this.ownerPlayerId = playerId;
+        if (playerId == 0) {
+            removeCharacter();
+        }
     }
     
     public int getPlayerId() {
@@ -135,5 +187,11 @@ public class Weapon extends Entity {
     
     public int getDamage() {
         return this.damage;
+    }
+    
+    public void removeCharacter() {
+        this.character = null;
+        this.velocityY = this.speed;
+        this.velocityX = 0;
     }
 }
