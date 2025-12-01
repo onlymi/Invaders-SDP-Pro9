@@ -6,7 +6,7 @@ import java.awt.Graphics;
 import screen.Screen;
 
 /**
- * Renders the Sign Up screen. Responsible for drawing all UI elements for the SignUpScreen.
+ * Renders the Sign-Up screen. Responsible for drawing all UI elements for the SignUpScreen.
  *
  * @author Seungju Yoon <yunseungju@gmail.com>
  */

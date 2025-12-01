@@ -33,7 +33,7 @@ public class PlayerSelectionScreenRenderer {
             int imageScale = 2;
             
             int drawX =
-                currentCharacter.getPositionX() - (currentCharacter.getWidth() * imageScale);
+                currentCharacter.getPositionX() - currentCharacter.getWidth();
             int drawY = currentCharacter.getPositionY();
             
             if (i == selectedShipIndex) {
