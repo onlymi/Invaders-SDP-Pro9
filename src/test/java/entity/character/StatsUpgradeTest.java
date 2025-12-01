@@ -1,11 +1,13 @@
 package entity.character;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import engine.Core;
 import engine.UserStats;
+import engine.utils.Cooldown;
 import entity.Entity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,6 +65,8 @@ class StatsUpgradeTest {
         coreMock = mockStatic(Core.class);
         coreMock.when(Core::getUserStats).thenReturn(userStats);
         coreMock.when(Core::getLogger).thenReturn(java.util.logging.Logger.getAnonymousLogger());
+        coreMock.when(() -> Core.getCooldown(anyInt()))
+            .thenAnswer(invocation -> new Cooldown(invocation.getArgument(0)));
         
         // 기본적으로 모든 스탯 레벨은 0으로 가정
         // 필요한 것만 개별 테스트에서 덮어씀

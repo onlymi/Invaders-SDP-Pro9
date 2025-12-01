@@ -3,10 +3,10 @@ package engine.renderer;
 import engine.AssetManager;
 import engine.AssetManager.SpriteType;
 import engine.Core;
-import entity.Bullet;
 import entity.EnemyShip;
 import entity.Entity;
 import entity.Ship;
+import entity.Weapon;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -119,8 +119,8 @@ public class EntityRenderer {
         
         return switch (entity) {
             case Ship ship -> getPlayerColor(ship.getPlayerId(), Color.BLUE, Color.RED, baseColor);
-            case Bullet bullet ->
-                getPlayerColor(bullet.getPlayerId(), Color.CYAN, Color.MAGENTA, baseColor);
+            case Weapon weapon ->
+                getPlayerColor(weapon.getPlayerId(), Color.CYAN, Color.MAGENTA, baseColor);
             case EnemyShip enemy -> calculateDamageAlpha(enemy, baseColor);
             default -> baseColor;
         };
