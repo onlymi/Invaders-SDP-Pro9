@@ -337,7 +337,6 @@ public class GameScreen extends Screen {
                 }
                 // -----------------------------
                 
-                
                 // Update bossShip
                 if (this.bossShip != null) {
                     if (!this.state.areEnemiesFrozen()) {
@@ -408,14 +407,6 @@ public class GameScreen extends Screen {
             if (this.achievementManager != null) {
                 this.achievementManager.update();
             }
-        }
-        
-        if (this.enemyKillCount >= this.killsToWin) {
-            this.levelFinished = true;
-            this.screenFinishedCooldown.reset();
-            
-            // 도전 과제 체크 등
-            checkAchievement();
         }
         
         draw();
