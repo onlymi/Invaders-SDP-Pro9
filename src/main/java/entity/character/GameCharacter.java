@@ -171,7 +171,7 @@ public abstract class GameCharacter extends Entity {
         }
         // 5: Attack Range (10% per level)
         if (stats.getStatLevel(5) > 0) {
-            this.baseStats.attackRange *=
+            this.baseStats.attackRange =
                 this.baseStats.attackRange * (1 + 0.1f * stats.getStatLevel(5));
         }
         // 6: Critical Chance (Add 5% per level)
