@@ -4,7 +4,6 @@ import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.InputManager;
 import engine.utils.Cooldown;
-import engine.UserStats;
 import entity.Entity;
 import entity.Weapon;
 import entity.WeaponPool;
@@ -40,6 +39,12 @@ public abstract class GameCharacter extends Entity {
     private int upKey;
     private int downKey;
     private int defaultAttackKey;
+    
+    protected boolean isMoving;
+    protected boolean isFacingLeft;
+    protected boolean isFacingRight;
+    protected boolean isFacingFront;
+    protected boolean isFacingBack;
     
     private static final int DESTRUCTION_COOLDOWN = 1000;
     private Cooldown shootingCooldown;
@@ -88,6 +93,12 @@ public abstract class GameCharacter extends Entity {
         this.downKey = KeyEvent.VK_S;
         this.defaultAttackKey = KeyEvent.VK_SPACE;
         
+        this.isMoving = false;
+        this.isFacingLeft = false;
+        this.isFacingRight = true;
+        this.isFacingFront = false;
+        this.isFacingBack = false;
+        
         // Reset cool time
         this.shootingCooldown = Core.getCooldown((int) this.currentStats.attackSpeed);
         this.shootingCooldown.reset();
@@ -129,36 +140,43 @@ public abstract class GameCharacter extends Entity {
         }
         // 0: Health (20% per level)
         if (stats.getStatLevel(0) > 0) {
-            this.baseStats.maxHealthPoints = (int) (this.baseStats.maxHealthPoints * (1 + 0.2 * stats.getStatLevel(0)));
+            this.baseStats.maxHealthPoints = (int) (this.baseStats.maxHealthPoints * (1
+                + 0.2 * stats.getStatLevel(0)));
             this.currentHealthPoints = this.baseStats.maxHealthPoints; // Reset current HP to new max
         }
         
         // 1: Mana (20% per level)
         if (stats.getStatLevel(1) > 0) {
-            this.baseStats.maxManaPoints = (int) (this.baseStats.maxManaPoints * (1 + 0.2 * stats.getStatLevel(1)));
+            this.baseStats.maxManaPoints = (int) (this.baseStats.maxManaPoints * (1
+                + 0.2 * stats.getStatLevel(1)));
             this.currentManaPoints = this.baseStats.maxManaPoints; // Reset current MP to new max
         }
         
         // 2: Speed (10% per level)
         if (stats.getStatLevel(2) > 0) {
-            this.baseStats.movementSpeed = this.baseStats.movementSpeed * (1 + 0.1f * stats.getStatLevel(2));
+            this.baseStats.movementSpeed =
+                this.baseStats.movementSpeed * (1 + 0.1f * stats.getStatLevel(2));
         }
         
         // 3: Damage (20% per level) - Applies to both Physical and Magical
         if (stats.getStatLevel(3) > 0) {
             double multiplier = 1 + 0.2 * stats.getStatLevel(3);
-            this.baseStats.physicalDamage = (int) (Math.ceil(this.baseStats.physicalDamage * multiplier));
-            this.baseStats.magicalDamage = (int) (Math.ceil(this.baseStats.magicalDamage * multiplier));
+            this.baseStats.physicalDamage = (int) (Math.ceil(
+                this.baseStats.physicalDamage * multiplier));
+            this.baseStats.magicalDamage = (int) (Math.ceil(
+                this.baseStats.magicalDamage * multiplier));
         }
         
         // 4: Attack Speed (10% per level)
         if (stats.getStatLevel(4) > 0) {
-            this.baseStats.attackSpeed = this.baseStats.attackSpeed * (1 + 0.1f * stats.getStatLevel(4));
+            this.baseStats.attackSpeed =
+                this.baseStats.attackSpeed * (1 + 0.1f * stats.getStatLevel(4));
         }
         
         // 5: Attack Range (10% per level)
         if (stats.getStatLevel(5) > 0) {
-            this.baseStats.attackRange = this.baseStats.attackRange * (1 + 0.1f * stats.getStatLevel(5));
+            this.baseStats.attackRange =
+                this.baseStats.attackRange * (1 + 0.1f * stats.getStatLevel(5));
         }
         
         // 6: Critical Chance (Add 5% per level)
@@ -170,7 +188,7 @@ public abstract class GameCharacter extends Entity {
         if (stats.getStatLevel(7) > 0) {
             this.baseStats.physicalDefense += 2 * stats.getStatLevel(7);
         }
-
+        
         this.currentStats = new CharacterStats(this.baseStats);
     }
     
@@ -218,31 +236,45 @@ public abstract class GameCharacter extends Entity {
     
     public boolean handleMovement(InputManager inputManager, Screen screen, Set<Weapon> weapons,
         float deltaTime) {
+        this.isMoving = false;
         int movementAmount = (int) (this.currentStats.movementSpeed * 150 * deltaTime);
         if (movementAmount == 0 && this.currentStats.movementSpeed > 0) {
             movementAmount = 1;
         }
         
+        this.isFacingLeft = false;
+        this.isFacingRight = false;
+        this.isFacingBack = false;
+        this.isFacingFront = false;
+        
         boolean isLeftBorder = (this.positionX - movementAmount) < 1;
         if (inputManager.isKeyDown(this.leftKey) && !isLeftBorder) {
             this.positionX -= movementAmount;
+            this.isMoving = true;
+            this.isFacingLeft = true;
         }
         
         boolean isRightBorder =
             (this.positionX + this.width + movementAmount) > (screen.getWidth() - 1);
         if (inputManager.isKeyDown(this.rightKey) && !isRightBorder) {
             this.positionX += movementAmount;
+            this.isMoving = true;
+            this.isFacingRight = true;
         }
         
         boolean isUpBorder = (this.positionY - movementAmount) < 1;
         if (inputManager.isKeyDown(this.upKey) && !isUpBorder) {
             this.positionY -= movementAmount;
+            this.isMoving = true;
+            this.isFacingBack = true;
         }
         
         boolean isDownBorder =
             (this.positionY + this.height + movementAmount) > (screen.getHeight() - 1);
         if (inputManager.isKeyDown(this.downKey) && !isDownBorder) {
             this.positionY += movementAmount;
+            this.isMoving = true;
+            this.isFacingFront = true;
         }
         
         if (inputManager.isKeyDown(this.defaultAttackKey)) {
@@ -309,5 +341,25 @@ public abstract class GameCharacter extends Entity {
     
     public int getPlayerId() {
         return this.playerId;
+    }
+    
+    public boolean isMoving() {
+        return this.isMoving;
+    }
+    
+    public boolean isFacingLeft() {
+        return isFacingLeft;
+    }
+    
+    public boolean isFacingRight() {
+        return this.isFacingRight;
+    }
+    
+    public boolean isFacingFront() {
+        return isFacingFront;
+    }
+    
+    public boolean isFacingBack() {
+        return isFacingBack;
     }
 }

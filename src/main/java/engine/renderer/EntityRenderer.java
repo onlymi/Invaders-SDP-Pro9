@@ -3,10 +3,12 @@ package engine.renderer;
 import engine.AssetManager;
 import engine.AssetManager.SpriteType;
 import engine.Core;
+import engine.renderer.character.ArcherCharacterRenderer;
 import entity.EnemyShip;
 import entity.Entity;
 import entity.Ship;
 import entity.Weapon;
+import entity.character.ArcherCharacter;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -15,10 +17,12 @@ public class EntityRenderer {
     
     private CommonRenderer commonRenderer;
     private AssetManager assetManager;
+    private ArcherCharacterRenderer archerCharacterRenderer;
     
     public EntityRenderer(CommonRenderer commonRenderer) {
         this.commonRenderer = commonRenderer;
         this.assetManager = Core.getAssetManager();
+        this.archerCharacterRenderer = new ArcherCharacterRenderer();
     }
     
     /**
@@ -39,6 +43,12 @@ public class EntityRenderer {
      */
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY, final Color color) {
+        
+        if (entity instanceof ArcherCharacter) {
+            archerCharacterRenderer.draw(g, (ArcherCharacter) entity);
+            return;
+        }
+        
         SpriteType type = entity.getSpriteType();
         
         if (type.isImage()) {
