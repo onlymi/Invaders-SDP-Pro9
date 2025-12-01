@@ -274,6 +274,10 @@ public class GameScreen extends Screen {
             }
         }
         
+        if (this.getGameState().areEnemiesFrozen()) {
+            return;
+        }
+        
         checkAchievement();
         if (this.inputDelay.checkFinished() && inputManager.isKeyDown(KeyEvent.VK_ESCAPE)
             && this.pauseCooldown.checkFinished()) {
@@ -697,6 +701,7 @@ public class GameScreen extends Screen {
                                     enemyShip.getPositionY(), true, finalShip);
                             state.addScore(pIdx, points);
                             state.incShipsDestroyed(pIdx);
+                            this.enemyKillCount++;
                             
                             Item drop = ItemManager.getInstance().obtainDrop(enemyShip);
                             if (drop != null) {
