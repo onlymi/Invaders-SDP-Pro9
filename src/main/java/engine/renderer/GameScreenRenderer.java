@@ -228,21 +228,16 @@ public class GameScreenRenderer {
     public void drawLevel(Graphics g, final Screen screen, final int level) {
         g.setColor(Color.WHITE);
         String levelString = "Level " + level;
-        g.drawString(levelString, screen.getWidth() - 250, 25);
+        g.drawString(levelString, screen.getWidth() - 270, 25);
     }
     
-    public void drawShipCount(Graphics g, final Screen screen, final int shipCount) {
+    public void drawShipCount(Graphics g, final Screen screen, final int enemyCount) {
         g.setColor(Color.GREEN);
-        Entity enemyIcon = new Entity(0, 0, 12 * 2, 8 * 2, Color.GREEN) {
-            {
-                this.spriteType = AssetManager.SpriteType.EnemyShipB2;
-            }
-        };
-        int iconX = screen.getWidth() - 252;
-        int iconY = 37;
-        entityRenderer.drawEntity(g, enemyIcon, iconX, iconY);
-        String shipString = ": " + shipCount;
-        g.drawString(shipString, iconX + 30, 52);
+        g.setFont(commonRenderer.getFontRegular());
+        int x = screen.getWidth() - 270;
+        int y = 52;
+        String statusString = "LEFT ENEMY : " + enemyCount;
+        g.drawString(statusString, x, y);
     }
     
     public void triggerExplosion(int x, int y, boolean enemy, boolean finalExplosion) {
@@ -490,7 +485,10 @@ public class GameScreenRenderer {
         }
         return w;
     }
-    
+    public void triggerEffect(int x, int y, engine.AssetManager.SpriteType sprite, int duration) {
+        explosions.add(new Explosion(x, y, sprite, duration));
+    }
+
     public void drawActiveItemSlots(Graphics g, final Screen screen, final GameState gameState) {
         if (gameState == null) {
             return;

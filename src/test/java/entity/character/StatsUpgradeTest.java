@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 
-class GameCharacterTest {
+class StatsUpgradeTest {
     
     @Mock
     private UserStats userStats;

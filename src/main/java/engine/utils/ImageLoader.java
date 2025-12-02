@@ -54,7 +54,7 @@ public class ImageLoader {
         Graphics2D g = resizedImage.createGraphics();
         
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         
         g.drawImage(originalImage, 0, 0, width, height, null);
@@ -81,7 +81,7 @@ public class ImageLoader {
         Graphics2D g = resizedImage.createGraphics();
         
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         
         g.drawImage(originalImage, 0, 0, width, height, null);

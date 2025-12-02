@@ -162,37 +162,45 @@ public final class AssetManager {
          */
         PlayerBullet(SourceCategory.BULLET, 3, 5),
         /**
+         * GasterBlaster of boss.
+         */
+        GasterBlaster(SourceCategory.BULLET, 128, 128),
+        /**
          * Enemy bullet.
          */
         EnemyBullet(SourceCategory.BULLET, 3, 5),
         /**
+         * Boss bullet.
+         */
+        BossBullet(SourceCategory.BULLET, 5, 5),
+        /**
+         * Boss laser.
+         */
+        BigLaserBeam(SourceCategory.BULLET, 11, 20),
+        /**
          * First enemy ship - first form.
          */
-        EnemyShipA1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipA1(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
         /**
          * First enemy ship - second form.
          */
-        EnemyShipA2(SourceCategory.ENEMY, 12, 8),
+        EnemyShipA2(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
         /**
          * Second enemy ship - first form.
          */
-        EnemyShipB1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipB1(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
         /**
          * Second enemy ship - second form.
          */
-        EnemyShipB2(SourceCategory.ENEMY, 12, 8),
+        EnemyShipB2(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
         /**
          * Third enemy ship - first form.
          */
-        EnemyShipC1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipC1(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
         /**
          * Third enemy ship - second form.
          */
-        EnemyShipC2(SourceCategory.ENEMY, 12, 8),
-        /**
-         * Bonus ship.
-         */
-        EnemyShipSpecial(SourceCategory.ENEMY, 16, 7),
+        EnemyShipC2(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
         /**
          * Boss ship.
          */
@@ -250,6 +258,7 @@ public final class AssetManager {
             this.frameCount = 1;
         }
         
+        // Getter 메서드
         public SourceCategory getCategory() {
             return this.category;
         }
