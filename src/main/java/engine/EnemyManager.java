@@ -3,6 +3,7 @@ package engine;
 import engine.AssetManager.SpriteType;
 import engine.utils.Cooldown;
 import entity.EnemyShip;
+import entity.character.GameCharacter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,18 +35,27 @@ public class EnemyManager {
      * Updates the state of all enemies.
      */
     public void update() {
-        // 1. 스폰 로직
+        // Freeze 상태라면 스폰 중단
+        if (gameScreen.getGameState().areEnemiesFrozen()) {
+            return;
+        }
+        // 스폰 로직
         if (this.spawnCooldown.checkFinished()) {
             spawnEnemy();
             this.spawnCooldown.reset();
         }
-        // 2. 적 업데이트 및 화면 밖 삭제 로직
+        
         Iterator<EnemyShip> iterator = enemies.iterator();
         while (iterator.hasNext()) {
             EnemyShip enemy = iterator.next();
-            enemy.update();
             
-            // 화면 아래로 나가면 삭제 (Y좌표 기준)
+            // 가장 가까운 플레이어 찾기
+            GameCharacter target = findTargetPlayer(enemy);
+            
+            // 타겟 정보를 넘겨주며 적 업데이트
+            enemy.update(target);
+            
+            // 화면 아래로 나가면 삭제
             if (enemy.getPositionY() > gameScreen.getHeight()) {
                 iterator.remove();
                 Core.getLogger().info("Enemy escaped!");
@@ -88,13 +98,37 @@ public class EnemyManager {
      */
     public void draw() {
         for (EnemyShip enemy : enemies) {
-            Core.getDrawManager().getEntityRenderer().drawEntity(
+            Core.getDrawManager().getEntityRenderer().drawEntityByScale(
                 Core.getDrawManager().getBackBufferGraphics(),
                 enemy,
                 enemy.getPositionX(),
-                enemy.getPositionY()
+                enemy.getPositionY(), 1
             );
         }
+    }
+    
+    /**
+     *
+     * @param enemy 타겟을 찾으려는 적 유닛
+     * @return 가장 가까운 GameCharacter (모든 플레이어가 죽었으면 null 반환)
+     */
+    private GameCharacter findTargetPlayer(EnemyShip enemy) {
+        GameCharacter closestPlayer = null;
+        double minClosestSq = Double.MAX_VALUE;
+        
+        for (GameCharacter player : gameScreen.getCharacters()) {
+            if (player == null) {
+                continue;
+            }
+            double dx = player.getPositionX() - enemy.getPositionX();
+            double dy = player.getPositionY() - enemy.getPositionY();
+            double distanceSq = dx * dx + dy * dy;
+            if (distanceSq < minClosestSq) {
+                minClosestSq = distanceSq;
+                closestPlayer = player;
+            }
+        }
+        return closestPlayer;
     }
     
     public List<EnemyShip> getEnemies() {

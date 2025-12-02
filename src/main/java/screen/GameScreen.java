@@ -848,4 +848,8 @@ public class GameScreen extends Screen {
     public int getSeparationLineHeight() {
         return SEPARATION_LINE_HEIGHT;
     }
+    
+    public GameCharacter[] getCharacters() {
+        return this.characters;
+    }
 }
