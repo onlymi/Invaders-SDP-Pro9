@@ -1,10 +1,29 @@
 package entity;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
+import engine.Core;
+import engine.SoundManager;
 import engine.AssetManager.SpriteType;
+import engine.utils.Cooldown;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class BossShipTest {
     
     private BossShip boss;
@@ -14,9 +33,39 @@ public class BossShipTest {
     private static final int BOSS_MAX_Y = 340;
     private static final int SCREEN_WIDTH = 1200;
     
+    // [수정] Core와 SoundManager를 가로채기 위한 Mock 객체 선언
+    @Mock
+    private Cooldown mockCooldown;
+    
+    private MockedStatic<Core> coreMock;
+    private MockedStatic<SoundManager> soundManagerMock;
+    
     @BeforeEach
     void setUp() {
+        // 1. Static Class Mocking 시작
+        coreMock = mockStatic(Core.class);
+        soundManagerMock = mockStatic(SoundManager.class);
+        
+        // 2. Core.getCooldown() 호출 시 가짜 Cooldown 반환 (시간 체크 무시하고 항상 true 반환)
+        coreMock.when(() -> Core.getCooldown(anyInt())).thenReturn(mockCooldown);
+        when(mockCooldown.checkFinished()).thenReturn(true);
+        
+        // 3. 화면 크기 가짜 반환
+        coreMock.when(Core::getFrameWidth).thenReturn(SCREEN_WIDTH);
+        coreMock.when(Core::getFrameHeight).thenReturn(800);
+        
+        // 4. [중요] SoundManager.playOnce()가 호출되어도 아무 일도 안 일어나게 막음 (오디오 장치 없음 오류 방지)
+        soundManagerMock.when(() -> SoundManager.playOnce(anyString())).thenAnswer(invocation -> null);
+        
+        // 5. BossShip 생성 (이제 내부에서 Core나 SoundManager를 호출해도 안전함)
         boss = new BossShip(100, TOP_BOUNDARY + 10);
+    }
+    
+    @AfterEach
+    void tearDown() {
+        // Mock 해제 (메모리 누수 방지)
+        coreMock.close();
+        soundManagerMock.close();
     }
     
     // --- 1. 스탯 및 파괴 테스트 ---
@@ -27,12 +76,12 @@ public class BossShipTest {
         assertEquals(BOSS_INITIAL_HEALTH / 2, boss.getAttackHpThreshold(), "Attack threshold must be 50% of initial health.");
         assertEquals(5000, boss.getPointValue(), "Point value must be 5000");
         
-        // [수정] BossShip 생성자에서 isAttackEnabled = true로 초기화되므로 assertTrue로 변경해야 합니다.
         assertTrue(boss.isAttackEnabled(), "Attack must be enabled initially (by default implementation).");
     }
     
     @Test
     void healthDecrementsAndDestroys() {
+        // 데미지를 입힐 때 내부적으로 SoundManager.playOnce()가 호출되지만, 위에서 Mock 처리했으므로 오류가 안 남
         boss.getDamage(boss.getHealth() - 1);
         assertFalse(boss.isDestroyed(), "Boss should not be destroyed yet (HP=1)");
         
@@ -52,16 +101,6 @@ public class BossShipTest {
     void movementFlipsAtHorizontalBoundary() {
         // 우측 경계 테스트
         boss.setPositionX(SCREEN_WIDTH - boss.getWidth() + 1);
-        // BossShip의 필드 접근 제한자로 인해 직접 할당이 어렵다면, 내부 로직에 의해 업데이트 되도록 유도하거나,
-        // 테스트 패키지가 동일(entity)하므로 package-private 필드 접근이 가능합니다.
-        // 여기서는 기존 코드 로직을 유지하되 명시적으로 설정합니다.
-        
-        // *주의: movingRight 필드는 package-private이므로 접근 가능하다고 가정합니다.
-        // 만약 접근이 불가능하다면 리플렉션이나 setter가 필요하지만, 현재는 동일 패키지입니다.
-        
-        // 강제로 오른쪽 이동 상태로 설정
-        // (BossShip 클래스에 setMovingRight가 없다면 필드 직접 접근이 필요할 수 있음)
-        // boss.movingRight = true; // 필드가 보이지 않는 경우 로직에 맡김
         
         boss.update();
         assertFalse(boss.isMovingRight(), "Direction must flip to Left at right boundary.");
@@ -92,9 +131,6 @@ public class BossShipTest {
     
     @Test
     void attackEnablesAtThreshold() {
-        // [수정] BossShip은 초기 생성 시 공격이 활성화(true) 상태입니다.
-        // 따라서 "체력이 낮아질 때 활성화된다"는 로직보다는 "항상 활성화되어 있거나, 조건 만족 시 상태를 유지한다"를 검증합니다.
-        
         assertTrue(boss.isAttackEnabled(), "Attack is enabled initially.");
         
         // HP를 임계값 + 1로 드롭
@@ -110,11 +146,6 @@ public class BossShipTest {
     
     @Test
     void animationCycleIsCorrect() {
-        // 초기 상태 확인
         assertEquals(SpriteType.BossShip1, boss.getSpriteType());
-        
-        // 애니메이션 사이클 테스트는 Cooldown 로직(시간 경과)에 의존하므로
-        // 단위 테스트에서는 초기 상태 검증만으로 충분할 수 있습니다.
-        // 추가 검증이 필요하다면 Core.getCooldown()을 Mocking해야 합니다.
     }
 }
