@@ -1,6 +1,7 @@
 package entity;
 
 import engine.AssetManager.SpriteType;
+import entity.character.GameCharacter;
 import java.awt.Color;
 import engine.Core;
 import engine.utils.Cooldown;
@@ -21,7 +22,7 @@ public class Weapon extends Entity {
     private int speedX = 0;
     private int speedY = 0;
     
-    private Ship target;
+    private GameCharacter target;
     private boolean isHoming = false;
     private static final double HOMING_AGILITY = 4.0;
     private Cooldown homingTimer;
@@ -196,7 +197,7 @@ public class Weapon extends Entity {
     public int getDamage() {
         return this.damage;
     }
-    public void setHoming(Ship target) {
+    public void setHoming(GameCharacter target) {
         this.target = target;
         this.isHoming = true;
         this.homingTimer = Core.getCooldown(9000);

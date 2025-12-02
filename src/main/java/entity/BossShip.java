@@ -4,9 +4,8 @@ import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.SoundManager;
 import engine.utils.Cooldown;
-import entity.Ship;
+import entity.character.GameCharacter;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.Color;
@@ -116,13 +115,13 @@ public class BossShip extends EnemyShip {
         this.spreadChargeCooldown = Core.getCooldown(SPREAD_CHARGE_TIME);
         this.laserChargeTimer = 0;
         this.spreadChargeTimer = 0;
-        this.isAttackEnabled = false;
+        this.isAttackEnabled = true;
     }
 
     /**
      * New shoot method to manage attacks
      */
-    public final void shoot(final Set<Weapon> weapons, Ship[] players) {
+    public final void shoot(final Set<Weapon> weapons, GameCharacter[] players) {
         // Do nothing if the boss is not in an attacking state
         if (!this.isAttackEnabled) {
             return;
@@ -132,7 +131,7 @@ public class BossShip extends EnemyShip {
         int spawnY = this.positionY + this.height;
         
         // Find the nearest player to target
-        Ship target = getNearestTarget(players, spawnX, spawnY);
+        GameCharacter target = getNearestTarget(players, spawnX, spawnY);
         
         
         // === Phase 1: Homing Missile ===
@@ -460,11 +459,11 @@ public class BossShip extends EnemyShip {
 
     }
     
-    private Ship getNearestTarget(Ship[] players, int x, int y) {
-        Ship nearest = null;
+    private GameCharacter getNearestTarget(GameCharacter[] players, int x, int y) {
+        GameCharacter nearest = null;
         double minDist = Double.MAX_VALUE;
         if (players == null) return null;
-        for (Ship p : players) {
+        for (GameCharacter p : players) {
             if (p != null && !p.isDestroyed()) {
                 double dist = Math.pow(p.getPositionX() - x, 2) + Math.pow(p.getPositionY() - y, 2);
                 if (dist < minDist) {

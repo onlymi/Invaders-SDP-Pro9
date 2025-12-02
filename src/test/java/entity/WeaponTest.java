@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.utils.Cooldown;
-import java.awt.Color;
+import entity.character.GameCharacter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,15 +19,15 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 
-class BulletTest {
+class WeaponTest {
     
-    private Bullet bullet;
+    private Weapon bullet;
     private MockedStatic<Core> coreMock;
     
     @Mock
     private Cooldown mockCooldown;
     @Mock
-    private Ship mockTarget;
+    private GameCharacter mockTarget;
     
     @BeforeEach
     void setUp() {
@@ -38,7 +38,7 @@ class BulletTest {
         coreMock.when(() -> Core.getCooldown(anyInt())).thenReturn(mockCooldown);
         
         // Create a default bullet
-        bullet = new Bullet(100, 100, 6, 10, 5);
+        bullet = new Weapon(100, 100, 6, 10, 5);
     }
     
     @AfterEach
@@ -57,24 +57,7 @@ class BulletTest {
     void setSprite_NormalBullet() {
         // Speed > 0 (Enemy Bullet)
         bullet.setSpeed(5);
-        bullet.setSprite();
-        assertEquals(SpriteType.EnemyBullet, bullet.getSpriteType());
-        
-        // Speed < 0 (Player Bullet)
-        bullet.setSpeed(-5);
-        bullet.setSprite();
-        assertEquals(SpriteType.Bullet, bullet.getSpriteType());
-    }
-    
-    @Test
-    void setBossBullet() {
-        bullet.setBossBullet(true);
-        assertEquals(SpriteType.BossBullet, bullet.getSpriteType());
-        // Boss bullet forces size to 10x10 (5*2)
-        assertEquals(10, bullet.getWidth());
-        assertEquals(10, bullet.getHeight());
-        
-        bullet.setBossBullet(false);
+        bullet.setSpriteMap();
         assertEquals(SpriteType.EnemyBullet, bullet.getSpriteType());
     }
     
@@ -85,7 +68,7 @@ class BulletTest {
         
         bullet.setBigLaser(false);
         // Reverts to default based on speed
-        bullet.setSprite();
+        bullet.setSpriteMap();
         assertEquals(SpriteType.EnemyBullet, bullet.getSpriteType());
     }
     

@@ -233,7 +233,7 @@ public class GameScreen extends Screen {
         enemyShipFormation.attach(this);
         
         // --- Character Initialization & Control Setup ---
-        if (this.level == 6) {
+        if (this.level == 1) {
             this.enemyShipFormation = null;
             this.bossShip = new BossShip(this.width / 2 - 42, 120);
             this.LOGGER.info("Boss Stage Initialized!");
@@ -418,7 +418,7 @@ public class GameScreen extends Screen {
                 if (this.bossShip != null) {
                     this.bossShip.update();
                     if (!this.bossShip.isDestroyed()) {
-                        this.bossShip.shoot(this.weapons, this.ships);
+                        this.bossShip.shoot(this.weapons, this.characters);
                     }
                     if (!this.state.areEnemiesFrozen()) {
                         this.bossShip.update();
@@ -426,12 +426,15 @@ public class GameScreen extends Screen {
                 }
                 
                 // Formation Update
-                this.enemyShipFormation.update(this.state);
-                if (this.state == null || !this.state.areEnemiesFrozen()) {
-                    int bulletsBefore = this.weapons.size();
-                    this.enemyShipFormation.shoot(this.weapons);
-                    if (this.weapons.size() > bulletsBefore) {
-                        SoundManager.playOnce("shoot_enemies");
+                if (this.enemyShipFormation != null) {
+                    this.enemyShipFormation.update(this.state);
+                    
+                    if (this.state == null || !this.state.areEnemiesFrozen()) {
+                        int bulletsBefore = this.weapons.size();
+                        this.enemyShipFormation.shoot(this.weapons);
+                        if (this.weapons.size() > bulletsBefore) {
+                            SoundManager.playOnce("shoot_enemies");
+                        }
                     }
                 }
             }

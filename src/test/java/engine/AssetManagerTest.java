@@ -38,12 +38,12 @@ class AssetManagerTest {
         // AssetManager에 getCharacterWidth 메서드가 없으므로, SpriteType을 통해 간접 테스트
         // 예: WarriorCharacterBasic의 너비 검증
         SpriteType warrior = SpriteType.CharacterWarriorBasic;
-        int expectedWidth = 32;
+        int expectedWidth = 64;
         
         assertEquals(expectedWidth, warrior.getWidth(), "Character width mismatch");
         
         // 실제 로드된 스프라이트 배열의 크기 확인
-        boolean[][] sprite = assetManager.getSprite(warrior);
+        boolean[][] sprite = assetManager.getSpriteMap(warrior);
         if (sprite != null) {
             assertEquals(expectedWidth, sprite.length, "Loaded sprite width mismatch");
         }
@@ -53,11 +53,12 @@ class AssetManagerTest {
     void getCharacterHeight() {
         // SpriteType을 통해 높이 검증
         SpriteType warrior = SpriteType.CharacterWarriorBasic;
-        int expectedHeight = 32;
+        int expectedHeight = 64;
         
         assertEquals(expectedHeight, warrior.getHeight(), "Character height mismatch");
         
-        boolean[][] sprite = assetManager.getSprite(warrior);
+        // 수정됨: getSpritemap -> getSprite (메서드명 통일)
+        boolean[][] sprite = assetManager.getSpriteMap(warrior);
         if (sprite != null && sprite.length > 0) {
             assertEquals(expectedHeight, sprite[0].length, "Loaded sprite height mismatch");
         }
@@ -69,7 +70,7 @@ class AssetManagerTest {
         // 따라서 getSprite나 getSound가 정상적으로 반환되는지로 로딩 성공 여부를 판단
         
         // 1. 스프라이트 로딩 확인
-        boolean[][] shipSprite = assetManager.getSprite(SpriteType.Ship1);
+        boolean[][] shipSprite = assetManager.getSpriteMap(SpriteType.Ship1);
         assertNotNull(shipSprite, "Ship1 sprite should be loaded");
         
         // 2. 폰트 로딩 확인
@@ -132,7 +133,7 @@ class AssetManagerTest {
     @Test
     void getSprite() {
         // 특정 스프라이트(예: Ship1) 데이터 확인
-        boolean[][] sprite = assetManager.getSprite(SpriteType.Ship1);
+        boolean[][] sprite = assetManager.getSpriteMap(SpriteType.Ship1);
         
         assertNotNull(sprite, "Sprite should not be null");
         assertTrue(sprite.length > 0, "Sprite width should be > 0");
