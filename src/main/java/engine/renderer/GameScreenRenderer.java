@@ -269,22 +269,6 @@ public class GameScreenRenderer {
                 iterator.remove();
                 continue;
             }
-            
-            if (e.getSpriteType() != null) {
-                int width = e.getSpriteType().getWidth() * 2;
-                int height = e.getSpriteType().getHeight() * 2;
-                
-                Entity effectEntity = new Entity(0, 0, width, height, Color.WHITE) {
-                    {
-                        this.spriteType = e.getSpriteType();
-                    }
-                };
-                
-                
-                entityRenderer.drawEntity(g, effectEntity,
-                    (int)e.getParticles()[0].x - width/2,
-                    (int)e.getParticles()[0].y - height/2);
-            }
 
             for (Explosion.Particle p : e.getParticles()) {
                 if (!p.active) {
@@ -574,7 +558,7 @@ public class GameScreenRenderer {
             return;
         }
 
-        boolean[][] sprite = AssetManager.getInstance().getSprite(st);
+        boolean[][] sprite = AssetManager.getInstance().getSpriteMap(st);
         if (sprite == null) {
             return;
         }

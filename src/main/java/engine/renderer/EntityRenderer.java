@@ -3,10 +3,10 @@ package engine.renderer;
 import engine.AssetManager;
 import engine.AssetManager.SpriteType;
 import engine.Core;
-import entity.Bullet;
 import entity.EnemyShip;
 import entity.Entity;
 import entity.Ship;
+import entity.Weapon;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -29,7 +29,7 @@ public class EntityRenderer {
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY) {
         AssetManager assetManager = AssetManager.getInstance();
-        boolean[][] image = assetManager.getSprite(entity.getSpriteType());
+        boolean[][] image = assetManager.getSpriteMap(entity.getSpriteType());
         drawEntity(g, entity, positionX, positionY, getEntityColor(entity));
     }
     
@@ -159,8 +159,8 @@ public class EntityRenderer {
         
         return switch (entity) {
             case Ship ship -> getPlayerColor(ship.getPlayerId(), Color.BLUE, Color.RED, baseColor);
-            case Bullet bullet ->
-                getPlayerColor(bullet.getPlayerId(), Color.CYAN, Color.MAGENTA, baseColor);
+            case Weapon weapon ->
+                getPlayerColor(weapon.getPlayerId(), Color.CYAN, Color.MAGENTA, baseColor);
             case EnemyShip enemy -> calculateDamageAlpha(enemy, baseColor);
             default -> baseColor;
         };

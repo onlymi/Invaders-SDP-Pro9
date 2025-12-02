@@ -9,6 +9,7 @@ import entity.Ship;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.Color;
 import java.util.Set;
 
 /**
@@ -23,7 +24,7 @@ public class BossShip extends EnemyShip {
 
     private static final int ATTACK_HOMING_MISSILE = 1;
     private static final int ATTACK_LASER_CHARGE = 2;
-    private static final int HOMING_MISSILE_INTERVAL = 1000;
+    private static final int HOMING_MISSILE_INTERVAL = 3000;
     private static final int LASER_CHARGE_TIME = 1000;
     private static final int MISSILE_SPEED = 4;
     private static final int ATTACK_SPREAD_CHARGE = 3;
@@ -62,21 +63,21 @@ public class BossShip extends EnemyShip {
     private Cooldown spreadChargeCooldown;
     private Cooldown laserFireDelayCooldown;
     private boolean hasSpawnedSkulls;
-    private Bullet activeLeftSkull;
-    private Bullet activeRightSkull;
+    private Weapon activeLeftSkull;
+    private Weapon activeRightSkull;
     private double lockedAngleLeft;
     private double lockedAngleRight;
     private Cooldown laserActiveCooldown;
     private boolean isFiring;
-    private List<Bullet> activeLeftLasers = new ArrayList<>();
-    private List<Bullet> activeRightLasers = new ArrayList<>();
+    private List<Weapon> activeLeftLasers = new ArrayList<>();
+    private List<Weapon> activeRightLasers = new ArrayList<>();
     
     private final int BOSS_ATTACK_HP_THRESHOLD;
     private boolean isAttackEnabled;
     
-    final int screenWidth = Core.WIDTH;
-    final int screenHeight = Core.HEIGHT;
-
+    final int screenWidth = Core.getFrameWidth();
+    final int screenHeight = Core.getFrameHeight();
+    
     /**
      * Constructor, establishes the boss ship's properties. Initializes with SpriteType.BossEnemy1.
      *
@@ -115,27 +116,17 @@ public class BossShip extends EnemyShip {
         this.spreadChargeCooldown = Core.getCooldown(SPREAD_CHARGE_TIME);
         this.laserChargeTimer = 0;
         this.spreadChargeTimer = 0;
-        this.laserFireDelayCooldown = Core.getCooldown(LASER_FIRE_DELAY);
-        this.hasSpawnedSkulls = false;
-        this.laserActiveCooldown = Core.getCooldown(LASER_DURATION);
-        this.isFiring = false;
-        
-        this.isAttackEnabled = true;
-        
+        this.isAttackEnabled = false;
     }
-    
+
     /**
-     * New shoot method to manage attacks.
-     * Handles the boss's attack patterns based on the current phase:
-     * 1. Homing Missile -> 2. Gaster Blaster Laser -> 3. Spread Attack.
-     *
-     * @param bullets Set of game bullets to add new projectiles to.
-     * @param players Array of player ships for targeting.
+     * New shoot method to manage attacks
      */
-    public final void shoot(final Set<Bullet> bullets, Ship[] players) {
+    public final void shoot(final Set<Weapon> weapons, Ship[] players) {
         // Do nothing if the boss is not in an attacking state
-        if (!this.isAttackEnabled) return;
-        
+        if (!this.isAttackEnabled) {
+            return;
+        }
         // Calculate the center position of the boss for spawning projectiles
         int spawnX = this.positionX + this.width / 2;
         int spawnY = this.positionY + this.height;
@@ -146,13 +137,13 @@ public class BossShip extends EnemyShip {
         
         // === Phase 1: Homing Missile ===
         if (this.attackPhase == ATTACK_HOMING_MISSILE) {
-            // Check if the cooldown between missiles has finished
+            // Missile Interval Cooldown Check
             if (this.attackCooldown.checkFinished()) {
                 
                 // Create a missile projectile
-                Bullet missile = BulletPool.getBullet(spawnX, spawnY,
+                Weapon missile = WeaponPool.getWeapon(spawnX, spawnY,
                     MISSILE_SPEED, BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
-                bullets.add(missile);
+                weapons.add(missile);
                 
                 // If a target exists, enable homing behavior on the missile
                 if (target != null) {
@@ -199,16 +190,16 @@ public class BossShip extends EnemyShip {
                     
                     
                     // Spawn Left Skull and rotate it towards the target
-                    this.activeLeftSkull = BulletPool.getBullet(spawnX - xOffset, skullY, 0, SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
+                    this.activeLeftSkull = WeaponPool.getWeapon(spawnX - xOffset, skullY, 0, SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
                     this.activeLeftSkull.setSpriteType(SpriteType.GasterBlaster);
                     this.activeLeftSkull.setRotation(Math.toDegrees(this.lockedAngleLeft));
-                    bullets.add(this.activeLeftSkull);
+                    weapons.add(this.activeLeftSkull);
                     
                     // Spawn Right Skull and rotate it towards the target
-                    this.activeRightSkull = BulletPool.getBullet(spawnX + xOffset, skullY, 0, SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
+                    this.activeRightSkull = WeaponPool.getWeapon(spawnX + xOffset, skullY, 0, SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
                     this.activeRightSkull.setSpriteType(SpriteType.GasterBlaster);
                     this.activeRightSkull.setRotation(Math.toDegrees(this.lockedAngleRight));
-                    bullets.add(this.activeRightSkull);
+                    weapons.add(this.activeRightSkull);
                     
                     // Update flags and start the delay timer before firing
                     this.hasSpawnedSkulls = true;
@@ -226,27 +217,27 @@ public class BossShip extends EnemyShip {
                         // Create Left Lasers (Stack 3 beams for persistence against single hits)
                         double startXLeft = spawnX - xOffset;
                         for (int i = 0; i < 3; i++) {
-                            Bullet leftLaser = BulletPool.getBullet((int)startXLeft, (int)laserY, 0, 11 * 4, laserLength, Entity.Team.ENEMY);
+                            Weapon leftLaser = WeaponPool.getWeapon((int)startXLeft, (int)laserY, 0, 11 * 4, laserLength, Entity.Team.ENEMY);
                             leftLaser.setBigLaser(true);
                             leftLaser.setBossBullet(false);
                             leftLaser.setSpeedX(0); // No horizontal movement
                             leftLaser.setSpeed(0);  // No vertical movement
                             // Rotate laser to match the aimed angle (-90 correction for vertical sprite)
                             leftLaser.setRotation(Math.toDegrees(this.lockedAngleLeft) - 90);
-                            bullets.add(leftLaser);
+                            weapons.add(leftLaser);
                             this.activeLeftLasers.add(leftLaser);
                         }
                         
                         // Create Right Lasers (Stack 3 beams)
                         double startXRight = spawnX + xOffset;
                         for (int i = 0; i < 3; i++) {
-                            Bullet rightLaser = BulletPool.getBullet((int)startXRight, (int)laserY, 0, 11 * 4, laserLength, Entity.Team.ENEMY);
+                            Weapon rightLaser = WeaponPool.getWeapon((int)startXRight, (int)laserY, 0, 11 * 4, laserLength, Entity.Team.ENEMY);
                             rightLaser.setBigLaser(true);
                             rightLaser.setBossBullet(false);
                             rightLaser.setSpeedX(0);
                             rightLaser.setSpeed(0);
                             rightLaser.setRotation(Math.toDegrees(this.lockedAngleRight) - 90);
-                            bullets.add(rightLaser);
+                            weapons.add(rightLaser);
                             this.activeRightLasers.add(rightLaser);
                         }
                         
@@ -261,33 +252,33 @@ public class BossShip extends EnemyShip {
                     if (this.laserActiveCooldown.checkFinished()) {
                         
                         // Remove all active Left Lasers
-                        for (Bullet b : this.activeLeftLasers) {
-                            if (bullets.contains(b)) {
-                                bullets.remove(b);
-                                BulletPool.recycle(java.util.Collections.singleton(b));
+                        for (Weapon w : this.activeLeftLasers) {
+                            if (weapons.contains(w)) {
+                                weapons.remove(w);
+                                WeaponPool.recycle(java.util.Collections.singleton(w));
                             }
                         }
                         this.activeLeftLasers.clear();
                         
                         // Remove all active Right Lasers
-                        for (Bullet b : this.activeRightLasers) {
-                            if (bullets.contains(b)) {
-                                bullets.remove(b);
-                                BulletPool.recycle(java.util.Collections.singleton(b));
+                        for (Weapon w : this.activeRightLasers) {
+                            if (weapons.contains(w)) {
+                                weapons.remove(w);
+                                WeaponPool.recycle(java.util.Collections.singleton(w));
                             }
                         }
                         this.activeRightLasers.clear();
                         
                         // Remove Left Skull
                         if (this.activeLeftSkull != null) {
-                            bullets.remove(this.activeLeftSkull);
-                            BulletPool.recycle(java.util.Collections.singleton(this.activeLeftSkull));
+                            weapons.remove(this.activeLeftSkull);
+                            WeaponPool.recycle(java.util.Collections.singleton(this.activeLeftSkull));
                             this.activeLeftSkull = null;
                         }
                         // Remove Right Skull
                         if (this.activeRightSkull != null) {
-                            bullets.remove(this.activeRightSkull);
-                            BulletPool.recycle(java.util.Collections.singleton(this.activeRightSkull));
+                            weapons.remove(this.activeRightSkull);
+                            WeaponPool.recycle(java.util.Collections.singleton(this.activeRightSkull));
                             this.activeRightSkull = null;
                         }
                         
@@ -315,7 +306,7 @@ public class BossShip extends EnemyShip {
                     int velX = (int) (bulletSpeed * Math.cos(angle));
                     int velY = (int) (bulletSpeed * Math.sin(angle));
                     
-                    Bullet spreadBullet = BulletPool.getBullet(
+                    Weapon spreadBullet = WeaponPool.getWeapon(
                         spawnX,
                         spawnY,
                         velY,
@@ -324,13 +315,13 @@ public class BossShip extends EnemyShip {
                     spreadBullet.setSpeedX(velX);
                     spreadBullet.setBossBullet(true);
                     
-                    bullets.add(spreadBullet);
+                    weapons.add(spreadBullet);
                 }
                 
                 // Loop back to Phase 1 (Homing Missile)
                 this.attackPhase = ATTACK_HOMING_MISSILE;
                 this.attackCooldown.reset();
-                this.changeColor(Color.CYAN);
+                this.changeColor(Color.CYAN); // Reset to neutral color
             }
         }
     }
@@ -358,17 +349,53 @@ public class BossShip extends EnemyShip {
         // Check Horizontal Boundary
         if (this.positionX + this.width >= screenWidth || this.positionX <= 0) {
             this.movingRight = !this.movingRight;
-            if (this.positionX <= 0) this.positionX = 1;
-            if (this.positionX + this.width >= screenWidth) this.positionX = screenWidth - this.width - 1;
+            if (this.positionX <= 0) {
+                this.positionX = 1;
+            }
+            if (this.positionX + this.width >= screenWidth) {
+                this.positionX = screenWidth - this.width - 1;
+            }
         }
 
         // Check Vertical Boundary
         if (this.positionY + this.height >= BOSS_MAX_Y || this.positionY <= TOP_BOUNDARY) {
             this.movingDown = !this.movingDown;
-            if (this.positionY <= TOP_BOUNDARY) this.positionY = TOP_BOUNDARY + 1;
-            if (this.positionY + this.height >= BOSS_MAX_Y) this.positionY = BOSS_MAX_Y - this.height - 1;
+            if (this.positionY <= TOP_BOUNDARY) {
+                this.positionY = TOP_BOUNDARY + 1;
+            }
+            if (this.positionY + this.height >= BOSS_MAX_Y) {
+                this.positionY = BOSS_MAX_Y - this.height - 1;
+            }
         }
         
+        // Attack Pattern Logic
+        if (this.attackPhase == ATTACK_HOMING_MISSILE) {
+            // Missile Interval Cooldown
+            if (this.attackCooldown.checkFinished()) {
+                // **Placeholder for Homing Missile Logic**
+                
+                // Switch to Laser Charge phase
+                this.attackPhase = ATTACK_LASER_CHARGE;
+                this.laserChargeCooldown.reset();
+                this.laserChargeTimer = LASER_CHARGE_TIME; // Start charge timer
+                
+                // Visual feedback for charge (changes color to RED)
+                this.changeColor(Color.RED);
+            }
+        } else if (this.attackPhase == ATTACK_LASER_CHARGE) {
+            // Update the remaining charge time for rendering the charge bar
+            this.laserChargeTimer = this.laserChargeCooldown.getDuration();
+            
+            // Laser Charge Finished
+            if (this.laserChargeCooldown.checkFinished()) {
+                // **Placeholder for Laser Fire Logic**
+                
+                // Switch back to Homing Missile phase and reset colors
+                this.attackPhase = ATTACK_HOMING_MISSILE;
+                this.attackCooldown.reset();
+                this.changeColor(Color.CYAN);
+            }
+        }
         // Inherited from EnemyShip, checks if 500ms animation interval is finished.
         if (this.bossAnimationCooldown.checkFinished()) {
             this.bossAnimationCooldown.reset();
@@ -448,8 +475,10 @@ public class BossShip extends EnemyShip {
         }
         return nearest;
     }
-
-    /** Returns the current attack phase. */
+    
+    /**
+     * Returns the current attack phase.
+     */
     public final int getAttackPhase() {
         return this.attackPhase;
     }

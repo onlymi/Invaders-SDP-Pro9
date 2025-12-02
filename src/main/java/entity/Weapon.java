@@ -11,7 +11,7 @@ import engine.utils.Cooldown;
  * @author <a href="mailto:RobertoIA1987@gmail.com">Roberto Izquierdo Amo</a>
  *
  */
-public class Bullet extends Entity {
+public class Weapon extends Entity {
     
     /**
      * Speed of the bullet, positive or negative depending on direction - positive is down.
@@ -34,6 +34,8 @@ public class Bullet extends Entity {
     // standardised for DrawManager scaling
     private int playerId = 0;
     
+    private int damage = 0;
+    
     private boolean isBossBullet = false;
     private boolean isBigLaser = false;
     
@@ -45,11 +47,25 @@ public class Bullet extends Entity {
      * @param speed     Speed of the bullet, positive or negative depending on direction - positive
      *                  is down.
      */
-    // change the constructor to receive width and height
-    public Bullet(final int positionX, final int positionY, final int width, final int height,
+    public Weapon(final int positionX, final int positionY, final int width, final int height,
         final int speed) {
-        super(positionX, positionY, 0, 0, Color.WHITE);
+        super(positionX, positionY, width, height, Color.WHITE);
         this.speed = speed;
+    }
+    
+    /**
+     * Constructor, establishes the bullet's properties.
+     *
+     * @param positionX Initial position of the weapon in the X axis.
+     * @param positionY Initial position of the weapon in the Y axis.
+     * @param speed     Speed of the weapon, positive or negative depending on direction - positive
+     *                  is down.
+     */
+    public Weapon(final int positionX, final int positionY, final int width, final int height,
+        final int speed, final int damage) {
+        super(positionX, positionY, width, height, Color.WHITE);
+        this.speed = speed;
+        this.damage = damage;
     }
     
     // reset the size when recycling bullets
@@ -61,7 +77,7 @@ public class Bullet extends Entity {
     /**
      * Sets correct sprite for the bullet, based on speed.
      */
-    public final void setSprite() {
+    public final void setSpriteMap() {
         if (this.isBossBullet) {
             this.spriteType = SpriteType.BossBullet;
         }
@@ -70,15 +86,15 @@ public class Bullet extends Entity {
             this.spriteType = SpriteType.BigLaserBeam;
         }
         else if (this.speed < 0) {
-            this.spriteType = SpriteType.Bullet;
-        } else if (!this.isBigLaser && !this.isBossBullet) {
-            this.spriteType = SpriteType.EnemyBullet;
+            this.spriteType = SpriteType.PlayerBullet; // player bullet fired, team remains NEUTRAL
+        } else {
+            this.spriteType = SpriteType.EnemyBullet; // enemy fired bullet
         }
     }
     
     public void setBossBullet(boolean isBoss) {
         this.isBossBullet = isBoss;
-        setSprite();
+        setSpriteMap();
         if (isBoss) {
             this.width = 5 * 2;
             this.height = 5 * 2;
@@ -87,7 +103,7 @@ public class Bullet extends Entity {
     
     public void setBigLaser(boolean isBigLaser) {
         this.isBigLaser = isBigLaser;
-        setSprite();
+        setSpriteMap();
     }
     
     public void setSpriteType(SpriteType spriteType) {
@@ -95,7 +111,18 @@ public class Bullet extends Entity {
     }
     
     /**
-     * Updates the bullet's position.
+     * Sets the sprite type for the weapon.
+     *
+     * @param spriteType New sprite type to use.
+     */
+    public final void setSpriteImage(final SpriteType spriteType) {
+        this.spriteType = spriteType;
+        this.width = spriteType.getWidth();
+        this.height = spriteType.getHeight();
+    }
+    
+    /**
+     * Updates the weapon's position.
      */
     public final void update() {
         if (this.isHoming) {
@@ -117,18 +144,20 @@ public class Bullet extends Entity {
         this.positionY += this.speed;
         this.positionX += this.speedX;
     }
+    
     /**
-     * Setter of the speed of the bullet.
+     * Setter of the speed of the weapon.
      *
-     * @param speed New speed of the bullet.
+     * @param speed New speed of the weapon.
      */
     public final void setSpeed(final int speed) {
         this.speed = speed;
     }
+    
     /**
-     * Getter for the speed of the bullet.
+     * Getter for the speed of the weapon.
      *
-     * @return Speed of the bullet.
+     * @return Speed of the weapon.
      */
     public final int getSpeed() {
         return this.speed;
@@ -142,24 +171,31 @@ public class Bullet extends Entity {
         return this.speedX;
     }
     
+    public final void setOwnerPlayerId(final int ownerPlayerId) {
+        this.ownerPlayerId = ownerPlayerId;
+    }
+    
     // 2P mode: adding owner API, standardised player API
     public final int getOwnerPlayerId() {
         return ownerPlayerId;
     }
     
-    public final void setOwnerPlayerId(final int ownerPlayerId) {
-        this.ownerPlayerId = ownerPlayerId;
+    public void setPlayerId(int playerId) {
+        this.playerId = playerId;
+        this.ownerPlayerId = playerId;
     }
     
     public int getPlayerId() {
         return this.playerId;
     }
     
-    public void setPlayerId(int playerId) {
-        this.playerId = playerId;
-        this.ownerPlayerId = playerId; // keep them in sync
+    public void setDamage(int damage) {
+        this.damage = damage;
     }
     
+    public int getDamage() {
+        return this.damage;
+    }
     public void setHoming(Ship target) {
         this.target = target;
         this.isHoming = true;

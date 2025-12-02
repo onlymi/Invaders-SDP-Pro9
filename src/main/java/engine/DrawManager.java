@@ -21,6 +21,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -252,7 +254,25 @@ public final class DrawManager {
      * @param screen Screen to draw on.
      */
     public void completeDrawing(final Screen screen) {
-        graphics.drawImage(backBuffer, frame.getInsets().left, frame.getInsets().top, frame);
+        // [수정] Graphics2D로 캐스팅하여 고급 렌더링 옵션 사용
+        Graphics2D g2d = (Graphics2D) graphics;
+        
+        if (g2d != null) {
+            // 1. 보간법 비활성화 (픽셀을 뭉개지 않고 그대로 확대) -> 픽셀 아트가 선명해짐
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            
+            // 2. 렌더링 품질보다는 속도 우선 (선택 사항)
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_SPEED);
+            
+            // 3. 안티앨리어싱 끄기 (픽셀 아트의 경우 끄는 것이 좋음)
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_OFF);
+            
+            // 실제 그리기 (기존 코드)
+            g2d.drawImage(backBuffer, frame.getInsets().left, frame.getInsets().top, frame);
+        }
     }
     
     
