@@ -89,9 +89,10 @@ public abstract class GameCharacter extends Entity {
         this.defaultAttackKey = KeyEvent.VK_SPACE;
         
         // Reset cool time
-        this.shootingCooldown = Core.getCooldown((int) this.currentStats.attackSpeed);
+        int cooldownMs = (int) (1000 / Math.max(0.1, this.currentStats.attackSpeed));
+        this.shootingCooldown = Core.getCooldown(cooldownMs);
         this.shootingCooldown.reset();
-        this.destructionCooldown = Core.getCooldown(DESTRUCTION_COOLDOWN);
+        this.destructionCooldown = Core.getCooldown(1000);
         
         this.projectileSpriteType = SpriteType.PlayerBullet;
         this.projectileWidth = 3;

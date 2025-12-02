@@ -113,8 +113,8 @@ public class BossShip extends EnemyShip {
         this.attackCooldown.reset();
         this.laserChargeCooldown = Core.getCooldown(LASER_CHARGE_TIME);
         this.spreadChargeCooldown = Core.getCooldown(SPREAD_CHARGE_TIME);
-        this.laserChargeTimer = 0;
-        this.spreadChargeTimer = 0;
+        this.laserFireDelayCooldown = Core.getCooldown(1000);
+        this.laserActiveCooldown = Core.getCooldown(700);
         this.isAttackEnabled = true;
     }
 
@@ -138,6 +138,8 @@ public class BossShip extends EnemyShip {
         if (this.attackPhase == ATTACK_HOMING_MISSILE) {
             // Missile Interval Cooldown Check
             if (this.attackCooldown.checkFinished()) {
+                
+                SoundManager.playOnce("shoot_enemies");
                 
                 // Create a missile projectile
                 Weapon missile = WeaponPool.getWeapon(spawnX, spawnY,
@@ -294,6 +296,8 @@ public class BossShip extends EnemyShip {
         // === Phase 3: Spread Charge (360-degree Attack) ===
         else if (this.attackPhase == ATTACK_SPREAD_CHARGE) {
             if (this.spreadChargeCooldown.checkFinished()) {
+                
+                SoundManager.playOnce("shoot_enemies");
                 
                 int bulletCount = 36;
                 int bulletSpeed = 5;

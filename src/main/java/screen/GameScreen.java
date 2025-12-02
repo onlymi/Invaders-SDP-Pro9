@@ -173,7 +173,6 @@ public class GameScreen extends Screen {
         super(width, height, fps);
         
         this.characters = new GameCharacter[GameState.NUM_PLAYERS];
-        this.ships = new Ship[GameState.NUM_PLAYERS];
         
         this.state = gameState;
         this.gameSettings = gameSettings;
@@ -404,13 +403,6 @@ public class GameScreen extends Screen {
                         this.enemyShipSpecial = null;
                         SoundManager.loopStop();
                         this.LOGGER.info("The special ship has escaped");
-                    }
-                }
-                
-                // Update ships & enemies
-                for (Ship s : this.ships) {
-                    if (s != null) {
-                        s.update();
                     }
                 }
 
@@ -863,8 +855,9 @@ public class GameScreen extends Screen {
                         drawManager.getGameScreenRenderer()
                             .triggerExplosion(this.bossShip.getPositionX(),
                                 this.bossShip.getPositionY(), true, true);
+                    }else {
+                        SoundManager.playOnce("boss_hit");
                     }
-                    // Since the Boss is a single target, break is omitted to continue with the next bullet/enemy check.
                 }
             }
         }
