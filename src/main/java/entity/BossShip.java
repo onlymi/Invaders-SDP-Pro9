@@ -458,9 +458,9 @@ public class BossShip extends EnemyShip {
             // Ensure full alpha upon destruction for explosion effect
             color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
             changeColor(color);
+        } else{
+            SoundManager.playOnce("boss_hit");
         }
-        // Note: No sprite flipping or animation logic is applied for the boss in hit().
-
     }
     
     private GameCharacter getNearestTarget(GameCharacter[] players, int x, int y) {
