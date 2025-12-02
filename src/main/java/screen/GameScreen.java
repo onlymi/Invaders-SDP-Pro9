@@ -855,7 +855,19 @@ public class GameScreen extends Screen {
                         drawManager.getGameScreenRenderer()
                             .triggerExplosion(this.bossShip.getPositionX(),
                                 this.bossShip.getPositionY(), true, true);
-                        
+                        java.util.Random rand = new java.util.Random();
+                        for (int i = 0; i < 10; i++) {
+                            int offsetX = rand.nextInt(this.bossShip.getWidth()) - this.bossShip.getWidth()/2;
+                            int offsetY = rand.nextInt(this.bossShip.getHeight()) - this.bossShip.getHeight()/2;
+                            
+                            Color explosionColor = new Color(255, rand.nextInt(150), 0);
+                            
+                            drawManager.getGameScreenRenderer().triggerCustomExplosion(
+                                this.bossShip.getPositionX() + this.bossShip.getWidth() / 2 + offsetX,
+                                this.bossShip.getPositionY() + this.bossShip.getHeight() / 2 + offsetY,
+                                explosionColor
+                            );
+                        }
                     }else {
                         SoundManager.playOnce("boss_hit");
                         

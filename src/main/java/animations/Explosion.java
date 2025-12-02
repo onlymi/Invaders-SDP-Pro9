@@ -64,12 +64,10 @@ public class Explosion {
         this.particles = new Particle[NUM_PARTICLES];
         for (int i = 0; i < NUM_PARTICLES; i++) {
             double angle = 2 * Math.PI * random.nextDouble();
-            // 더 빠르고 강렬하게 퍼지도록 속도 조정
             double speed = 2 + random.nextDouble() * 3;
             double dx = Math.cos(angle) * speed;
             double dy = Math.sin(angle) * speed;
             
-            // 수명 랜덤 설정 (40~60 프레임)
             int life = 40 + random.nextInt(20);
             
             particles[i] = new Particle(startX, startY, dx, dy, color, life);
