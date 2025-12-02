@@ -1,10 +1,10 @@
 package entity;
 
 import engine.AssetManager.SpriteType;
-import entity.character.GameCharacter;
-import java.awt.Color;
 import engine.Core;
 import engine.utils.Cooldown;
+import entity.character.GameCharacter;
+import java.awt.Color;
 
 /**
  * Implements a bullet that moves vertically up or down.
@@ -29,7 +29,7 @@ public class Weapon extends Entity {
     private boolean isHoming = false;
     private static final double HOMING_AGILITY = 4.0;
     private Cooldown homingTimer;
-
+    
     /**
      * 2P mode: id number to specifying who fired the bullet - 0 = enemy, 1 = P1, 2 = P2.
      **/
@@ -111,6 +111,13 @@ public class Weapon extends Entity {
             this.velocityX = 0;
             this.velocityY = this.speed;
         }
+        
+        if (this.velocityX != 0 || this.velocityY != 0) {
+            this.rotation = Math.atan2(this.velocityY, this.velocityX);
+            // this.rotation = Math.atan2(this.velocityY, this.velocityX) + Math.PI / 2;
+        } else {
+            this.rotation = 0;
+        }
     }
     
     // reset the size when recycling weapons
@@ -130,9 +137,9 @@ public class Weapon extends Entity {
         if (this.isBigLaser) {
             this.spriteType = SpriteType.BigLaserBeam;
         } else if (this.speed == 0) {
-            this.spriteType = SpriteType.EnemyBullet; // player bullet fired, team remains NEUTRAL
+            this.spriteType = SpriteType.EnemyBullet; // enemy fired bullet
         } else {
-            this.spriteType = SpriteType.PlayerBullet; // enemy fired bullet
+            this.spriteType = SpriteType.PlayerBullet; // player bullet fired, team remains NEUTRAL
         }
     }
     
@@ -176,8 +183,10 @@ public class Weapon extends Entity {
             }
             
             if (this.target != null && !this.target.isDestroyed()) {
-                double dx = (target.getPositionX() + target.getWidth() / 2.0) - (this.positionX + this.width / 2.0);
-                double dy = (target.getPositionY() + target.getHeight() / 2.0) - (this.positionY + this.height / 2.0);
+                double dx = (target.getPositionX() + target.getWidth() / 2.0)
+                    - (this.positionX + this.width / 2.0);
+                double dy = (target.getPositionY() + target.getHeight() / 2.0)
+                    - (this.positionY + this.height / 2.0);
                 double angle = Math.atan2(dy, dx);
                 
                 this.speedX = (int) (HOMING_AGILITY * Math.cos(angle));
@@ -197,10 +206,6 @@ public class Weapon extends Entity {
      */
     public final void setSpeed(final int speed) {
         this.speed = speed;
-        if (this.character == null) {
-            this.velocityY = speed;
-            this.velocityX = 0;
-        }
     }
     
     /**

@@ -30,7 +30,7 @@ public final class WeaponPool {
      * @param positionX Requested position of the weapon in the X axis.
      * @param positionY Requested position of the weapon in the Y axis.
      * @param speed     Requested speed of the weapon, positive or negative depending on direction -
-     * positive is down.
+     *                  positive is down.
      * @param width     Requested size of the weapon width.
      * @param height    Requested size of the weapon height.
      * @param team      Requested team type.
@@ -76,7 +76,7 @@ public final class WeaponPool {
      * @param positionX Requested position of the weapon in the X axis.
      * @param positionY Requested position of the weapon in the Y axis.
      * @param speed     Requested speed of the weapon, positive or negative depending on direction -
-     * positive is down.
+     *                  positive is down.
      * @param width     Requested size of the weapon width.
      * @param height    Requested size of the weapon height.
      * @param team      Requested team type.

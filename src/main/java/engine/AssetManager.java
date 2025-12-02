@@ -53,7 +53,7 @@ public final class AssetManager {
         CharacterWarriorWalk2(SourceCategory.CHARACTER, "warrior/warrior_basic.png",
             characterWidth, characterHeight),
         CharacterWarriorDefaultProjectile(SourceCategory.WEAPON,
-            "warrior/default_attack_warrior.png", 32, 32),
+            "warrior/default_attack_warrior.png", 32, characterHeight),
         /**
          * Archer Character.
          */
@@ -61,8 +61,14 @@ public final class AssetManager {
             characterWidth, characterHeight),
         CharacterArcherShadow(SourceCategory.CHARACTER, "archer/archer_shadow.png",
             characterWidth, characterHeight),
-        CharacterArcherAttack1(SourceCategory.CHARACTER, "archer/archer_basic.png",
-            characterWidth, characterHeight),
+        CharacterArcherLeftAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_left_attack.png", characterWidth, characterHeight),
+        CharacterArcherRightAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_right_attack.png", characterWidth, characterHeight),
+        CharacterArcherFrontAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_front_attack.png", characterWidth, characterHeight),
+        CharacterArcherBackAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_back_attack.png", characterWidth, characterHeight),
         CharacterArcherStand(SourceCategory.CHARACTER, "archer/archer_stand.png",
             characterWidth, characterHeight),
         CharacterArcherLeftWalk(SourceCategory.CHARACTER, "archer/walk/archer_left_walk",
@@ -75,7 +81,7 @@ public final class AssetManager {
             characterWidth, characterHeight, 4),
         CharacterArcherDefaultProjectile(SourceCategory.WEAPON,
             "archer/default_attack_archer.png",
-            20, 15),
+            32, 14),
         /**
          * Wizard Character.
          */
@@ -390,7 +396,6 @@ public final class AssetManager {
                         
                         for (int i = 0; i < type.getFrameCount(); i++) {
                             String fullPath = basePath + (i + 1) + ".png";
-                            System.out.println(type.getFrameCount() + " - " + fullPath);
                             
                             frames[i] = engine.utils.ImageLoader.loadImage(fullPath, targetWidth,
                                 targetHeight);

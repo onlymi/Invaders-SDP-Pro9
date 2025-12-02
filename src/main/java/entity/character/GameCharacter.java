@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import screen.GameScreen;
 import screen.Screen;
 
 public abstract class GameCharacter extends Entity {
@@ -41,6 +42,7 @@ public abstract class GameCharacter extends Entity {
     private int defaultAttackKey;
     
     private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
+    protected boolean isAttacking;
     protected boolean isMoving;
     protected boolean isFacingLeft;
     protected boolean isFacingRight;
@@ -48,6 +50,7 @@ public abstract class GameCharacter extends Entity {
     protected boolean isFacingBack;
     
     private static final int DESTRUCTION_COOLDOWN = 1000;
+    private static final int BASE_SHOOTING_COOLDOWN = 1500;
     private Cooldown shootingCooldown;
     private final Cooldown destructionCooldown;
     
@@ -98,22 +101,18 @@ public abstract class GameCharacter extends Entity {
         this.downKey = KeyEvent.VK_S;
         this.defaultAttackKey = KeyEvent.VK_SPACE;
         
-        this.isMoving = false;
-        this.isFacingLeft = false;
-        this.isFacingRight = true;
-        this.isFacingFront = false;
-        this.isFacingBack = false;
+        initializeKeyboardPressing();
         
         // Reset cool time
-        this.shootingCooldown = Core.getCooldown(
-            (int) this.currentStats.attackSpeed * SHOOTING_COOLDOWN_FACTOR);
+        this.shootingCooldown = Core.getCooldown((int) (BASE_SHOOTING_COOLDOWN
+            - this.currentStats.attackSpeed * SHOOTING_COOLDOWN_FACTOR));
         this.shootingCooldown.reset();
         this.destructionCooldown = Core.getCooldown(DESTRUCTION_COOLDOWN);
         
         this.projectileSpriteType = SpriteType.PlayerBullet;
         this.projectileWidth = 3;
         this.projectileHeight = 5;
-        this.projectileSpeed = 6;
+        this.projectileSpeed = 1;
     }
     
     /**
@@ -146,14 +145,14 @@ public abstract class GameCharacter extends Entity {
         }
         // 0: Health (20% per level)
         if (stats.getStatLevel(0) > 0) {
-            this.baseStats.maxHealthPoints = (int) (this.baseStats.maxHealthPoints * (1
-                + 0.2 * stats.getStatLevel(0)));
+            this.baseStats.maxHealthPoints = (int) (
+                this.baseStats.maxHealthPoints * (1 + 0.2 * stats.getStatLevel(0)));
             this.currentHealthPoints = this.baseStats.maxHealthPoints; // Reset current HP to new max
         }
         // 1: Mana (20% per level)
         if (stats.getStatLevel(1) > 0) {
-            this.baseStats.maxManaPoints = (int) (this.baseStats.maxManaPoints * (1
-                + 0.2 * stats.getStatLevel(1)));
+            this.baseStats.maxManaPoints = (int) (
+                this.baseStats.maxManaPoints * (1 + 0.2 * stats.getStatLevel(1)));
             this.currentManaPoints = this.baseStats.maxManaPoints; // Reset current MP to new max
         }
         // 2: Speed (10% per level)
@@ -235,12 +234,7 @@ public abstract class GameCharacter extends Entity {
     
     public boolean handleMovement(InputManager inputManager, Screen screen, Set<Weapon> weapons,
         float deltaTime) {
-        this.isMoving = false;
-        
-        this.isFacingLeft = false;
-        this.isFacingRight = false;
-        this.isFacingBack = false;
-        this.isFacingFront = false;
+        initializeKeyboardPressing();
         
         float dx = 0;
         float dy = 0;
@@ -265,18 +259,16 @@ public abstract class GameCharacter extends Entity {
         if (dx != 0 || dy != 0) {
             this.isMoving = true;
             
-            // 대각선 이동 시 벡터 정규화 (속도 보정)
+            // 대각선 이동 시 속도 보정
             if (dx != 0 && dy != 0) {
                 dx *= DIAGONAL_CORRECTION_FACTOR;
                 dy *= DIAGONAL_CORRECTION_FACTOR;
             }
             
-            // 프레임 단위 이동 거리 계산
             float speed = this.currentStats.movementSpeed * MOVEMENT_SPEED_FACTOR * deltaTime;
             int movementX = Math.round(dx * speed);
             int movementY = Math.round(dy * speed);
             
-            // 속도가 낮아도 입력이 있으면 최소 1픽셀 이동 보장
             if (movementX == 0 && dx != 0) {
                 movementX = (dx > 0) ? 1 : -1;
             }
@@ -284,22 +276,23 @@ public abstract class GameCharacter extends Entity {
                 movementY = (dy > 0) ? 1 : -1;
             }
             
-            // X축 이동 및 경계 체크
             int nextX = this.positionX + movementX;
-            boolean isValidX = (nextX >= 1) && ((nextX + this.width) <= screen.getWidth() - 1);
+            boolean isValidX = (nextX >= 1)
+                && ((nextX + this.width) <= screen.getWidth() - 1);
             if (isValidX) {
                 this.positionX += movementX;
             }
             
-            // Y축 이동 및 경계 체크
             int nextY = this.positionY + movementY;
-            boolean isValidY = (nextY >= 1) && ((nextY + this.height) <= screen.getHeight() - 1);
+            boolean isValidY = (nextY >= GameScreen.SEPARATION_LINE_HEIGHT + 1)
+                && ((nextY + this.height) <= screen.getHeight() - 1);
             if (isValidY) {
                 this.positionY += movementY;
             }
         }
         
         if (inputManager.isKeyDown(this.defaultAttackKey)) {
+            this.isAttacking = true;
             return launchBasicAttack(weapons);
         }
         return false;
@@ -315,15 +308,32 @@ public abstract class GameCharacter extends Entity {
         if (this.shootingCooldown.checkFinished()) {
             this.shootingCooldown.reset();
             
-            int launchX = this.positionX + this.width / 2 - (this.projectileWidth / 2);
-            int launchY = this.positionY;
+            int launchX;
+            int launchY;
             
-            Weapon weapon = WeaponPool.getWeapon(launchX, launchY,
-                this.projectileWidth, this.projectileHeight, this.projectileSpeed, this.team);
+            if (isFacingLeft) {
+                launchX = this.positionX;
+                launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
+            } else if (isFacingRight) {
+                launchX = this.positionX + this.width;
+                launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
+            } else if (isFacingFront) {
+                launchX = this.positionX + (this.width / 2) - (this.projectileWidth / 2);
+                launchY = this.positionY + this.height;
+            } else if (isFacingBack) {
+                launchX = this.positionX + (this.width / 2) - (this.projectileWidth / 2);
+                launchY = this.positionY;
+            } else {
+                launchX = this.positionX + (this.width / 2) - (this.projectileWidth / 2);
+                launchY = this.positionY + this.height;
+            }
+            
+            Weapon weapon = WeaponPool.getWeapon(launchX, launchY, this.projectileSpeed,
+                this.projectileWidth, this.projectileHeight, this.team);
             weapon.setCharacter(this);
             
             weapon.setSpriteImage(this.projectileSpriteType);
-            weapon.setOwnerPlayerId(this.playerId);
+            weapon.setPlayerId(this.playerId);
             weapons.add(weapon);
             return true;
         }
@@ -346,8 +356,21 @@ public abstract class GameCharacter extends Entity {
         return !this.destructionCooldown.checkFinished();
     }
     
+    public void initializeKeyboardPressing() {
+        this.isAttacking = false;
+        this.isMoving = false;
+        this.isFacingLeft = false;
+        this.isFacingRight = false;
+        this.isFacingFront = false;
+        this.isFacingBack = false;
+    }
+    
     public CharacterStats getBaseStats() {
         return this.baseStats;
+    }
+    
+    public CharacterStats getCurrentStats() {
+        return this.currentStats;
     }
     
     public ArrayList<Skill> getSkills() {
@@ -364,6 +387,10 @@ public abstract class GameCharacter extends Entity {
     
     public int getPlayerId() {
         return this.playerId;
+    }
+    
+    public boolean isAttacking() {
+        return this.isAttacking;
     }
     
     public boolean isMoving() {

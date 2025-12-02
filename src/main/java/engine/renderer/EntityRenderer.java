@@ -45,7 +45,6 @@ public class EntityRenderer {
      */
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY, final Color color) {
-        
         // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
         // Color debugColor = g.getColor();
         // g.setColor(new Color(255, 0, 0, 128));
@@ -53,10 +52,20 @@ public class EntityRenderer {
         // g.setColor(debugColor); // 원래 색상 복구
         // [DEBUG END]
         
-        
         if (entity instanceof ArcherCharacter) {
             archerCharacterRenderer.draw(g, (ArcherCharacter) entity);
             return;
+        }
+        
+        Graphics2D g2d = (Graphics2D) g;
+        AffineTransform originalTransform = g2d.getTransform(); // 기존 변환 저장
+        boolean isRotated = false;
+        
+        if (entity instanceof Weapon) {
+            double centerX = positionX + entity.getWidth() / 2.0;
+            double centerY = positionY + entity.getHeight() / 2.0;
+            g2d.rotate(entity.getRotation(), centerX, centerY);
+            isRotated = true;
         }
         
         SpriteType type = entity.getSpriteType();
@@ -65,6 +74,10 @@ public class EntityRenderer {
             drawEntityAsImage(g, entity, positionX, positionY, color, 1);
         } else {
             drawEntityAsSprite(g, entity, positionX, positionY, color, 1);
+        }
+        
+        if (isRotated) {
+            g2d.setTransform(originalTransform);
         }
     }
     
@@ -116,7 +129,7 @@ public class EntityRenderer {
         }
         
         if (flip) {
-            g.drawImage(image, drawX + entityWidth, drawY, - entityWidth, entityHeight, null);
+            g.drawImage(image, drawX + entityWidth, drawY, -entityWidth, entityHeight, null);
         } else {
             g.drawImage(image, positionX, positionY, entityWidth, entityHeight, null);
         }
@@ -159,7 +172,6 @@ public class EntityRenderer {
         int spriteWidth = spriteMap.length;
         int spriteHeight = spriteMap[0].length;
         g.setColor(color);
-        
         
         if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
             g.fillRect(positionX, positionY, entityWidth, entityHeight);

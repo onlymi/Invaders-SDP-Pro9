@@ -15,12 +15,12 @@ public class ArcherCharacterRenderer {
         if (character.isMoving()) {
             // 캐릭터가 바라보는 방향에 따라 애니메이션 선택
             BufferedImage[] walkFrames;
-            if (character.isFacingRight()) {
+            if (character.isFacingLeft()) {
                 walkFrames = assetManager.getAnimation(
-                    SpriteType.CharacterArcherRightWalk); // 오른쪽 걷기
-            } else if (character.isFacingLeft()) {
+                    SpriteType.CharacterArcherLeftWalk); // 오른쪽 걷기
+            } else if (character.isFacingRight()) {
                 walkFrames = assetManager.getAnimation(
-                    SpriteType.CharacterArcherLeftWalk); // 왼쪽 걷기
+                    SpriteType.CharacterArcherRightWalk); // 왼쪽 걷기
             } else if (character.isFacingFront()) {
                 walkFrames = assetManager.getAnimation(
                     SpriteType.CharacterArcherFrontWalk); // 앞을 보면서(아래로) 걷기
@@ -33,12 +33,27 @@ public class ArcherCharacterRenderer {
             }
             
             // 현재 시간을 기준으로 프레임 인덱스 계산 (속도 조절 가능)
-            int frameSwitchTime = 100;
-            long frameIndex = (System.currentTimeMillis() / frameSwitchTime) % walkFrames.length;
-            currentSprite = walkFrames[(int) frameIndex];
+            int frameSwitchTime = (int) (character.getCurrentStats().movementSpeed * 100);
+            int frameIndex =
+                (int) (System.currentTimeMillis() / frameSwitchTime) % walkFrames.length;
+            currentSprite = walkFrames[frameIndex];
         } else {
             // 움직이지 않을 때는 기본(정지) 이미지 사용
             currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherStand);
+        }
+        
+        if (character.isAttacking()) {
+            if (character.isFacingLeft()) {
+                currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherLeftAttack);
+            } else if (character.isFacingRight()) {
+                currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherRightAttack);
+            } else if (character.isFacingFront()) {
+                currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherRightAttack);
+            } else if (character.isFacingBack()) {
+                currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherLeftAttack);
+            } else {
+                currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherRightAttack);
+            }
         }
         
         g.drawImage(currentSprite, character.getPositionX(), character.getPositionY(), null);
