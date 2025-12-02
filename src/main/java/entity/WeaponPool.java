@@ -30,14 +30,14 @@ public final class WeaponPool {
      * @param positionX Requested position of the weapon in the X axis.
      * @param positionY Requested position of the weapon in the Y axis.
      * @param speed     Requested speed of the weapon, positive or negative depending on direction -
-     *                  positive is down.
+     * positive is down.
      * @param width     Requested size of the weapon width.
      * @param height    Requested size of the weapon height.
      * @param team      Requested team type.
      * @return Requested weapon.
      */
     public static Weapon getWeapon(final int positionX,
-        final int positionY, final int width, final int height, final int speed, final Team team) {
+        final int positionY, final int speed, final int width, final int height, final Team team) {
         Weapon weapon;
         if (!pool.isEmpty()) {
             weapon = pool.iterator().next();
@@ -47,11 +47,23 @@ public final class WeaponPool {
             weapon.setSpeed(speed);
             weapon.setSize(width, height);  // weapon size
             weapon.setTeam(team);    // team setting
+            
+            // User's logic applied to recycled weapon
+            weapon.setSpeedX(0);
+            weapon.setBossBullet(false);
+            weapon.setRotation(0);
+            weapon.resetHoming();
         } else {
             weapon = new Weapon(positionX, positionY, width, height, speed);
             weapon.setPositionX(positionX - width / 2);
             weapon.setSize(width, height); // weapon size
             weapon.setTeam(team); // team setting
+            
+            // User's logic applied to new weapon
+            weapon.setSpeedX(0);
+            weapon.setBossBullet(false);
+            weapon.setRotation(0);
+            weapon.resetHoming();
         }
         weapon.setCharacter(null);
         weapon.setSpriteMap();
@@ -64,7 +76,7 @@ public final class WeaponPool {
      * @param positionX Requested position of the weapon in the X axis.
      * @param positionY Requested position of the weapon in the Y axis.
      * @param speed     Requested speed of the weapon, positive or negative depending on direction -
-     *                  positive is down.
+     * positive is down.
      * @param width     Requested size of the weapon width.
      * @param height    Requested size of the weapon height.
      * @param team      Requested team type.
@@ -83,9 +95,21 @@ public final class WeaponPool {
             weapon.setSize(width, height);  // weapon size
             weapon.setTeam(team);    // team setting
             weapon.setDamage(damage);
+            
+            // User's logic applied to recycled weapon (consistency)
+            weapon.setSpeedX(0);
+            weapon.setBossBullet(false);
+            weapon.setRotation(0);
+            weapon.resetHoming();
         } else {
             weapon = new Weapon(positionX - width / 2, positionY, width, height, speed, damage);
             weapon.setTeam(team); // team setting
+            
+            // User's logic applied to new weapon (consistency)
+            weapon.setSpeedX(0);
+            weapon.setBossBullet(false);
+            weapon.setRotation(0);
+            weapon.resetHoming();
         }
         weapon.setCharacter(null);
         weapon.setSpriteMap();

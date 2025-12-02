@@ -5,6 +5,7 @@ import engine.hitbox.HitboxManager;
 import engine.utils.Cooldown;
 import engine.utils.MinimalFormatter;
 import entity.character.CharacterType;
+import java.awt.Color;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
@@ -33,8 +34,8 @@ import screen.TitleScreen;
  */
 public final class Core {
     
-    private static final int WIDTH = 1200;
-    private static final int HEIGHT = 800;
+    public static final int WIDTH = 1200;
+    public static final int HEIGHT = 800;
     private static final int FPS = 60;
     
     /**
@@ -88,7 +89,7 @@ public final class Core {
         GameState gameState = null;
         boolean coopSelected = false; // false = 1-player mode, true = 2-player mode
         
-        int returnCode = 6;
+        int returnCode = 9;
         
         CharacterType characterTypeP1 = CharacterType.ARCHER; // Player 1 Ship Type
         CharacterType characterTypeP2 = CharacterType.ARCHER; // Player 2 Ship Type
@@ -367,12 +368,44 @@ public final class Core {
         GameState gameState = new GameState(1, MAX_LIVES, coopSelected, 0);
         AchievementManager achievementManager = new AchievementManager(); // 1p, 2p achievement manager
         
+        int maxLevel = gameSettings.size();
+        
         do {
             int teamCap = gameState.isCoop() ? (MAX_LIVES * GameState.NUM_PLAYERS) : MAX_LIVES;
             boolean bonusLife = gameState.getLevel() % EXTRA_LIFE_FREQUENCY == 0
                 && gameState.getLivesRemaining() < teamCap;
             
-            currentScreen = new GameScreen(gameState, gameSettings.get(gameState.getLevel() - 1),
+            GameSettings currentSettings;
+            if (gameState.getLevel() <= maxLevel) {
+                currentSettings = gameSettings.get(gameState.getLevel() - 1);
+            } else {
+                // Formation: 7x5, Speed: 60, ShootingFreq: 500ms
+                currentSettings = new GameSettings(7, 5, 60, 500);
+                
+                // Boss Unit (Center) - HP 50, Reward 100, Red
+                currentSettings.getChangeDataList().add(
+                    new GameSettings.ChangeData(3, 2, 50, 100, Color.RED));
+                
+                // Elite Guards (Inner Ring) - HP 10, Reward 10, Dark Orange
+                Color darkOrange = new Color(255, 69, 0);
+                int[][] guards = {{2, 1}, {3, 1}, {4, 1}, {2, 2}, {4, 2}, {2, 3}, {3, 3}, {4, 3}};
+                for (int[] pos : guards) {
+                    currentSettings.getChangeDataList().add(
+                        new GameSettings.ChangeData(pos[0], pos[1], 10, 10, darkOrange));
+                }
+                
+                // Minions (Outer Corners) - HP 2, Reward 2, Gold
+                Color gold = new Color(255, 215, 0);
+                int[][] minions = {{0, 0}, {6, 0}, {0, 4}, {6, 4}};
+                for (int[] pos : minions) {
+                    currentSettings.getChangeDataList().add(
+                        new GameSettings.ChangeData(pos[0], pos[1], 2, 2, gold));
+                }
+                
+                LOGGER.info("Entering Boss Stage!");
+            }
+            
+            currentScreen = new GameScreen(gameState, currentSettings,
                 bonusLife, width, height, FPS,
                 characterTypeP1, characterTypeP2, achievementManager);
             

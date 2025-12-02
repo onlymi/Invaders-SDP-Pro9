@@ -11,6 +11,8 @@ import entity.Weapon;
 import entity.character.ArcherCharacter;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 public class EntityRenderer {
@@ -44,6 +46,14 @@ public class EntityRenderer {
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY, final Color color) {
         
+        // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
+        // Color debugColor = g.getColor();
+        // g.setColor(new Color(255, 0, 0, 128));
+        // g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+        // g.setColor(debugColor); // 원래 색상 복구
+        // [DEBUG END]
+        
+        
         if (entity instanceof ArcherCharacter) {
             archerCharacterRenderer.draw(g, (ArcherCharacter) entity);
             return;
@@ -54,7 +64,7 @@ public class EntityRenderer {
         if (type.isImage()) {
             drawEntityAsImage(g, entity, positionX, positionY, color, 1);
         } else {
-            drawEntityAsSprite(g, type, positionX, positionY, color, 1);
+            drawEntityAsSprite(g, entity, positionX, positionY, color, 1);
         }
     }
     
@@ -65,12 +75,21 @@ public class EntityRenderer {
     
     public void drawEntityByScale(Graphics g, final Entity entity, final int positionX,
         final int positionY, final Color color, final int scale) {
+        
+        // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
+        // Color debugColor = g.getColor();
+        // g.setColor(new Color(255, 0, 0, 128));
+        // 히트박스는 렌더링 스케일(scale)과 무관하게 엔티티의 실제 크기(width, height)를 따릅니다.
+        // g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+        // g.setColor(debugColor);
+        // [DEBUG END]
+        
         SpriteType type = entity.getSpriteType();
         
         if (type.isImage()) {
             drawEntityAsImage(g, entity, positionX, positionY, color, scale);
         } else {
-            drawEntityAsSprite(g, type, positionX, positionY, color, scale);
+            drawEntityAsSprite(g, entity, positionX, positionY, color, scale);
         }
     }
     
@@ -78,13 +97,29 @@ public class EntityRenderer {
         final int positionY, Color color, final int scale) {
         BufferedImage image = assetManager.getSpriteImage(entity.getSpriteType());
         if (image == null) {
+            drawMissingTexturePlaceholder(g, entity, positionX, positionY);
             return;
         }
         
         int entityWidth = image.getWidth() * scale;
         int entityHeight = image.getWidth() * scale;
         
-        g.drawImage(image, positionX, positionY, entityWidth, entityHeight, null);
+        int drawX = positionX + (entity.getWidth() - entityWidth) / 2;
+        int drawY = positionY + (entity.getHeight() - entityHeight) / 2;
+        
+        boolean flip = false;
+        if (entity instanceof EnemyShip) {
+            // 왼쪽을 보고 있다면 반전
+            if (!((EnemyShip) entity).isFacingRight()) {
+                flip = true;
+            }
+        }
+        
+        if (flip) {
+            g.drawImage(image, drawX + entityWidth, drawY, - entityWidth, entityHeight, null);
+        } else {
+            g.drawImage(image, positionX, positionY, entityWidth, entityHeight, null);
+        }
         
         if (color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
@@ -93,26 +128,55 @@ public class EntityRenderer {
     }
     
     /**
-     * 스프라이트(boolean 배열) 타입의 엔티티를 그립니다.
+     * Draws an entity of the type of boolean array (Sprite).
      */
-    private void drawEntityAsSprite(Graphics g, SpriteType type, int positionX, int positionY,
+    private void drawEntityAsSprite(Graphics g, Entity entity, int positionX, int positionY,
         Color color, int scale) {
+        SpriteType type = entity.getSpriteType();
         boolean[][] spriteMap = assetManager.getSpriteMap(type);
         if (spriteMap == null) {
             return;
         }
         
+        // Calculate scaling ratios compared to original sprite
+        int entityWidth = entity.getWidth();
+        int entityHeight = entity.getHeight();
+        
+        Graphics2D g2d = (Graphics2D) g;
+        AffineTransform old = g2d.getTransform();
+        
+        double anchorX = positionX + entityWidth / 2.0;
+        double anchorY = positionY + entityHeight / 2.0;
+        
+        if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
+            anchorY = positionY;
+        }
+        
+        if (entity.getRotation() != 0) {
+            g2d.rotate(Math.toRadians(entity.getRotation()), anchorX, anchorY);
+        }
+        // Set drawing color again
         int spriteWidth = spriteMap.length;
         int spriteHeight = spriteMap[0].length;
-        
         g.setColor(color);
-        for (int i = 0; i < spriteWidth; i++) {
-            for (int j = 0; j < spriteHeight; j++) {
-                if (spriteMap[i][j]) {
-                    g.fillRect(positionX + (i * scale), positionY + (j * scale), scale, scale);
+        
+        
+        if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
+            g.fillRect(positionX, positionY, entityWidth, entityHeight);
+            
+            g.setColor(Color.WHITE);
+            g.fillRect(positionX + entityWidth / 4, positionY, entityWidth / 2, entityHeight);
+        } else {
+            for (int i = 0; i < spriteWidth; i++) {
+                for (int j = 0; j < spriteHeight; j++) {
+                    if (spriteMap[i][j]) {
+                        g.fillRect(positionX + (i * scale), positionY + (j * scale), scale, scale);
+                    }
                 }
             }
         }
+        
+        g2d.setTransform(old);
     }
     
     private void drawMissingTexturePlaceholder(Graphics g, Entity entity, int x, int y) {
@@ -122,7 +186,7 @@ public class EntityRenderer {
     }
     
     /**
-     * 엔티티의 상태(체력, 플레이어 ID 등)에 따른 색상을 결정합니다.
+     * Determines the color based on the entity's status (physical strength, player ID, etc.).
      */
     private static Color getEntityColor(Entity entity) {
         Color baseColor = entity.getColor();

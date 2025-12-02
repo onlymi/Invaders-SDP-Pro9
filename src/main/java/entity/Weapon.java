@@ -3,6 +3,8 @@ package entity;
 import engine.AssetManager.SpriteType;
 import entity.character.GameCharacter;
 import java.awt.Color;
+import engine.Core;
+import engine.utils.Cooldown;
 
 /**
  * Implements a bullet that moves vertically up or down.
@@ -17,9 +19,17 @@ public class Weapon extends Entity {
      */
     private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
     private int speed;
+    private int speedX = 0;
+    private int speedY = 0;
+    
     private int velocityX = 0;
     private int velocityY = 0;
     
+    private GameCharacter target;
+    private boolean isHoming = false;
+    private static final double HOMING_AGILITY = 4.0;
+    private Cooldown homingTimer;
+
     /**
      * 2P mode: id number to specifying who fired the bullet - 0 = enemy, 1 = P1, 2 = P2.
      **/
@@ -31,6 +41,9 @@ public class Weapon extends Entity {
     private int damage = 0;
     
     private GameCharacter character = null;
+    
+    private boolean isBossBullet = false;
+    private boolean isBigLaser = false;
     
     /**
      * Constructor, establishes the bullet's properties.
@@ -63,6 +76,7 @@ public class Weapon extends Entity {
         this.damage = damage;
         this.velocityX = 0;
         this.velocityY = speed;
+        setSpriteMap();
     }
     
     public final void setCharacter(GameCharacter character) {
@@ -109,11 +123,35 @@ public class Weapon extends Entity {
      * Sets correct sprite for the weapon, based on speed.
      */
     public final void setSpriteMap() {
-        if (this.playerId == 0) {
-            this.spriteType = SpriteType.EnemyBullet; // enemy fired bullet
-        } else {
-            this.spriteType = SpriteType.PlayerBullet; // player bullet fired, team remains NEUTRAL
+        if (this.isBossBullet) {
+            this.spriteType = SpriteType.BossBullet;
         }
+        
+        if (this.isBigLaser) {
+            this.spriteType = SpriteType.BigLaserBeam;
+        } else if (this.speed == 0) {
+            this.spriteType = SpriteType.EnemyBullet; // player bullet fired, team remains NEUTRAL
+        } else {
+            this.spriteType = SpriteType.PlayerBullet; // enemy fired bullet
+        }
+    }
+    
+    public void setBossBullet(boolean isBoss) {
+        this.isBossBullet = isBoss;
+        setSpriteMap();
+        if (isBoss) {
+            this.width = 5 * 2;
+            this.height = 5 * 2;
+        }
+    }
+    
+    public void setBigLaser(boolean isBigLaser) {
+        this.isBigLaser = isBigLaser;
+        setSpriteMap();
+    }
+    
+    public void setSpriteType(SpriteType spriteType) {
+        this.spriteType = spriteType;
     }
     
     /**
@@ -131,8 +169,25 @@ public class Weapon extends Entity {
      * Updates the weapon's position.
      */
     public final void update() {
-        this.positionX += this.velocityX;
+        if (this.isHoming) {
+            if (this.homingTimer != null && this.homingTimer.checkFinished()) {
+                this.positionY = 2000;
+                return;
+            }
+            
+            if (this.target != null && !this.target.isDestroyed()) {
+                double dx = (target.getPositionX() + target.getWidth() / 2.0) - (this.positionX + this.width / 2.0);
+                double dy = (target.getPositionY() + target.getHeight() / 2.0) - (this.positionY + this.height / 2.0);
+                double angle = Math.atan2(dy, dx);
+                
+                this.speedX = (int) (HOMING_AGILITY * Math.cos(angle));
+                this.speed = (int) (HOMING_AGILITY * Math.sin(angle));
+                this.rotation = Math.toDegrees(angle) - 90;
+            }
+        }
         this.positionY += this.velocityY;
+        this.positionX += this.velocityX;
+        this.positionX += this.speedX;
     }
     
     /**
@@ -155,6 +210,14 @@ public class Weapon extends Entity {
      */
     public final int getSpeed() {
         return this.speed;
+    }
+    
+    public void setSpeedX(int speedX) {
+        this.speedX = speedX;
+    }
+    
+    public int getSpeedX() {
+        return this.speedX;
     }
     
     public final void setOwnerPlayerId(final int ownerPlayerId) {
@@ -193,5 +256,19 @@ public class Weapon extends Entity {
         this.character = null;
         this.velocityY = this.speed;
         this.velocityX = 0;
+    }
+    
+    public void setHoming(GameCharacter target) {
+        this.target = target;
+        this.isHoming = true;
+        this.homingTimer = Core.getCooldown(9000);
+        this.homingTimer.reset();
+    }
+    
+    public void resetHoming() {
+        this.target = null;
+        this.isHoming = false;
+        this.rotation = 0;
+        this.homingTimer = null;
     }
 }
