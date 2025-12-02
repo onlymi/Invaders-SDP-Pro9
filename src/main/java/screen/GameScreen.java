@@ -228,14 +228,18 @@ public class GameScreen extends Screen {
         // Start background music for gameplay
         soundManager.playLoop("game_theme");
         
+        // New BasicGameSpace Code
+        this.basicGameSpace = new BasicGameSpace(100, this.width, this.height);
+        
         enemyShipFormation = new EnemyShipFormation(this.gameSettings);
         enemyShipFormation.attach(this);
         
         // --- Character Initialization & Control Setup ---
-        if (this.level == 1) {
+        if (this.level == 6) {
             this.enemyShipFormation = null;
             this.bossShip = new BossShip(this.width / 2 - 42, 120);
             this.LOGGER.info("Boss Stage Initialized!");
+            this.basicGameSpace.setBossStage(true);
         } else {
             this.bossShip = null;
             this.enemyShipFormation = new EnemyShipFormation(this.gameSettings);
@@ -271,8 +275,6 @@ public class GameScreen extends Screen {
         this.weapons = new HashSet<Weapon>();
         this.items = new HashSet<Item>();
         
-        // New BasicGameSpace Code
-        this.basicGameSpace = new BasicGameSpace(100, this.width, this.height);
         
         // Special input delay / countdown.
         this.gameStartTime = System.currentTimeMillis();
@@ -999,7 +1001,10 @@ public class GameScreen extends Screen {
             
             float[] dist = {0.0f, 1.0f};
             Color[] colors = new Color[2];
-            if (basicGameSpace.isLastLife()) {
+            if (basicGameSpace.isBossStage()) {
+                colors[0] = new Color(200, 0, 255, 150);
+                colors[1] = new Color(255, 50, 50, 100);
+            } else if (basicGameSpace.isLastLife()) {
                 colors[0] = new Color(255, 0, 0, 100);
                 colors[1] = new Color(255, 0, 0, 50);
             } else {
