@@ -111,3 +111,26 @@
 0,2,3,3,#ffd23f
 1,2,3,3,#ffd23f
 2,2,3,3,#ffd23f
+
+&
+// Level 6 - Boss Stage
+// Settings: Width 7, Height 5, BaseSpeed 60 (Fast), ShootingFreq 500ms (Very Fast)
+7,5,60,500
+// Boss Unit (Center) - HP 50x, Reward 100x, Color Red (#ff0000)
+3,2,50,100,#ff0000
+
+// Elite Guards (Inner Ring) - HP 10x, Reward 10x, Color Dark Orange (#ff4500)
+2,1,10,10,#ff4500
+3,1,10,10,#ff4500
+4,1,10,10,#ff4500
+2,2,10,10,#ff4500
+4,2,10,10,#ff4500
+2,3,10,10,#ff4500
+3,3,10,10,#ff4500
+4,3,10,10,#ff4500
+
+// Minions (Outer Corners) - HP 2x, Reward 2x, Color Gold (#ffd700)
+0,0,2,2,#ffd700
+6,0,2,2,#ffd700
+0,4,2,2,#ffd700
+6,4,2,2,#ffd700

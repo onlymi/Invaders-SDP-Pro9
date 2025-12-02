@@ -9,6 +9,8 @@ import entity.Ship;
 import entity.Weapon;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 public class EntityRenderer {
@@ -26,6 +28,8 @@ public class EntityRenderer {
      */
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY) {
+        AssetManager assetManager = AssetManager.getInstance();
+        boolean[][] image = assetManager.getSpriteMap(entity.getSpriteType());
         drawEntity(g, entity, positionX, positionY, getEntityColor(entity));
     }
     
@@ -44,7 +48,7 @@ public class EntityRenderer {
         if (type.isImage()) {
             drawEntityAsImage(g, entity, positionX, positionY, color, 1);
         } else {
-            drawEntityAsSprite(g, type, positionX, positionY, color, 1);
+            drawEntityAsSprite(g, entity, positionX, positionY, color, 1);
         }
     }
     
@@ -60,7 +64,7 @@ public class EntityRenderer {
         if (type.isImage()) {
             drawEntityAsImage(g, entity, positionX, positionY, color, scale);
         } else {
-            drawEntityAsSprite(g, type, positionX, positionY, color, scale);
+            drawEntityAsSprite(g, entity, positionX, positionY, color, scale);
         }
     }
     
@@ -68,6 +72,9 @@ public class EntityRenderer {
         final int positionY, Color color, final int scale) {
         BufferedImage image = assetManager.getSpriteImage(entity.getSpriteType());
         if (image == null) {
+            g.setColor(Color.PINK);
+            g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+            System.err.println("EntityRenderer: Can't find sprite about " + entity.getSpriteType());
             return;
         }
         
@@ -83,26 +90,59 @@ public class EntityRenderer {
     }
     
     /**
-     * 스프라이트(boolean 배열) 타입의 엔티티를 그립니다.
+     * Draws an entity of the type of boulean array (Sprite).
      */
-    private void drawEntityAsSprite(Graphics g, SpriteType type, int positionX, int positionY,
+    private void drawEntityAsSprite(Graphics g, Entity entity, int positionX, int positionY,
         Color color, int scale) {
+        SpriteType type = entity.getSpriteType();
         boolean[][] spriteMap = assetManager.getSpriteMap(type);
         if (spriteMap == null) {
             return;
         }
         
+        
+        
+        // Calculate scaling ratios compared to original sprite
+        int entityWidth = entity.getWidth();
+        int entityHeight = entity.getHeight();
+        
         int spriteWidth = spriteMap.length;
         int spriteHeight = spriteMap[0].length;
         
+        Graphics2D g2d = (Graphics2D) g;
+        AffineTransform old = g2d.getTransform();
+        
+        double anchorX = positionX + entityWidth / 2.0;
+        double anchorY = positionY + entityHeight / 2.0;
+        
+        if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
+            anchorY = positionY;
+        }
+        
+        if (entity.getRotation() != 0) {
+            g2d.rotate(Math.toRadians(entity.getRotation()), anchorX, anchorY);
+        }
+        // Set drawing color again
         g.setColor(color);
-        for (int i = 0; i < spriteWidth; i++) {
-            for (int j = 0; j < spriteHeight; j++) {
-                if (spriteMap[i][j]) {
-                    g.fillRect(positionX + (i * scale), positionY + (j * scale), scale, scale);
+        
+        
+        if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
+            g.fillRect(positionX, positionY, entityWidth, entityHeight);
+            
+            g.setColor(Color.WHITE);
+            g.fillRect(positionX + entityWidth / 4, positionY, entityWidth / 2, entityHeight);
+        }
+        else {
+            for (int i = 0; i < spriteWidth; i++) {
+                for (int j = 0; j < spriteHeight; j++) {
+                    if (spriteMap[i][j]) {
+                        g.fillRect(positionX + (i * scale), positionY + (j * scale), scale, scale);
+                    }
                 }
             }
         }
+        
+        g2d.setTransform(old);
     }
     
     private void drawMissingTexturePlaceholder(Graphics g, Entity entity, int x, int y) {
@@ -112,7 +152,7 @@ public class EntityRenderer {
     }
     
     /**
-     * 엔티티의 상태(체력, 플레이어 ID 등)에 따른 색상을 결정합니다.
+     * Determines the color based on the entity's status (physical strength, player ID, etc.).
      */
     private static Color getEntityColor(Entity entity) {
         Color baseColor = entity.getColor();

@@ -1,5 +1,6 @@
 package animations;
 
+import engine.AssetManager.SpriteType;
 import java.awt.Color;
 import java.util.Random;
 
@@ -11,9 +12,25 @@ public class Explosion {
     private boolean enemy;
     private int size;
     
+    private SpriteType spriteType;
+    private int spriteDuration;
+    
     private static final Random random = new Random();
     
     public Explosion(double startX, double startY, boolean enemy, boolean finalExplosion) {
+        initParticles(startX, startY, enemy, finalExplosion);
+        this.spriteType = null;
+    }
+    
+    public Explosion(double startX, double startY, SpriteType spriteType, int duration) {
+        initParticles(startX, startY, true, false);
+        
+        this.spriteType = spriteType;
+        this.spriteDuration = duration;
+        this.active = true;
+    }
+    
+    private void initParticles(double startX, double startY, boolean enemy, boolean finalExplosion) {
         this.particles = new Particle[NUM_PARTICLES];
         this.active = true;
         this.enemy = enemy;
@@ -41,27 +58,30 @@ public class Explosion {
             return;
         }
         
+        if (this.spriteType != null) {
+            this.spriteDuration--;
+            if (this.spriteDuration <= 0) {
+                this.active = false;
+                return;
+            }
+        }
+        
         boolean anyAlive = false;
         for (Particle p : particles) {
             if (!p.active) {
                 continue;
             }
             
-            // update position
             p.x += p.dx;
             p.y += p.dy;
-            
-            // gravity and damping
             p.dy += 0.1;
             p.dx *= 0.98;
             p.dy *= 0.98;
             
-            // fade color
             int alpha = (int) (255 * ((double) p.life / 60));
             alpha = Math.max(alpha, 0);
             p.color = new Color(p.color.getRed(), p.color.getGreen(), p.color.getBlue(), alpha);
             
-            // decrease life
             p.life--;
             if (p.life <= 0) {
                 p.active = false;
@@ -72,8 +92,7 @@ public class Explosion {
             }
         }
         
-        // deactivate explosion if all particles are dead
-        if (!anyAlive) {
+        if (this.spriteType == null && !anyAlive) {
             active = false;
         }
     }
@@ -94,8 +113,12 @@ public class Explosion {
         return this.size;
     }
     
+    // [추가] Getter
+    public SpriteType getSpriteType() {
+        return this.spriteType;
+    }
+    
     public static class Particle {
-        
         public double x, y;
         public double dx, dy;
         public Color color;
@@ -113,4 +136,3 @@ public class Explosion {
         }
     }
 }
-
