@@ -16,6 +16,7 @@ public class ItemEffect {
         ENEMY_HP_DOWN,
         TIME_SLOW,
         DASH,
+        SHIELD,
         PET_SUPPORT
     }
     

@@ -184,7 +184,8 @@ public final class AssetManager {
         ItemTimeFreeze(SourceCategory.ITEM, 5, 5),
         ItemTimeSlow(SourceCategory.ITEM, 5, 5),
         ItemDash(SourceCategory.ITEM, 5, 5),
-        ItemPetGun(SourceCategory.ITEM, 5, 5);
+        ItemPetGun(SourceCategory.ITEM, 5, 5),
+        ItemShield(SourceCategory.ITEM, 5, 5);
         
         // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;

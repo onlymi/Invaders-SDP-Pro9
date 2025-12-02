@@ -774,6 +774,15 @@ public class GameScreen extends Screen {
                         recyclable.add(bullet);
                         hitSomething = true;
                         
+                        boolean hasShieldEffect =
+                            state != null && state.hasEffect(p,
+                                engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD);
+                        
+                        if (hasShieldEffect) {
+                            LOGGER.info("[GameScreen] Shield blocked damage for player " + (p + 1));
+                            break;
+                        }
+                        
                         this.drawManager.getGameScreenRenderer()
                             .triggerExplosion(ship.getPositionX(), ship.getPositionY(), false,
                                 state.getLivesRemaining() == 1);

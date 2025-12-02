@@ -637,6 +637,16 @@ public class GameState {
                 }
             }
             
+            case "SHIELD" -> {
+                addEffect(playerIndex,
+                    ItemEffectType.SHIELD,
+                    data.getEffectValue(),
+                    data.getEffectDuration()
+                );
+                logger.info("[GameState] SHIELD activated!");
+                applied = true;
+            }
+            
             default -> {
                 // Handle PET_* family
                 if (type.startsWith("PET_")) {

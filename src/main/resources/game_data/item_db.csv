@@ -10,3 +10,4 @@ TIME_FREEZE,ItemTimeFreeze,LEGENDARY,0,3,TIME_FREEZE,Time Freeze,Freezes all ene
 TIME_SLOW,ItemTimeSlow,EPIC,70,3,EPIC_TIME_SLOW,Time Slow,Slows all enemies by 50% for 3 seconds.,ACTIVE_ON_KEY,1,12,false,false
 DASH,ItemDash,RARE,2,1,DASH,Dash,Quickly roll in the last move direction.,ACTIVE_ON_KEY,1,4,false,false
 PET_GUN,ItemPetGun,EPIC,1,7,PET_GUN,PET-GUN,Summons a support drone that fires bullets in your facing direction.,ACTIVE_ON_KEY,1,10,false,false
+SHIELD,ItemShield,EPIC,1,3,EPIC_SHIELD,Energy Shield,Grants temporary invincibility that blocks all damage for a short time.,ACTIVE_ON_KEY,0,12,false,false

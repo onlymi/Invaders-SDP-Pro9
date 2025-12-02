@@ -63,7 +63,7 @@ public final class ItemManager {
         NONE(33.0, Color.GRAY),
         COMMON(30.0, Color.WHITE),
         UNCOMMON(20.0, Color.GREEN),
-        RARE(500.0, Color.BLUE),
+        RARE(10.0, Color.BLUE),
         EPIC(500.0, new Color(128, 0, 128)),      // (Purple)
         LEGENDARY(2.0, new Color(255, 215, 0)); // (Gold)
         
