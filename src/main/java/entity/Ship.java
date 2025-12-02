@@ -167,11 +167,6 @@ public class Ship extends Entity {
         int bulletX = positionX + this.width / 2;
         int bulletY = this.positionY - this.bulletHeight;
         
-        if (hasTripleShotEffect()) {
-            shootTripleShot(bullets, bulletX, bulletY);
-            return true;
-        }
-        
         // Default shooting based on ship type
         shootBasedOnType(bullets, bulletX, bulletY);
         return true;
@@ -291,8 +286,7 @@ public class Ship extends Entity {
      * Creates and adds a bullet to the game.
      */
     private void addBullet(final Set<Bullet> bullets, final int x, final int y) {
-        int speedMultiplier = getBulletSpeedMultiplier();
-        int currentBulletSpeed = this.bulletSpeed * speedMultiplier;
+        int currentBulletSpeed = this.bulletSpeed;
         
         Bullet bullet = BulletPool.getBullet(x, y, currentBulletSpeed,
             this.bulletWidth, this.bulletHeight, this.getTeam());
@@ -307,42 +301,9 @@ public class Ship extends Entity {
      *
      * @return list of active effects
      */
-    private boolean hasTripleShotEffect() {
-        return gameState != null && gameState.hasEffect(playerIndex, ItemEffectType.TRIPLESHOT);
-    }
-    
-    private int getBulletSpeedMultiplier() {
-        if (gameState == null) {
-            return 1;
-        }
-        
-        Integer effectValue = gameState.getEffectValue(playerIndex, ItemEffectType.BULLETSPEEDUP);
-        if (effectValue != null) {
-            Core.getLogger().info("[Ship] Item effect: Faster Bullets");
-            return effectValue;
-        }
-        return 1;
-    }
     
     public void addHit() {
         this.hits++;
-    }
-    
-    /**
-     * TRIPLE SHOT effect
-     *
-     * @param bullets Bullet sets
-     * @param centerX center x position
-     * @param bulletY Bullet y position
-     */
-    private void shootTripleShot(final Set<Bullet> bullets, final int centerX, final int bulletY) {
-        Core.getLogger().info("[Ship] Item effect: TRIPLESHOT");
-        Integer TRIPLE_SHOT_OFFSET = gameState.getEffectValue(playerIndex,
-            ItemEffectType.TRIPLESHOT);
-        
-        addBullet(bullets, centerX, bulletY);
-        addBullet(bullets, centerX - TRIPLE_SHOT_OFFSET, bulletY);
-        addBullet(bullets, centerX + TRIPLE_SHOT_OFFSET, bulletY);
     }
     
     /**

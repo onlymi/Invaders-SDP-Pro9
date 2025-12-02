@@ -133,9 +133,7 @@ public class Item extends Entity {
             case "COIN" -> SpriteType.ItemCoin;
             case "HEAL" -> SpriteType.ItemHeal;
             case "SCORE" -> SpriteType.ItemScore;
-            case "TRIPLESHOT" -> SpriteType.ItemTripleShot;
             case "SCOREBOOST" -> SpriteType.ItemScoreBooster;
-            case "BULLETSPEEDUP" -> SpriteType.ItemBulletSpeedUp;
             case "MOVE_SPEED_UP" -> SpriteType.ItemMoveSpeedUp;
             case "TIME_FREEZE" -> SpriteType.ItemTimeFreeze;
             case "TIME_SLOW" -> SpriteType.ItemTimeSlow;
@@ -194,14 +192,8 @@ public class Item extends Entity {
                 ItemEffect.applyScoreItem(gameState, playerId, value);
                 applied = true;
                 break;
-            case "TRIPLESHOT":
-                applied = ItemEffect.applyTripleShot(gameState, playerId, value, duration);
-                break;
             case "SCOREBOOST":
                 applied = ItemEffect.applyScoreBoost(gameState, playerId, value, duration);
-                break;
-            case "BULLETSPEEDUP":
-                applied = ItemEffect.applyBulletSpeedUp(gameState, playerId, value, duration);
                 break;
             case "TIME_FREEZE":
                 applied = ItemEffect.applyTimeFreeze(gameState, playerId, value, duration);

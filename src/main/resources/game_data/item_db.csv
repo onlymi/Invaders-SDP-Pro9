@@ -2,9 +2,7 @@ type,spriteType,dropTier,effectValue,effectDuration,id,displayName,description,a
 SCORE,ItemScore,COMMON,10,0,score1,Score,Grants 10 bonus points.,INSTANT_ON_PICKUP,0,0,true,false
 COIN,ItemCoin,UNCOMMON,20,0,coin1,Coin,Grants 20 coins when collected.,INSTANT_ON_PICKUP,0,0,true,false
 HEAL,ItemHeal,RARE,1,0,heal1,Heal,Restores 1 HP instantly.,INSTANT_ON_PICKUP,0,0,true,false
-TRIPLESHOT, ItemTripleShot, RARE, 30, 3,triple1,Triple Shot,Fires three bullets at once for 3s.,INSTANT_ON_PICKUP,0,0,true,false
 SCOREBOOST, ItemScoreBooster, UNCOMMON, 2, 5,scoreboost1,Score Booster,Multiplies score gain by 2x for 5s.,INSTANT_ON_PICKUP,0,0,true,false
-BULLETSPEEDUP, ItemBulletSpeedUp, RARE, 2, 3,bulletspeed1,Bullet Speed Up,Increases bullet speed for 3s.,INSTANT_ON_PICKUP,0,0,true,false
 MOVE_SPEED_UP,ItemMoveSpeedUp,EPIC,50,3,SpeedUp1,Overdrive,Temporarily boosts movement speed.,ACTIVE_ON_KEY,1,0,false,false
 TIME_FREEZE,ItemTimeFreeze,LEGENDARY,0,3,TIME_FREEZE,Time Freeze,Freezes all enemies and bosses for 3 seconds.,ACTIVE_ON_KEY,1,0,false,false
 TIME_SLOW,ItemTimeSlow,EPIC,70,3,EPIC_TIME_SLOW,Time Slow,Slows all enemies by 50% for 3 seconds.,ACTIVE_ON_KEY,1,12,false,false

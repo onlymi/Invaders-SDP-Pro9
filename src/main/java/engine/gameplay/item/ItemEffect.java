@@ -103,26 +103,6 @@ public class ItemEffect {
     }
     
     /**========================= DURATION ITEM =================================**/
-    
-    /**
-     * Applies the TripleShot timed effect to the specified player. Cost/coins are no longer
-     * required – effect is always applied if gameState is valid.
-     */
-    public static boolean applyTripleShot(final GameState gameState, final int playerId,
-        int effectValue, int duration) {
-        if (gameState == null) {
-            return false;
-        }
-        
-        int playerIndex = getPlayerIndex(playerId);
-        
-        gameState.addEffect(playerIndex, ItemEffectType.TRIPLESHOT, effectValue, duration);
-        logger.info(
-            "[ItemEffect - TRIPLESHOT] Player " + playerId + " applied for " + duration + "s.");
-        
-        return true;
-    }
-    
     /**
      * Applies the ScoreBoost timed effect to the specified player.
      */
@@ -137,24 +117,6 @@ public class ItemEffect {
         gameState.addEffect(playerIndex, ItemEffectType.SCOREBOOST, effectValue, duration);
         logger.info("[ItemEffect - SCOREBOOST] Player " + playerId + " applied for " + duration
             + "s. Score gain will be multiplied by " + effectValue + ".");
-        
-        return true;
-    }
-    
-    /**
-     * Applies the BulletSpeedUp timed effect to the specified player.
-     */
-    public static boolean applyBulletSpeedUp(final GameState gameState, final int playerId,
-        int effectValue, int duration) {
-        if (gameState == null) {
-            return false;
-        }
-        
-        int playerIndex = getPlayerIndex(playerId);
-        
-        gameState.addEffect(playerIndex, ItemEffectType.BULLETSPEEDUP, effectValue, duration);
-        logger.info(
-            "[ItemEffect - BULLETSPEEDUP] Player " + playerId + " applied for " + duration + "s.");
         
         return true;
     }
