@@ -855,8 +855,14 @@ public class GameScreen extends Screen {
                         drawManager.getGameScreenRenderer()
                             .triggerExplosion(this.bossShip.getPositionX(),
                                 this.bossShip.getPositionY(), true, true);
+                        
                     }else {
                         SoundManager.playOnce("boss_hit");
+                        
+                        drawManager.getGameScreenRenderer().triggerCustomExplosion(
+                            weapon.getPositionX() + weapon.getWidth() / 2,
+                            weapon.getPositionY(),
+                            new Color(255, 50, 50));
                     }
                 }
             }

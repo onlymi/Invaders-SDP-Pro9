@@ -17,6 +17,13 @@ public class Explosion {
     
     private static final Random random = new Random();
     
+    public Explosion(double startX, double startY, Color customColor) {
+        this.active = true;
+        this.spriteType = null;
+        this.size = 5;
+        initParticles(startX, startY, customColor);
+    }
+    
     public Explosion(double startX, double startY, boolean enemy, boolean finalExplosion) {
         initParticles(startX, startY, enemy, finalExplosion);
         this.spriteType = null;
@@ -48,6 +55,22 @@ public class Explosion {
             
             Color color = new Color(255, random.nextInt(150), 0, 255);
             int life = 60;
+            
+            particles[i] = new Particle(startX, startY, dx, dy, color, life);
+        }
+    }
+    
+    private void initParticles(double startX, double startY, Color color) {
+        this.particles = new Particle[NUM_PARTICLES];
+        for (int i = 0; i < NUM_PARTICLES; i++) {
+            double angle = 2 * Math.PI * random.nextDouble();
+            // 더 빠르고 강렬하게 퍼지도록 속도 조정
+            double speed = 2 + random.nextDouble() * 3;
+            double dx = Math.cos(angle) * speed;
+            double dy = Math.sin(angle) * speed;
+            
+            // 수명 랜덤 설정 (40~60 프레임)
+            int life = 40 + random.nextInt(20);
             
             particles[i] = new Particle(startX, startY, dx, dy, color, life);
         }
