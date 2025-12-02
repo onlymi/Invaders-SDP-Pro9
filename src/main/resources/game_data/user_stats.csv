@@ -2,4 +2,4 @@ id,coin,healthLevel,manaLevel,speedLevel,damageLevel,attackSpeedLevel,attackRang
 1234,0,0,1,0,0,0,0,0,0
 1,100,0,0,0,0,0,0,0,0
 2,0,0,1,0,0,0,0,0,0
-q,100,0,0,0,0,0,0,0,0
+q,0,1,0,0,0,0,0,0,0

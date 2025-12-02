@@ -16,6 +16,7 @@ import engine.renderer.SettingScreenRenderer;
 import engine.renderer.SignUpScreenRenderer;
 import engine.renderer.StoreScreenRenderer;
 import engine.renderer.TitleScreenRenderer;
+import entity.BossShip;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -270,7 +271,39 @@ public final class DrawManager {
         backBufferGraphics.drawLine(0, screen.getHeight() - 1, screen.getWidth() - 1,
             screen.getHeight() - 1);
     }
-    
+    /**
+     * Draws the Boss HP bar at the top of the screen.
+     *
+     * @param boss The boss ship instance.
+     */
+    public void drawBossHpBar(final BossShip boss, final screen.Screen screen) {
+        if (boss == null || boss.isDestroyed()) {
+            return;
+        }
+
+        int barWidth = 600;
+        int barHeight = 20;
+        int x = (screen.getWidth() - barWidth) / 2;
+        int y = 40;
+        
+        double hpRatio = (double) boss.getHealth() / boss.getInitialHealth();
+        
+        int filledWidth = (int) (barWidth * hpRatio);
+        
+        backBufferGraphics.setColor(Color.GRAY);
+        backBufferGraphics.fillRect(x, y, barWidth, barHeight);
+        
+        backBufferGraphics.setColor(Color.RED);
+        backBufferGraphics.fillRect(x, y, filledWidth, barHeight);
+        
+        backBufferGraphics.setColor(Color.WHITE);
+        backBufferGraphics.drawRect(x, y, barWidth, barHeight);
+        
+        backBufferGraphics.setFont(fontRegular);
+        backBufferGraphics.setColor(Color.WHITE);
+        int textWidth = backBufferGraphics.getFontMetrics().stringWidth("BOSS HP");
+        backBufferGraphics.drawString("BOSS HP", x + (barWidth - textWidth) / 2, y - 5);
+    }
     /**
      * For debugging purposes, draws a grid over the canvas.
      *

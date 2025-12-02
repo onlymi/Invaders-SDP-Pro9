@@ -239,7 +239,7 @@ public class GameScreen extends Screen {
         enemyShipFormation = new EnemyShipFormation(this.gameSettings);
         enemyShipFormation.attach(this);
         
-        if (this.level == 6) {
+        if (this.level == 1) {
             this.enemyShipFormation = null;
             this.bossShip = new BossShip(this.width / 2 - 42, 120);
             this.LOGGER.info("Boss Stage Initialized!");
@@ -553,6 +553,10 @@ public class GameScreen extends Screen {
         
         if (this.enemyShipFormation != null) {
             enemyShipFormation.draw();
+        }
+        
+        if (this.bossShip != null && !this.bossShip.isDestroyed()) {
+            drawManager.drawBossHpBar(this.bossShip, this);
         }
         
         for (Bullet bullet : this.bullets) {
