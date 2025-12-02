@@ -43,6 +43,14 @@ public class EntityRenderer {
      */
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY, final Color color) {
+        
+        // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
+//        Color debugColor = g.getColor();
+//        g.setColor(new Color(255, 0, 0, 128));
+//        g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+//        g.setColor(debugColor); // 원래 색상 복구
+        // [DEBUG END]
+        
         SpriteType type = entity.getSpriteType();
         
         if (type.isImage()) {
@@ -59,6 +67,15 @@ public class EntityRenderer {
     
     public void drawEntityByScale(Graphics g, final Entity entity, final int positionX,
         final int positionY, final Color color, final int scale) {
+        
+        // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
+//        Color debugColor = g.getColor();
+//        g.setColor(new Color(255, 0, 0, 128));
+//        히트박스는 렌더링 스케일(scale)과 무관하게 엔티티의 실제 크기(width, height)를 따릅니다.
+//        g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+//        g.setColor(debugColor);
+        // [DEBUG END]
+        
         SpriteType type = entity.getSpriteType();
         
         if (type.isImage()) {
@@ -78,14 +95,29 @@ public class EntityRenderer {
             return;
         }
         
-        int entityWidth = image.getWidth() * scale;
-        int entityHeight = image.getWidth() * scale;
+        int imageWidth = image.getWidth() * scale;
+        int imageHeight = image.getWidth() * scale;
         
-        g.drawImage(image, positionX, positionY, entityWidth, entityHeight, null);
+        int drawX = positionX + (entity.getWidth() - imageWidth) / 2;
+        int drawY = positionY + (entity.getHeight() - imageHeight) / 2;
+        
+        boolean flip = false;
+        if (entity instanceof EnemyShip) {
+            // 왼쪽을 보고 있다면 반전
+            if (!((EnemyShip) entity).isFacingRight()) {
+                flip = true;
+            }
+        }
+        
+        if (flip) {
+            g.drawImage(image, drawX + imageWidth, drawY, -imageWidth, imageHeight, null);
+        } else {
+            g.drawImage(image, drawX, drawY, imageWidth, imageHeight, null);
+        }
         
         if (color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
-            g.fillRect(positionX, positionY, entityWidth, entityHeight);
+            g.fillRect(drawX, drawY, imageWidth, imageHeight);
         }
     }
     

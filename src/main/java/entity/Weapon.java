@@ -67,6 +67,7 @@ public class Weapon extends Entity {
         super(positionX, positionY, width, height, Color.WHITE);
         this.speed = speed;
         this.damage = damage;
+        setSpriteMap();
     }
     
     // reset the size when recycling bullets
