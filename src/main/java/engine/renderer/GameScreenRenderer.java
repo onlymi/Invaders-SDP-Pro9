@@ -485,7 +485,10 @@ public class GameScreenRenderer {
         }
         return w;
     }
-    
+    public void triggerEffect(int x, int y, engine.AssetManager.SpriteType sprite, int duration) {
+        explosions.add(new Explosion(x, y, sprite, duration));
+    }
+
     public void drawActiveItemSlots(Graphics g, final Screen screen, final GameState gameState) {
         if (gameState == null) {
             return;
