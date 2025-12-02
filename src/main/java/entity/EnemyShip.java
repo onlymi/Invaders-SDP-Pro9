@@ -4,6 +4,7 @@ import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.GameState;
 import engine.utils.Cooldown;
+import entity.character.GameCharacter;
 import java.awt.Color;
 
 
@@ -26,6 +27,14 @@ public class EnemyShip extends Entity {
     private static final int B_TYPE_COINS = 3;
     private static final int C_TYPE_COINS = 5;
     /**
+     * Floating animation variable.
+     */
+    private double floatingPhase;
+    private static final double FLOATING_AMPLITUDE = 5.0;
+    private static final double FLOATING_SPEED = 0.005;
+    private boolean isFacingRight;
+    
+    /**
      * Checks if the ship has been hit by a bullet.
      */
     protected boolean isDestroyed;
@@ -45,14 +54,10 @@ public class EnemyShip extends Entity {
     protected int health;
     protected int initialHealth;
     
-    protected GameState gameState;
+    protected double preciseX;
+    protected double preciseY;
     
-    /**
-     * [Legacy Support] Constructor for Special Ship (Bonus Enemy).
-     */
-    public EnemyShip() {
-        this(0, 0, SpriteType.EnemyShipSpecial);
-    }
+    protected GameState gameState;
     
     /**
      * Constructor, establishes the ship's properties. Used by EnemyShipFormation and BossShip.
@@ -62,10 +67,13 @@ public class EnemyShip extends Entity {
      * @param spriteType Sprite type, image corresponding to the ship.
      */
     public EnemyShip(int positionX, int positionY, SpriteType spriteType) {
-        super(positionX, positionY, 12 * 2, 8 * 2, Color.WHITE);
+        super(positionX, positionY, 24, 36, Color.WHITE);
         this.spriteType = spriteType;
         this.animationCooldown = Core.getCooldown(500);
         this.isDestroyed = false;
+        this.preciseX = positionX;
+        this.preciseY = positionY;
+        this.floatingPhase = Math.random() * Math.PI * 2;
         
         initializeStats();
     }
@@ -162,6 +170,50 @@ public class EnemyShip extends Entity {
         update();
     }
     
+    public void update(GameCharacter player) {
+        update();
+        
+        if (player != null && !player.isDestroyed()) {
+            moveTowards(player);
+        }
+        
+        long currentTime = System.currentTimeMillis();
+        double floatingOffset =
+            Math.sin(currentTime * FLOATING_SPEED + this.floatingPhase) * FLOATING_AMPLITUDE;
+        
+        this.positionX = (int) preciseX;
+        this.positionY = (int) (preciseY + floatingOffset);
+    }
+    
+    private void moveTowards(GameCharacter player) {
+        double targetX = player.positionX;
+        double targetY = player.positionY;
+        
+        double dirX = targetX - this.positionX;
+        double dirY = targetY - this.positionY;
+        
+        if (dirX < 0) {
+            this.isFacingRight = false;
+        } else {
+            this.isFacingRight = true;
+        }
+        
+        double distance = Math.sqrt(dirX * dirX + dirY * dirY);
+        
+        if (distance > 0) {
+            // 단위 벡터로 만들기
+            dirX /= distance;
+            dirY /= distance;
+            
+            // 속도 적용
+            double speed = 1.0;
+            
+            // if (type == Type.B && distance < 200) { speed = -speed; }
+            this.preciseX += dirX * speed;
+            this.preciseY += dirY * speed;
+        }
+    }
+    
     /**
      * Returns the current health of the enemy ship.
      */
@@ -231,5 +283,9 @@ public class EnemyShip extends Entity {
     
     public int getInitialHealth() {
         return this.initialHealth;
+    }
+    
+    public boolean isFacingRight() {
+        return this.isFacingRight;
     }
 }

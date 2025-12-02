@@ -33,7 +33,7 @@ public final class AssetManager {
         CHARACTER("image/character/"),
         WEAPON("image/weapon/"),
         PLAYERSHIP("graphics/playersShip_graphics"),
-        ENEMY("graphics/enemy_graphics"),
+        ENEMY("image/enemy/"),
         BOSS("graphics/boss_graphics"),
         BULLET("graphics/bullet_graphics"),
         MUTUAL("graphics/mutual_graphics"),
@@ -187,31 +187,27 @@ public final class AssetManager {
         /**
          * First enemy ship - first form.
          */
-        EnemyShipA1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipA1(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
         /**
          * First enemy ship - second form.
          */
-        EnemyShipA2(SourceCategory.ENEMY, 12, 8),
+        EnemyShipA2(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
         /**
          * Second enemy ship - first form.
          */
-        EnemyShipB1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipB1(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
         /**
          * Second enemy ship - second form.
          */
-        EnemyShipB2(SourceCategory.ENEMY, 12, 8),
+        EnemyShipB2(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
         /**
          * Third enemy ship - first form.
          */
-        EnemyShipC1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipC1(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
         /**
          * Third enemy ship - second form.
          */
-        EnemyShipC2(SourceCategory.ENEMY, 12, 8),
-        /**
-         * Bonus ship.
-         */
-        EnemyShipSpecial(SourceCategory.ENEMY, 16, 7),
+        EnemyShipC2(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
         /**
          * Boss ship.
          */
