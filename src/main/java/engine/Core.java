@@ -4,8 +4,8 @@ import engine.gameplay.achievement.AchievementManager;
 import engine.hitbox.HitboxManager;
 import engine.utils.Cooldown;
 import engine.utils.MinimalFormatter;
-import java.awt.Color;
 import entity.character.CharacterType;
+import java.awt.Color;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
@@ -27,14 +27,13 @@ import screen.SignUpScreen;
 import screen.StoreScreen;
 import screen.TitleScreen;
 
-
 /**
  * Implements core game logic.
  *
  * @author <a href="mailto:RobertoIA1987@gmail.com">Roberto Izquierdo Amo</a>
  */
 public final class Core {
-
+    
     public static final int WIDTH = 1200;
     public static final int HEIGHT = 800;
     private static final int FPS = 60;
@@ -90,7 +89,7 @@ public final class Core {
         GameState gameState = null;
         boolean coopSelected = false; // false = 1-player mode, true = 2-player mode
         
-        int returnCode = 6;
+        int returnCode = 9;
         
         CharacterType characterTypeP1 = CharacterType.ARCHER; // Player 1 Ship Type
         CharacterType characterTypeP2 = CharacterType.ARCHER; // Player 2 Ship Type
@@ -389,7 +388,7 @@ public final class Core {
                 
                 // Elite Guards (Inner Ring) - HP 10, Reward 10, Dark Orange
                 Color darkOrange = new Color(255, 69, 0);
-                int[][] guards = {{2,1}, {3,1}, {4,1}, {2,2}, {4,2}, {2,3}, {3,3}, {4,3}};
+                int[][] guards = {{2, 1}, {3, 1}, {4, 1}, {2, 2}, {4, 2}, {2, 3}, {3, 3}, {4, 3}};
                 for (int[] pos : guards) {
                     currentSettings.getChangeDataList().add(
                         new GameSettings.ChangeData(pos[0], pos[1], 10, 10, darkOrange));
@@ -397,7 +396,7 @@ public final class Core {
                 
                 // Minions (Outer Corners) - HP 2, Reward 2, Gold
                 Color gold = new Color(255, 215, 0);
-                int[][] minions = {{0,0}, {6,0}, {0,4}, {6,4}};
+                int[][] minions = {{0, 0}, {6, 0}, {0, 4}, {6, 4}};
                 for (int[] pos : minions) {
                     currentSettings.getChangeDataList().add(
                         new GameSettings.ChangeData(pos[0], pos[1], 2, 2, gold));

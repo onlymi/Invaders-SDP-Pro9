@@ -253,7 +253,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
             if (changeData.hp == 0) {
                 destroy(ship);
             } else {
-                ship.changeShip(changeData);
+                //ship.changeShip(changeData);
             }
         }
         

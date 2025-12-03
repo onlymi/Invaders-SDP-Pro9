@@ -25,36 +25,9 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * Classes that load, store, and manage all the assets (Sprite, fonts, etc.) needed for the game.
  */
 public final class AssetManager {
-
-    /**
-     * Enum to distinguish between graphical source files.
-     */
-    private enum SourceCategory {
-        CHARACTER("image/character/"),
-        WEAPON("image/weapon/"),
-        PLAYERSHIP("graphics/playersShip_graphics"),
-        ENEMY("graphics/enemy_graphics"),
-        BOSS("graphics/boss_graphics"),
-        BULLET("graphics/bullet_graphics"),
-        MUTUAL("graphics/mutual_graphics"),
-        ITEM("graphics/item_graphics");
-
-        private final String filePath;
-
-        SourceCategory(String path) {
-            this.filePath = path;
-        }
-
-        public String getFilePath() {
-            return this.filePath;
-        }
-    }
-
-    /**
-     * Sprite types.
-     */
-    private static int characterWidth = 64;
-    private static int characterHeight = 64;
+    
+    private static final int characterWidth = 64;
+    private static final int characterHeight = 64;
     
     public int getCharacterWidth() {
         return characterWidth;
@@ -64,6 +37,9 @@ public final class AssetManager {
         return characterHeight;
     }
     
+    /**
+     * Sprite types.
+     */
     public enum SpriteType {
         /**
          * Warrior Character.
@@ -77,8 +53,7 @@ public final class AssetManager {
         CharacterWarriorWalk2(SourceCategory.CHARACTER, "warrior/warrior_basic.png",
             characterWidth, characterHeight),
         CharacterWarriorDefaultProjectile(SourceCategory.WEAPON,
-            "warrior/default_attack_warrior.png",
-            32, 32),
+            "warrior/default_attack_warrior.png", 32, 32),
         /**
          * Archer Character.
          */
@@ -88,10 +63,16 @@ public final class AssetManager {
             characterWidth, characterHeight),
         CharacterArcherAttack1(SourceCategory.CHARACTER, "archer/archer_basic.png",
             characterWidth, characterHeight),
-        CharacterArcherWalk1(SourceCategory.CHARACTER, "archer/archer_basic.png",
+        CharacterArcherStand(SourceCategory.CHARACTER, "archer/archer_stand.png",
             characterWidth, characterHeight),
-        CharacterArcherWalk2(SourceCategory.CHARACTER, "archer/archer_basic.png",
-            characterWidth, characterHeight),
+        CharacterArcherLeftWalk(SourceCategory.CHARACTER, "archer/walk/archer_left_walk",
+            characterWidth, characterHeight, 4),
+        CharacterArcherRightWalk(SourceCategory.CHARACTER, "archer/walk/archer_right_walk",
+            characterWidth, characterHeight, 4),
+        CharacterArcherFrontWalk(SourceCategory.CHARACTER, "archer/walk/archer_front_walk",
+            characterWidth, characterHeight, 4),
+        CharacterArcherBackWalk(SourceCategory.CHARACTER, "archer/walk/archer_back_walk",
+            characterWidth, characterHeight, 4),
         CharacterArcherDefaultProjectile(SourceCategory.WEAPON,
             "archer/default_attack_archer.png",
             20, 15),
@@ -199,31 +180,27 @@ public final class AssetManager {
         /**
          * First enemy ship - first form.
          */
-        EnemyShipA1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipA1(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
         /**
          * First enemy ship - second form.
          */
-        EnemyShipA2(SourceCategory.ENEMY, 12, 8),
+        EnemyShipA2(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
         /**
          * Second enemy ship - first form.
          */
-        EnemyShipB1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipB1(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
         /**
          * Second enemy ship - second form.
          */
-        EnemyShipB2(SourceCategory.ENEMY, 12, 8),
+        EnemyShipB2(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
         /**
          * Third enemy ship - first form.
          */
-        EnemyShipC1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipC1(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
         /**
          * Third enemy ship - second form.
          */
-        EnemyShipC2(SourceCategory.ENEMY, 12, 8),
-        /**
-         * Bonus ship.
-         */
-        EnemyShipSpecial(SourceCategory.ENEMY, 16, 7),
+        EnemyShipC2(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
         /**
          * Boss ship.
          */
@@ -256,13 +233,20 @@ public final class AssetManager {
         private final int width;
         private final int height;
         private final boolean isImage;
+        private final int frameCount;
         
         SpriteType(SourceCategory category, String filename, int width, int height) {
+            this(category, filename, width, height, 1);
+        }
+        
+        SpriteType(SourceCategory category, String filename, int width, int height,
+            int frameCount) {
             this.category = category;
             this.filename = filename;
             this.width = width;
             this.height = height;
             this.isImage = true;
+            this.frameCount = frameCount;
         }
         
         SpriteType(SourceCategory category, int width, int height) {
@@ -271,13 +255,18 @@ public final class AssetManager {
             this.width = width;
             this.height = height;
             this.isImage = false;
+            this.frameCount = 1;
         }
         
         // Getter 메서드
         public SourceCategory getCategory() {
             return this.category;
         }
-
+        
+        public String getFilename() {
+            return this.filename;
+        }
+        
         public int getWidth() {
             return this.width;
         }
@@ -290,8 +279,8 @@ public final class AssetManager {
             return this.isImage;
         }
         
-        public String getFilename() {
-            return this.filename;
+        public int getFrameCount() {
+            return this.frameCount;
         }
     }
 
@@ -301,6 +290,7 @@ public final class AssetManager {
 
     Map<SpriteType, boolean[][]> spriteMap;
     Map<SpriteType, BufferedImage> spriteImageMap;
+    Map<SpriteType, BufferedImage[]> animationMap;
     HashMap<String, Clip> soundMap;
     HashMap<String, File> csvDataMap;
     private Font fontRegular;
@@ -312,6 +302,7 @@ public final class AssetManager {
         try {
             spriteMap = new LinkedHashMap<>();
             spriteImageMap = new LinkedHashMap<>();
+            animationMap = new LinkedHashMap<>();
             this.loadResources();
             LOGGER.info("Finished loading the sprites.");
 
@@ -387,14 +378,27 @@ public final class AssetManager {
         try {
             for (SpriteType type : SpriteType.values()) {
                 if (type.isImage()) {
-                    String fullPath = type.getCategory().getFilePath() + type.getFilename();
+                    String basePath = type.getCategory().getFilePath() + type.getFilename();
                     int targetWidth = type.getWidth();
                     int targetHeight = type.getHeight();
                     
-                    BufferedImage img = engine.utils.ImageLoader.loadImage(
-                        fullPath, targetWidth, targetHeight
-                    );
-                    spriteImageMap.put(type, img);
+                    if (type.getFrameCount() == 1) {
+                        BufferedImage img = engine.utils.ImageLoader.loadImage(
+                            basePath, targetWidth, targetHeight
+                        );
+                        spriteImageMap.put(type, img);
+                    } else {
+                        BufferedImage[] frames = new BufferedImage[type.getFrameCount()];
+                        
+                        for (int i = 0; i < type.getFrameCount(); i++) {
+                            String fullPath = basePath + (i + 1) + ".png";
+                            System.out.println(type.getFrameCount() + " - " + fullPath);
+                            
+                            frames[i] = engine.utils.ImageLoader.loadImage(fullPath, targetWidth,
+                                targetHeight);
+                        }
+                        animationMap.put(type, frames);
+                    }
                     
                 } else {
                     boolean[][] data = new boolean[type.getWidth()][type.getHeight()];
@@ -536,6 +540,18 @@ public final class AssetManager {
         return new File(rootDir + File.separator + filePath);
     }
     
+    public Font getFontRegular() {
+        return fontRegular;
+    }
+    
+    public Font getFontBig() {
+        return fontBig;
+    }
+    
+    public File getCsvData(String fileName) {
+        return csvDataMap.get(fileName);
+    }
+    
     public Clip getSound(String soundName) {
         return soundMap.get(soundName);
     }
@@ -548,15 +564,7 @@ public final class AssetManager {
         return spriteImageMap.get(type);
     }
     
-    public File getCsvData(String fileName) {
-        return csvDataMap.get(fileName);
-    }
-    
-    public Font getFontRegular() {
-        return fontRegular;
-    }
-
-    public Font getFontBig() {
-        return fontBig;
+    public BufferedImage[] getAnimation(SpriteType type) {
+        return animationMap.get(type);
     }
 }

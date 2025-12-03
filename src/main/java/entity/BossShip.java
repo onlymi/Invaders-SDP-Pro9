@@ -71,8 +71,7 @@ public class BossShip extends EnemyShip {
     private List<Weapon> activeLeftLasers = new ArrayList<>();
     private List<Weapon> activeRightLasers = new ArrayList<>();
     
-    private final int BOSS_ATTACK_HP_THRESHOLD;
-    private boolean isAttackEnabled;
+    private boolean isAttackEnabled = true;
     
     final int screenWidth = Core.getFrameWidth();
     final int screenHeight = Core.getFrameHeight();
@@ -96,9 +95,6 @@ public class BossShip extends EnemyShip {
         this.pointValue = BOSS_POINTS;
         this.coinValue = BOSS_COINS;
 
-        // Set a BOSS_ATTACK_HP_THRESHOLD.
-        this.BOSS_ATTACK_HP_THRESHOLD = this.initialHealth / 2;
-
         // Set a prominent default color.
         this.changeColor(Color.CYAN);
 
@@ -115,17 +111,18 @@ public class BossShip extends EnemyShip {
         this.spreadChargeCooldown = Core.getCooldown(SPREAD_CHARGE_TIME);
         this.laserFireDelayCooldown = Core.getCooldown(1000);
         this.laserActiveCooldown = Core.getCooldown(700);
+        if (this.bossAnimationCooldown == null) {
+            this.bossAnimationCooldown = Core.getCooldown(500);
+        }
         this.isAttackEnabled = true;
+        
     }
 
     /**
      * New shoot method to manage attacks
      */
     public final void shoot(final Set<Weapon> weapons, GameCharacter[] players) {
-        // Do nothing if the boss is not in an attacking state
-        if (!this.isAttackEnabled) {
-            return;
-        }
+        
         // Calculate the center position of the boss for spawning projectiles
         int spawnX = this.positionX + this.width / 2;
         int spawnY = this.positionY + this.height;
@@ -335,11 +332,6 @@ public class BossShip extends EnemyShip {
     @Override
     public final void update() {
         
-        // Use the remaining time as a wide-ranging mode.
-        if (this.health <= BOSS_ATTACK_HP_THRESHOLD && !this.isAttackEnabled) {
-            this.isAttackEnabled = true;
-            this.attackCooldown.reset(); // Start attack cycle immediately
-        }
 
         if (this.isAttackEnabled) {
             if (this.attackPhase == ATTACK_LASER_CHARGE) {
@@ -504,11 +496,6 @@ public class BossShip extends EnemyShip {
     /** Returns the laser charge timer value. */
     public final int getLaserChargeTimer() {
         return this.laserChargeTimer;
-    }
-
-    /** Returns the attack HP threshold. */
-    public final int getAttackHpThreshold() {
-        return this.BOSS_ATTACK_HP_THRESHOLD;
     }
 
     /** Returns the charge timer read. */
