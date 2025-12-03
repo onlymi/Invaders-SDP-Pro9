@@ -4,7 +4,6 @@ import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.InputManager;
 import engine.utils.Cooldown;
-import engine.UserStats;
 import entity.Entity;
 import entity.Weapon;
 import entity.WeaponPool;
@@ -40,6 +39,13 @@ public abstract class GameCharacter extends Entity {
     private int upKey;
     private int downKey;
     private int defaultAttackKey;
+    
+    private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
+    protected boolean isMoving;
+    protected boolean isFacingLeft;
+    protected boolean isFacingRight;
+    protected boolean isFacingFront;
+    protected boolean isFacingBack;
     
     private static final int DESTRUCTION_COOLDOWN = 1000;
     private Cooldown shootingCooldown;
@@ -88,8 +94,14 @@ public abstract class GameCharacter extends Entity {
         this.downKey = KeyEvent.VK_S;
         this.defaultAttackKey = KeyEvent.VK_SPACE;
         
+        this.isMoving = false;
+        this.isFacingLeft = false;
+        this.isFacingRight = true;
+        this.isFacingFront = false;
+        this.isFacingBack = false;
+        
         // Reset cool time
-        this.shootingCooldown = Core.getCooldown((int) this.currentStats.attackSpeed);
+        this.shootingCooldown = Core.getCooldown((int) this.currentStats.attackSpeed * 500);
         this.shootingCooldown.reset();
         this.destructionCooldown = Core.getCooldown(DESTRUCTION_COOLDOWN);
         
@@ -129,48 +141,48 @@ public abstract class GameCharacter extends Entity {
         }
         // 0: Health (20% per level)
         if (stats.getStatLevel(0) > 0) {
-            this.baseStats.maxHealthPoints = (int) (this.baseStats.maxHealthPoints * (1 + 0.2 * stats.getStatLevel(0)));
+            this.baseStats.maxHealthPoints = (int) (this.baseStats.maxHealthPoints * (1
+                + 0.2 * stats.getStatLevel(0)));
             this.currentHealthPoints = this.baseStats.maxHealthPoints; // Reset current HP to new max
         }
-        
         // 1: Mana (20% per level)
         if (stats.getStatLevel(1) > 0) {
-            this.baseStats.maxManaPoints = (int) (this.baseStats.maxManaPoints * (1 + 0.2 * stats.getStatLevel(1)));
+            this.baseStats.maxManaPoints = (int) (this.baseStats.maxManaPoints * (1
+                + 0.2 * stats.getStatLevel(1)));
             this.currentManaPoints = this.baseStats.maxManaPoints; // Reset current MP to new max
         }
-        
         // 2: Speed (10% per level)
         if (stats.getStatLevel(2) > 0) {
-            this.baseStats.movementSpeed = this.baseStats.movementSpeed * (1 + 0.1f * stats.getStatLevel(2));
+            this.baseStats.movementSpeed =
+                this.baseStats.movementSpeed * (1 + 0.1f * stats.getStatLevel(2));
         }
-        
         // 3: Damage (20% per level) - Applies to both Physical and Magical
         if (stats.getStatLevel(3) > 0) {
             double multiplier = 1 + 0.2 * stats.getStatLevel(3);
-            this.baseStats.physicalDamage = (int) (Math.ceil(this.baseStats.physicalDamage * multiplier));
-            this.baseStats.magicalDamage = (int) (Math.ceil(this.baseStats.magicalDamage * multiplier));
+            this.baseStats.physicalDamage = (int) (Math.ceil(
+                this.baseStats.physicalDamage * multiplier));
+            this.baseStats.magicalDamage = (int) (Math.ceil(
+                this.baseStats.magicalDamage * multiplier));
         }
-        
         // 4: Attack Speed (10% per level)
         if (stats.getStatLevel(4) > 0) {
-            this.baseStats.attackSpeed = this.baseStats.attackSpeed * (1 + 0.1f * stats.getStatLevel(4));
+            this.baseStats.attackSpeed =
+                this.baseStats.attackSpeed * (1 + 0.1f * stats.getStatLevel(4));
         }
-        
         // 5: Attack Range (10% per level)
         if (stats.getStatLevel(5) > 0) {
-            this.baseStats.attackRange = this.baseStats.attackRange * (1 + 0.1f * stats.getStatLevel(5));
+            this.baseStats.attackRange =
+                this.baseStats.attackRange * (1 + 0.1f * stats.getStatLevel(5));
         }
-        
         // 6: Critical Chance (Add 5% per level)
         if (stats.getStatLevel(6) > 0) {
             this.baseStats.critChance += 0.05f * stats.getStatLevel(6);
         }
-        
         // 7: Defence (Add 2 per level)
         if (stats.getStatLevel(7) > 0) {
             this.baseStats.physicalDefense += 2 * stats.getStatLevel(7);
         }
-
+        
         this.currentStats = new CharacterStats(this.baseStats);
     }
     
@@ -218,31 +230,68 @@ public abstract class GameCharacter extends Entity {
     
     public boolean handleMovement(InputManager inputManager, Screen screen, Set<Weapon> weapons,
         float deltaTime) {
-        int movementAmount = (int) (this.currentStats.movementSpeed * 150 * deltaTime);
-        if (movementAmount == 0 && this.currentStats.movementSpeed > 0) {
-            movementAmount = 1;
+        this.isMoving = false;
+        
+        this.isFacingLeft = false;
+        this.isFacingRight = false;
+        this.isFacingBack = false;
+        this.isFacingFront = false;
+        
+        float dx = 0;
+        float dy = 0;
+        
+        if (inputManager.isKeyDown(this.leftKey)) {
+            dx -= 1;
+            this.isFacingLeft = true;
+        }
+        if (inputManager.isKeyDown(this.rightKey)) {
+            dx += 1;
+            this.isFacingRight = true;
+        }
+        if (inputManager.isKeyDown(this.upKey)) {
+            dy -= 1;
+            this.isFacingBack = true;
+        }
+        if (inputManager.isKeyDown(this.downKey)) {
+            dy += 1;
+            this.isFacingFront = true;
         }
         
-        boolean isLeftBorder = (this.positionX - movementAmount) < 1;
-        if (inputManager.isKeyDown(this.leftKey) && !isLeftBorder) {
-            this.positionX -= movementAmount;
-        }
-        
-        boolean isRightBorder =
-            (this.positionX + this.width + movementAmount) > (screen.getWidth() - 1);
-        if (inputManager.isKeyDown(this.rightKey) && !isRightBorder) {
-            this.positionX += movementAmount;
-        }
-        
-        boolean isUpBorder = (this.positionY - movementAmount) < 1;
-        if (inputManager.isKeyDown(this.upKey) && !isUpBorder) {
-            this.positionY -= movementAmount;
-        }
-        
-        boolean isDownBorder =
-            (this.positionY + this.height + movementAmount) > (screen.getHeight() - 1);
-        if (inputManager.isKeyDown(this.downKey) && !isDownBorder) {
-            this.positionY += movementAmount;
+        if (dx != 0 || dy != 0) {
+            this.isMoving = true;
+            
+            // 대각선 이동 시 벡터 정규화 (속도 보정)
+            if (dx != 0 && dy != 0) {
+                dx *= DIAGONAL_CORRECTION_FACTOR;
+                dy *= DIAGONAL_CORRECTION_FACTOR;
+            }
+            
+            // 프레임 단위 이동 거리 계산
+            float speed = this.currentStats.movementSpeed * 150 * deltaTime;
+            int movementX = Math.round(dx * speed);
+            int movementY = Math.round(dy * speed);
+            
+            // 속도가 낮아도 입력이 있으면 최소 1픽셀 이동 보장
+            if (movementX == 0 && dx != 0) {
+                movementX = (dx > 0) ? 1 : -1;
+            }
+            if (movementY == 0 && dy != 0) {
+                movementY = (dy > 0) ? 1 : -1;
+            }
+            
+            // X축 이동 및 경계 체크
+            int nextX = this.positionX + movementX;
+            boolean isValidX = (nextX >= 1) && ((nextX + this.width) <= screen.getWidth() - 1);
+            if (isValidX) {
+                this.positionX += movementX;
+            }
+            
+            // Y축 이동 및 경계 체크
+            int nextY = this.positionY + movementY;
+            boolean isValidY = (nextY >= 1) && ((nextY + this.height) <= screen.getHeight() - 1);
+            if (isValidY) {
+                this.positionY += movementY;
+            }
         }
         
         if (inputManager.isKeyDown(this.defaultAttackKey)) {
@@ -309,5 +358,25 @@ public abstract class GameCharacter extends Entity {
     
     public int getPlayerId() {
         return this.playerId;
+    }
+    
+    public boolean isMoving() {
+        return this.isMoving;
+    }
+    
+    public boolean isFacingLeft() {
+        return isFacingLeft;
+    }
+    
+    public boolean isFacingRight() {
+        return this.isFacingRight;
+    }
+    
+    public boolean isFacingFront() {
+        return isFacingFront;
+    }
+    
+    public boolean isFacingBack() {
+        return isFacingBack;
     }
 }

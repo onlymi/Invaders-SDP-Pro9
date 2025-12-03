@@ -3,10 +3,12 @@ package engine.renderer;
 import engine.AssetManager;
 import engine.AssetManager.SpriteType;
 import engine.Core;
+import engine.renderer.character.ArcherCharacterRenderer;
 import entity.EnemyShip;
 import entity.Entity;
 import entity.Ship;
 import entity.Weapon;
+import entity.character.ArcherCharacter;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -17,10 +19,12 @@ public class EntityRenderer {
     
     private CommonRenderer commonRenderer;
     private AssetManager assetManager;
+    private ArcherCharacterRenderer archerCharacterRenderer;
     
     public EntityRenderer(CommonRenderer commonRenderer) {
         this.commonRenderer = commonRenderer;
         this.assetManager = Core.getAssetManager();
+        this.archerCharacterRenderer = new ArcherCharacterRenderer();
     }
     
     /**
@@ -28,8 +32,6 @@ public class EntityRenderer {
      */
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY) {
-        AssetManager assetManager = AssetManager.getInstance();
-        boolean[][] image = assetManager.getSpriteMap(entity.getSpriteType());
         drawEntity(g, entity, positionX, positionY, getEntityColor(entity));
     }
     
@@ -45,11 +47,17 @@ public class EntityRenderer {
         final int positionY, final Color color) {
         
         // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
-//        Color debugColor = g.getColor();
-//        g.setColor(new Color(255, 0, 0, 128));
-//        g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
-//        g.setColor(debugColor); // 원래 색상 복구
+        // Color debugColor = g.getColor();
+        // g.setColor(new Color(255, 0, 0, 128));
+        // g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+        // g.setColor(debugColor); // 원래 색상 복구
         // [DEBUG END]
+        
+        
+        if (entity instanceof ArcherCharacter) {
+            archerCharacterRenderer.draw(g, (ArcherCharacter) entity);
+            return;
+        }
         
         SpriteType type = entity.getSpriteType();
         
@@ -69,11 +77,11 @@ public class EntityRenderer {
         final int positionY, final Color color, final int scale) {
         
         // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
-//        Color debugColor = g.getColor();
-//        g.setColor(new Color(255, 0, 0, 128));
-//        히트박스는 렌더링 스케일(scale)과 무관하게 엔티티의 실제 크기(width, height)를 따릅니다.
-//        g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
-//        g.setColor(debugColor);
+        // Color debugColor = g.getColor();
+        // g.setColor(new Color(255, 0, 0, 128));
+        // 히트박스는 렌더링 스케일(scale)과 무관하게 엔티티의 실제 크기(width, height)를 따릅니다.
+        // g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+        // g.setColor(debugColor);
         // [DEBUG END]
         
         SpriteType type = entity.getSpriteType();
@@ -89,17 +97,15 @@ public class EntityRenderer {
         final int positionY, Color color, final int scale) {
         BufferedImage image = assetManager.getSpriteImage(entity.getSpriteType());
         if (image == null) {
-            g.setColor(Color.PINK);
-            g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
-            System.err.println("EntityRenderer: Can't find sprite about " + entity.getSpriteType());
+            drawMissingTexturePlaceholder(g, entity, positionX, positionY);
             return;
         }
         
-        int imageWidth = image.getWidth() * scale;
-        int imageHeight = image.getWidth() * scale;
+        int entityWidth = image.getWidth() * scale;
+        int entityHeight = image.getWidth() * scale;
         
-        int drawX = positionX + (entity.getWidth() - imageWidth) / 2;
-        int drawY = positionY + (entity.getHeight() - imageHeight) / 2;
+        int drawX = positionX + (entity.getWidth() - entityWidth) / 2;
+        int drawY = positionY + (entity.getHeight() - entityHeight) / 2;
         
         boolean flip = false;
         if (entity instanceof EnemyShip) {
@@ -110,19 +116,19 @@ public class EntityRenderer {
         }
         
         if (flip) {
-            g.drawImage(image, drawX + imageWidth, drawY, -imageWidth, imageHeight, null);
+            g.drawImage(image, drawX + entityWidth, drawY, - entityWidth, entityHeight, null);
         } else {
-            g.drawImage(image, drawX, drawY, imageWidth, imageHeight, null);
+            g.drawImage(image, positionX, positionY, entityWidth, entityHeight, null);
         }
         
         if (color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
-            g.fillRect(drawX, drawY, imageWidth, imageHeight);
+            g.fillRect(positionX, positionY, entityWidth, entityHeight);
         }
     }
     
     /**
-     * Draws an entity of the type of boulean array (Sprite).
+     * Draws an entity of the type of boolean array (Sprite).
      */
     private void drawEntityAsSprite(Graphics g, Entity entity, int positionX, int positionY,
         Color color, int scale) {
@@ -132,14 +138,9 @@ public class EntityRenderer {
             return;
         }
         
-        
-        
         // Calculate scaling ratios compared to original sprite
         int entityWidth = entity.getWidth();
         int entityHeight = entity.getHeight();
-        
-        int spriteWidth = spriteMap.length;
-        int spriteHeight = spriteMap[0].length;
         
         Graphics2D g2d = (Graphics2D) g;
         AffineTransform old = g2d.getTransform();
@@ -155,6 +156,8 @@ public class EntityRenderer {
             g2d.rotate(Math.toRadians(entity.getRotation()), anchorX, anchorY);
         }
         // Set drawing color again
+        int spriteWidth = spriteMap.length;
+        int spriteHeight = spriteMap[0].length;
         g.setColor(color);
         
         
@@ -163,8 +166,7 @@ public class EntityRenderer {
             
             g.setColor(Color.WHITE);
             g.fillRect(positionX + entityWidth / 4, positionY, entityWidth / 2, entityHeight);
-        }
-        else {
+        } else {
             for (int i = 0; i < spriteWidth; i++) {
                 for (int j = 0; j < spriteHeight; j++) {
                     if (spriteMap[i][j]) {
