@@ -2,9 +2,7 @@ package entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -33,16 +31,17 @@ class WeaponTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         
-        // Static Mocking for Core to handle Cooldown creation
+        // Core의 정적 메서드 Mocking (Cooldown 생성 방지)
         coreMock = mockStatic(Core.class);
         coreMock.when(() -> Core.getCooldown(anyInt())).thenReturn(mockCooldown);
         
-        // Create a default bullet
+        // 기본 총알 생성 (속도 5)
         bullet = new Weapon(100, 100, 6, 10, 5);
     }
     
     @AfterEach
     void tearDown() {
+        // 정적 Mock 해제 (필수)
         coreMock.close();
     }
     
@@ -55,10 +54,10 @@ class WeaponTest {
     
     @Test
     void setSprite_NormalBullet() {
-        // Speed > 0 (Enemy Bullet)
+        // Weapon.java 로직상 속도가 0이 아니면 PlayerBullet으로 설정됨
         bullet.setSpeed(5);
         bullet.setSpriteMap();
-        assertEquals(SpriteType.EnemyBullet, bullet.getSpriteType());
+        assertEquals(SpriteType.PlayerBullet, bullet.getSpriteType());
     }
     
     @Test
@@ -67,14 +66,14 @@ class WeaponTest {
         assertEquals(SpriteType.BigLaserBeam, bullet.getSpriteType());
         
         bullet.setBigLaser(false);
-        // Reverts to default based on speed
+        // 속도가 5이므로 PlayerBullet으로 돌아감
         bullet.setSpriteMap();
-        assertEquals(SpriteType.EnemyBullet, bullet.getSpriteType());
+        assertEquals(SpriteType.PlayerBullet, bullet.getSpriteType());
     }
     
     @Test
     void setSpriteType() {
-        bullet.setSpriteType(SpriteType.BossShip1); // Any sprite
+        bullet.setSpriteType(SpriteType.BossShip1);
         assertEquals(SpriteType.BossShip1, bullet.getSpriteType());
     }
     
@@ -87,31 +86,33 @@ class WeaponTest {
         
         bullet.update();
         
+        // Y: 100 + 5 = 105
+        // X: 100 + 0(VelocityX) + 2(SpeedX) = 102
         assertEquals(102, bullet.getPositionX());
         assertEquals(105, bullet.getPositionY());
     }
     
     @Test
     void update_HomingMovement() {
-        // Setup Target
+        // Target 설정 (현재 위치보다 오른쪽 아래)
         when(mockTarget.getPositionX()).thenReturn(200);
         when(mockTarget.getPositionY()).thenReturn(200);
         when(mockTarget.getWidth()).thenReturn(20);
         when(mockTarget.getHeight()).thenReturn(20);
         when(mockTarget.isDestroyed()).thenReturn(false);
         
-        // Enable Homing
+        // 유도 기능 활성화
         bullet.setHoming(mockTarget);
         
-        // Initial rotation is 0
+        // 초기 회전값 0
         bullet.setRotation(0);
         
-        // Update should calculate new speed and rotation
+        // 업데이트 실행
         bullet.update();
         
-        // Rotation should change to face target
+        // 타겟을 향해 회전했는지 확인
         assertNotEquals(0, bullet.getRotation());
-        // SpeedX and Speed should be updated
+        // 속도가 계산되었는지 확인
         assertNotEquals(0, bullet.getSpeedX());
         assertNotEquals(0, bullet.getSpeed());
     }
@@ -120,12 +121,12 @@ class WeaponTest {
     void update_HomingExpired() {
         bullet.setHoming(mockTarget);
         
-        // Simulate cooldown finished (expired)
+        // 쿨다운이 끝났다고 설정 (유도 시간 만료)
         when(mockCooldown.checkFinished()).thenReturn(true);
         
         bullet.update();
         
-        // Should be moved off-screen for recycling
+        // 화면 밖으로 이동되어야 함 (재활용을 위해)
         assertEquals(2000, bullet.getPositionY());
     }
     
@@ -174,16 +175,8 @@ class WeaponTest {
     @Test
     void setPlayerId() {
         bullet.setPlayerId(2);
-        // Assuming setPlayerId also sets ownerPlayerId in Bullet implementation
         assertEquals(2, bullet.getPlayerId());
         assertEquals(2, bullet.getOwnerPlayerId());
-    }
-    
-    @Test
-    void setHoming() {
-        bullet.setHoming(mockTarget);
-        // We can verify internal state indirectly by checking if update changes rotation
-        // or simply trust that no exception was thrown and logic is exercised in update test
     }
     
     @Test
@@ -194,17 +187,15 @@ class WeaponTest {
         bullet.resetHoming();
         
         assertEquals(0, bullet.getRotation());
-        // Can't easily check private fields isHoming/target without getters,
-        // but behavior should revert to normal update
         
         bullet.setSpeed(5);
         bullet.setSpeedX(0);
         bullet.setPositionX(100);
         bullet.setPositionY(100);
         
-        // Update should be linear now, not homing
+        // 유도가 풀렸으므로 직선 이동
         bullet.update();
-        assertEquals(100, bullet.getPositionX()); // SpeedX is 0
-        assertEquals(105, bullet.getPositionY()); // SpeedY is 5
+        assertEquals(100, bullet.getPositionX());
+        assertEquals(105, bullet.getPositionY());
     }
 }

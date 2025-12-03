@@ -136,6 +136,8 @@ public class Weapon extends Entity {
      * Sets correct sprite for the weapon, based on speed.
      */
     public final void setSpriteMap() {
+        this.spriteType = SpriteType.PlayerBullet; // player bullet fired, team remains NEUTRAL
+        
         if (this.isBossBullet) {
             this.spriteType = SpriteType.BossBullet;
         }
@@ -144,8 +146,6 @@ public class Weapon extends Entity {
             this.spriteType = SpriteType.BigLaserBeam;
         } else if (this.speed == 0) {
             this.spriteType = SpriteType.EnemyBullet; // enemy fired bullet
-        } else {
-            this.spriteType = SpriteType.PlayerBullet; // player bullet fired, team remains NEUTRAL
         }
     }
     

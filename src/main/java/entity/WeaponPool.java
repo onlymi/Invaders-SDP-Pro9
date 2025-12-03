@@ -52,11 +52,11 @@ public final class WeaponPool {
         weapon.setSize(width, height); // weapon size
         weapon.setTeam(team); // team setting
         // User's logic applied to weapon
+        weapon.setCharacter(null);
         weapon.setSpeedX(0);
         weapon.setBossBullet(false);
         weapon.setRotation(0);
         weapon.resetHoming();
-        weapon.setCharacter(null);
         weapon.setSpriteMap();
         return weapon;
     }
@@ -91,11 +91,11 @@ public final class WeaponPool {
             weapon.setTeam(team); // team setting
         }
         // User's logic applied to weapon (consistency)
+        weapon.setCharacter(null);
         weapon.setSpeedX(0);
         weapon.setBossBullet(false);
         weapon.setRotation(0);
         weapon.resetHoming();
-        weapon.setCharacter(null);
         weapon.setSpriteMap();
         return weapon;
     }

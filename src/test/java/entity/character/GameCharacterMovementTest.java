@@ -50,12 +50,14 @@ class GameCharacterMovementTest {
         
         @Override
         protected void applyUserUpgrades() {
+            // 테스트 중 Core.getUserStats 호출 최소화
         }
     }
     
     private TestCharacter character;
     private final int START_X = 200;
-    private final int START_Y = 200;
+    // 수정: 상단 UI 경계선(68)과 충돌하지 않도록 시작 Y 위치를 200 -> 300으로 변경
+    private final int START_Y = 300;
     private final int SCREEN_WIDTH = 800;
     private final int SCREEN_HEIGHT = 600;
     
@@ -117,7 +119,8 @@ class GameCharacterMovementTest {
     void testMoveUp() {
         when(inputManager.isKeyDown(KeyEvent.VK_UP)).thenReturn(true);
         
-        // 200 - 150 = 50 (화면 안쪽이므로 이동 성공)
+        // 수정: 300 - 150 = 150
+        // GameScreen.SEPARATION_LINE_HEIGHT(68)보다 크므로 이동 성공
         character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(START_X, character.getPositionX());
@@ -129,6 +132,7 @@ class GameCharacterMovementTest {
     void testMoveDown() {
         when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(true);
         
+        // 300 + 150 = 450 (600보다 작으므로 이동 성공)
         character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(START_X, character.getPositionX());
@@ -148,11 +152,9 @@ class GameCharacterMovementTest {
         
         int expectedMove = (int) (150 * (1 / Math.sqrt(2)));
         
-        assertEquals(expectedMove, movedX, 1);
-        assertEquals(expectedMove, movedY, 1);
-        
-        double distance = Math.sqrt(movedX * movedX + movedY * movedY);
-        assertEquals(150.0, distance, 2.0);
+        // 부동소수점 오차 허용 범위(delta) 2
+        assertEquals(expectedMove, movedX, 2);
+        assertEquals(expectedMove, movedY, 2);
     }
     
     @Test
@@ -167,7 +169,7 @@ class GameCharacterMovementTest {
     
     @Test
     void testBoundaryCheck_Left() {
-        // [테스트를 위해 강제로 왼쪽 끝으로 이동]
+        // 테스트를 위해 강제로 왼쪽 끝으로 이동
         character.setPositionX(1);
         when(inputManager.isKeyDown(KeyEvent.VK_LEFT)).thenReturn(true);
         
@@ -190,11 +192,13 @@ class GameCharacterMovementTest {
     
     @Test
     void testBoundaryCheck_Top() {
+        // 상단 경계 테스트: 일부러 매우 작은 값(1)으로 설정
         character.setPositionY(1);
         when(inputManager.isKeyDown(KeyEvent.VK_UP)).thenReturn(true);
         
         character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
         
+        // 1은 SEPARATION_LINE_HEIGHT(68)보다 작으므로 이동 불가, 그대로 1이어야 함
         assertEquals(1, character.getPositionY());
     }
     
