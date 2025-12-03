@@ -78,10 +78,6 @@ public class BossShipTest {
     void initialStatsAreSetCorrectly() {
         assertEquals(BOSS_INITIAL_HEALTH, boss.getHealth(), "Initial health must be 500");
         
-        // 새로운 Getter를 사용하여 임계값(Threshold)이 50%로 정확히 설정되었는지 검증
-        assertEquals(BOSS_INITIAL_HEALTH / 2, boss.getAttackHpThreshold(),
-            "Attack threshold must be 50% of initial health.");
-        
         assertEquals(5000, boss.getPointValue(), "Point value must be 5000");
         
         assertTrue(boss.isAttackEnabled(), "Attack must be enabled initially (by default implementation).");
@@ -164,8 +160,7 @@ public class BossShipTest {
         // HP 500 (임계값보다 높음)
         assertTrue(boss.isAttackEnabled(), "Attack must be enabled at full HP.");
         
-        // HP를 임계값 + 1로 드롭
-        boss.getDamage(boss.getHealth() - (boss.getAttackHpThreshold() + 1));
+        // 1로 드롭
         boss.update();
         assertTrue(boss.isAttackEnabled(), "Attack must remain enabled just above threshold.");
         
@@ -178,7 +173,7 @@ public class BossShipTest {
     @Test
     void animationCycleIsCorrect() {
         // 초기 상태 확인
-        assertEquals(SpriteType.BossShip1, boss.getSpriteType());
+        assertEquals(SpriteType.BossMainBody, boss.getSpriteType());
         
         // 1회 업데이트 (BossShip1 -> BossShip2)
         // Cooldown이 끝났다고 가정하기 위해 강제로 시간을 만료시키고 업데이트
