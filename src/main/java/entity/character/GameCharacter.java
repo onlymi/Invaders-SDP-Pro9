@@ -61,9 +61,9 @@ public abstract class GameCharacter extends Entity {
     protected int projectileHeight;
     protected int projectileSpeed;
     
-    protected final int MOVEMENT_SPEED_FACTOR = 150;
-    protected final int ATTACK_SPEED_FACTOR = 10;
-    protected final int SHOOTING_COOLDOWN_FACTOR = 500;
+    protected static final int MOVEMENT_SPEED_FACTOR = 150;
+    protected static final int ATTACK_SPEED_FACTOR = 10;
+    protected static final int SHOOTING_COOLDOWN_FACTOR = 500;
     
     /**
      * Constructor, establishes the entity's generic properties.
@@ -338,6 +338,7 @@ public abstract class GameCharacter extends Entity {
             weapon.setCharacter(this);
             weapon.setSpriteImage(this.projectileSpriteType);
             weapon.setPlayerId(this.playerId);
+            weapon.setRange(this.currentStats.attackRange);
             weapons.add(weapon);
             return true;
         }

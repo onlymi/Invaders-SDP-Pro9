@@ -535,8 +535,11 @@ public class GameScreen extends Screen {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
             weapon.update();
-            if (weapon.getPositionY() < SEPARATION_LINE_HEIGHT
-                || weapon.getPositionY() > this.height) {
+            boolean isOffScreenY = weapon.getPositionY() < SEPARATION_LINE_HEIGHT
+                || weapon.getPositionY() > this.height;
+            boolean isOffScreenX = weapon.getPositionX() < 0
+                || weapon.getPositionX() > this.width;
+            if (isOffScreenY || isOffScreenX) {
                 recyclable.add(weapon);
             }
         }

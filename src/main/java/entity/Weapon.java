@@ -25,6 +25,12 @@ public class Weapon extends Entity {
     private int velocityX = 0;
     private int velocityY = 0;
     
+    private static final int ATTACK_RANGE_FACTOR = 30;
+    private static final int OFF_SCREEN_Y = 2000;
+    private int initialX;
+    private int initialY;
+    private float maxRange = -1; // -1이면 사거리 제한 없음 (기본값)
+    
     private GameCharacter target;
     private boolean isHoming = false;
     private static final double HOMING_AGILITY = 4.0;
@@ -173,6 +179,18 @@ public class Weapon extends Entity {
     }
     
     /**
+     * 무기의 최대 사거리를 설정합니다.
+     *
+     * @param range 사거리 (픽셀 단위, 혹은 게임 내 거리 단위)
+     */
+    public void setRange(float range) {
+        this.maxRange = range;
+        // 사거리 체크를 위해 현재 위치를 발사 원점으로 기록
+        this.initialX = this.positionX;
+        this.initialY = this.positionY;
+    }
+    
+    /**
      * Updates the weapon's position.
      */
     public final void update() {
@@ -197,6 +215,17 @@ public class Weapon extends Entity {
         this.positionY += this.velocityY;
         this.positionX += this.velocityX;
         this.positionX += this.speedX;
+        
+        if (this.maxRange > 0) {
+            double distanceTraveled = Math.sqrt(
+                Math.pow(this.positionX - this.initialX, 2)
+                    + Math.pow(this.positionY - this.initialY, 2)
+            );
+            if (distanceTraveled >= this.maxRange * ATTACK_RANGE_FACTOR) {
+                // 화면 밖으로 보내서 소멸 처리 (일반적인 풀링 회수 방식)
+                this.positionY = OFF_SCREEN_Y;
+            }
+        }
     }
     
     /**
