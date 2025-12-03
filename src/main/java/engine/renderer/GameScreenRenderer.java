@@ -178,13 +178,11 @@ public class GameScreenRenderer {
      * @param screen Screen to draw on.
      * @param lives  Whether the game is in co-op mode.
      */
-    
-    
     public void drawLives(Graphics g, final Screen screen, final int lives, final boolean isCoop) {
         g.setFont(commonRenderer.getFontRegular());
         g.setColor(Color.WHITE);
         
-        Entity heart = new Entity(0, 0, 11 * 2, 10 * 2, Color.RED) {
+        Entity heart = new Entity(0, 0, 11, 10, Color.RED) {
             {
                 this.spriteType = AssetManager.SpriteType.Heart;
             }
@@ -492,7 +490,7 @@ public class GameScreenRenderer {
     public void triggerEffect(int x, int y, engine.AssetManager.SpriteType sprite, int duration) {
         explosions.add(new Explosion(x, y, sprite, duration));
     }
-
+    
     public void drawActiveItemSlots(Graphics g, final Screen screen, final GameState gameState) {
         if (gameState == null) {
             return;

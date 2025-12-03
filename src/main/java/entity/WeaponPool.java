@@ -45,26 +45,17 @@ public final class WeaponPool {
             weapon.setPositionX(positionX - width / 2);
             weapon.setPositionY(positionY);
             weapon.setSpeed(speed);
-            weapon.setSize(width, height);  // weapon size
-            weapon.setTeam(team);    // team setting
-            
-            // User's logic applied to recycled weapon
-            weapon.setSpeedX(0);
-            weapon.setBossBullet(false);
-            weapon.setRotation(0);
-            weapon.resetHoming();
         } else {
             weapon = new Weapon(positionX, positionY, width, height, speed);
             weapon.setPositionX(positionX - width / 2);
-            weapon.setSize(width, height); // weapon size
-            weapon.setTeam(team); // team setting
-            
-            // User's logic applied to new weapon
-            weapon.setSpeedX(0);
-            weapon.setBossBullet(false);
-            weapon.setRotation(0);
-            weapon.resetHoming();
         }
+        weapon.setSize(width, height); // weapon size
+        weapon.setTeam(team); // team setting
+        // User's logic applied to weapon
+        weapon.setSpeedX(0);
+        weapon.setBossBullet(false);
+        weapon.setRotation(0);
+        weapon.resetHoming();
         weapon.setCharacter(null);
         weapon.setSpriteMap();
         return weapon;
@@ -95,22 +86,15 @@ public final class WeaponPool {
             weapon.setSize(width, height);  // weapon size
             weapon.setTeam(team);    // team setting
             weapon.setDamage(damage);
-            
-            // User's logic applied to recycled weapon (consistency)
-            weapon.setSpeedX(0);
-            weapon.setBossBullet(false);
-            weapon.setRotation(0);
-            weapon.resetHoming();
         } else {
             weapon = new Weapon(positionX - width / 2, positionY, width, height, speed, damage);
             weapon.setTeam(team); // team setting
-            
-            // User's logic applied to new weapon (consistency)
-            weapon.setSpeedX(0);
-            weapon.setBossBullet(false);
-            weapon.setRotation(0);
-            weapon.resetHoming();
         }
+        // User's logic applied to weapon (consistency)
+        weapon.setSpeedX(0);
+        weapon.setBossBullet(false);
+        weapon.setRotation(0);
+        weapon.resetHoming();
         weapon.setCharacter(null);
         weapon.setSpriteMap();
         return weapon;

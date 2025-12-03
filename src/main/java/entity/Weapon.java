@@ -113,7 +113,7 @@ public class Weapon extends Entity {
         }
         
         if (this.velocityX != 0 || this.velocityY != 0) {
-            this.rotation = Math.atan2(this.velocityY, this.velocityX);
+            this.rotation = Math.toDegrees(Math.atan2(this.velocityY, this.velocityX)) + 90;
             // this.rotation = Math.atan2(this.velocityY, this.velocityX) + Math.PI / 2;
         } else {
             this.rotation = 0;

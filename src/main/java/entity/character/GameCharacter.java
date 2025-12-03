@@ -41,6 +41,8 @@ public abstract class GameCharacter extends Entity {
     private int downKey;
     private int defaultAttackKey;
     
+    public boolean isInSelectScreen;
+    
     private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
     protected boolean isAttacking;
     protected boolean isMoving;
@@ -113,6 +115,8 @@ public abstract class GameCharacter extends Entity {
         this.projectileWidth = 3;
         this.projectileHeight = 5;
         this.projectileSpeed = 1;
+        
+        this.isInSelectScreen = false;
     }
     
     /**
@@ -312,26 +316,26 @@ public abstract class GameCharacter extends Entity {
             int launchY;
             
             if (isFacingLeft) {
-                launchX = this.positionX;
+                launchX = this.positionX - (this.projectileWidth / 2);
                 launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
             } else if (isFacingRight) {
-                launchX = this.positionX + this.width;
+                launchX = this.positionX + this.width + (this.projectileWidth / 2);
                 launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
             } else if (isFacingFront) {
-                launchX = this.positionX + (this.width / 2) - (this.projectileWidth / 2);
+                launchX = this.positionX + (this.width / 2);
                 launchY = this.positionY + this.height;
             } else if (isFacingBack) {
-                launchX = this.positionX + (this.width / 2) - (this.projectileWidth / 2);
-                launchY = this.positionY;
+                launchX = this.positionX + (this.width / 2);
+                launchY = this.positionY - this.projectileHeight;
             } else {
-                launchX = this.positionX + (this.width / 2) - (this.projectileWidth / 2);
-                launchY = this.positionY + this.height;
+                launchX = this.positionX + (this.width / 2);
+                launchY = this.positionY - this.projectileHeight;
             }
             
             Weapon weapon = WeaponPool.getWeapon(launchX, launchY, this.projectileSpeed,
                 this.projectileWidth, this.projectileHeight, this.team);
-            weapon.setCharacter(this);
             
+            weapon.setCharacter(this);
             weapon.setSpriteImage(this.projectileSpriteType);
             weapon.setPlayerId(this.playerId);
             weapons.add(weapon);
@@ -365,6 +369,12 @@ public abstract class GameCharacter extends Entity {
         this.isFacingBack = false;
     }
     
+    public void setProjectile(int projectileWidth, int projectileHeight, int projectileSpeed) {
+        this.projectileWidth = projectileWidth;
+        this.projectileHeight = projectileHeight;
+        this.projectileSpeed = projectileSpeed;
+    }
+    
     public CharacterStats getBaseStats() {
         return this.baseStats;
     }
@@ -387,6 +397,10 @@ public abstract class GameCharacter extends Entity {
     
     public int getPlayerId() {
         return this.playerId;
+    }
+    
+    public boolean isInSelectScreen() {
+        return this.isInSelectScreen;
     }
     
     public boolean isAttacking() {

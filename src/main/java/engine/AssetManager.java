@@ -81,7 +81,7 @@ public final class AssetManager {
             characterWidth, characterHeight, 4),
         CharacterArcherDefaultProjectile(SourceCategory.WEAPON,
             "archer/default_attack_archer.png",
-            32, 14),
+            14, 32),
         /**
          * Wizard Character.
          */
