@@ -192,7 +192,8 @@ public class GameScreen extends Screen {
         // --- Character Initialization & Control Setup ---
         this.enemyManager = new EnemyManager(this);
         if (this.level == 1) {
-            this.bossShip = new BossShip(this.width / 2 - 42, 120);
+            int bossWidth = 240;
+            this.bossShip = new BossShip(this.width / 2 - bossWidth / 2, 120);
             this.LOGGER.info("Boss Stage Initialized!");
             this.basicGameSpace.setBossStage(true);
         } else {

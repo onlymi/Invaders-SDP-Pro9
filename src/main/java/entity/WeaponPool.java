@@ -53,6 +53,7 @@ public final class WeaponPool {
             weapon.setBossBullet(false);
             weapon.setRotation(0);
             weapon.resetHoming();
+            weapon.setOwnerPlayerId(0);
         } else {
             weapon = new Weapon(positionX, positionY, width, height, speed);
             weapon.setPositionX(positionX - width / 2);
@@ -64,6 +65,7 @@ public final class WeaponPool {
             weapon.setBossBullet(false);
             weapon.setRotation(0);
             weapon.resetHoming();
+            weapon.setOwnerPlayerId(0);
         }
         weapon.setSpriteMap();
         return weapon;
@@ -100,6 +102,7 @@ public final class WeaponPool {
             weapon.setBossBullet(false);
             weapon.setRotation(0);
             weapon.resetHoming();
+            weapon.setOwnerPlayerId(0);
         } else {
             weapon = new Weapon(positionX - width / 2, positionY, width, height, speed, damage);
             weapon.setTeam(team); // team setting
@@ -109,6 +112,7 @@ public final class WeaponPool {
             weapon.setBossBullet(false);
             weapon.setRotation(0);
             weapon.resetHoming();
+            weapon.setOwnerPlayerId(0);
         }
         weapon.setSpriteMap();
         return weapon;

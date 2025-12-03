@@ -167,8 +167,8 @@ public class BossShip extends EnemyShip {
             if (this.laserChargeCooldown.checkFinished()) {
                 
                 // Constants for positioning
-                int xOffset = 100; // Horizontal distance from boss center
-                int skullY = spawnY - 40; // Y position for skulls
+                int xOffset = 180; // Horizontal distance from boss center
+                int skullY = spawnY - 100; // Y position for skulls
                 double laserY = spawnY + (SKULL_HEIGHT / 2.0); // Laser origin Y (center of skull)
                 
                 
