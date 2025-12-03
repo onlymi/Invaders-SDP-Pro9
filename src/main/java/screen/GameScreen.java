@@ -378,7 +378,7 @@ public class GameScreen extends Screen {
                 if (!this.tookDamageThisLevel) {
                     achievementManager.unlock("Survivor");
                 }
-                if (state.getLevel() == 5) {
+                if (state.teamAlive() && state.getLevel() == 5) {
                     achievementManager.unlock("Clear");
                 }
                 checkAchievement();
@@ -678,34 +678,6 @@ public class GameScreen extends Screen {
                     }
                 }
                 
-                // player vs enemy body collision
-                for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
-                    GameCharacter player = this.characters[p];
-                    if (player == null || player.isDestroyed()) {
-                        continue;
-                    }
-                    for (EnemyShip enemy : this.enemyManager.getEnemies()) {
-                        if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
-                            
-                            // 플레이어 피해 (추후 체력 시스템 개발 완료 시 변경 필요)
-                            // 추후 GameCharacter에 무적 시간 쿨타임을 추가 필요.
-                            state.decLife(p);
-                            
-                            // enemy knockback
-                            double dx = enemy.getPositionX() - player.getPositionX();
-                            double dy = enemy.getPositionY() - player.getPositionY();
-                            double dist = Math.sqrt(dx * dx + dy * dy);
-                            
-                            if (dist > 0) {
-                                enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
-                            }
-                            
-                            this.LOGGER.info(
-                                "Collision! Player " + (p + 1) + " hit by enemy body.");
-                        }
-                    }
-                }
-                
                 if (this.bossShip != null
                     && !this.bossShip.isDestroyed()
                     && checkCollision(weapon, this.bossShip)) {
@@ -729,6 +701,35 @@ public class GameScreen extends Screen {
                 }
             }
         }
+        
+        // player vs enemy body collision
+        for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
+            GameCharacter player = this.characters[p];
+            if (player == null || player.isDestroyed()) {
+                continue;
+            }
+            for (EnemyShip enemy : this.enemyManager.getEnemies()) {
+                if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
+                    
+                    // 플레이어 피해 (추후 체력 시스템 개발 완료 시 변경 필요)
+                    // 추후 GameCharacter에 무적 시간 쿨타임을 추가 필요.
+                    state.decLife(p);
+                    
+                    // enemy knockback
+                    double dx = enemy.getPositionX() - player.getPositionX();
+                    double dy = enemy.getPositionY() - player.getPositionY();
+                    double dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist > 0) {
+                        enemy.pushBack((dx / dist) * 20.0, (dy / dist) * 20.0);
+                    }
+                    
+                    this.LOGGER.info(
+                        "Collision! Player " + (p + 1) + " hit by enemy body.");
+                }
+            }
+        }
+        
         this.weapons.removeAll(recyclable);
         WeaponPool.recycle(recyclable);
     }

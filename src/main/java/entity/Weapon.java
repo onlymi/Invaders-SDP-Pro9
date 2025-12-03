@@ -232,4 +232,13 @@ public class Weapon extends Entity {
         }
         return System.currentTimeMillis() - createTime > duration;
     }
+    
+    public void reset() {
+        this.createTime = System.currentTimeMillis(); // 생성 시간 초기화
+        this.duration = -1;
+        this.isHoming = false;
+        this.target = null;
+        this.rotation = 0;
+        this.speedX = 0;
+    }
 }

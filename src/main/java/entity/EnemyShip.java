@@ -62,7 +62,7 @@ public class EnemyShip extends Entity {
      */
     protected double knockbackX = 0;
     protected double knockbackY = 0;
-    protected double knockbackDecay = 0.9; // 넉벡 감쇠값
+    protected double knockbackDecay = 0.95; // 넉벡 감쇠값
     
     protected GameState gameState;
     
@@ -135,10 +135,6 @@ public class EnemyShip extends Entity {
         return this.pointValue;
     }
     
-    public void move() {
-        this.positionX += 2;
-    }
-    
     /**
      * Moves the ship the specified distance.
      *
@@ -159,9 +155,8 @@ public class EnemyShip extends Entity {
         }
         if (this.animationCooldown.checkFinished()) {
             this.animationCooldown.reset();
-            changeAnimationSprite();
+            // changeAnimationSprite();
         }
-        move();
     }
     
     /**

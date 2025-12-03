@@ -315,6 +315,7 @@ public abstract class GameCharacter extends Entity {
             
             Weapon weapon = WeaponPool.getWeapon(launchX, launchY,
                 this.projectileWidth, this.projectileHeight, this.projectileSpeed, this.team);
+            weapon.reset();
             
             weapon.setSpriteImage(this.projectileSpriteType);
             weapon.setOwnerPlayerId(this.playerId);

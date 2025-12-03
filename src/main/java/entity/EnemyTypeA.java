@@ -48,6 +48,7 @@ public class EnemyTypeA extends EnemyShip {
     public EnemyTypeA(int positionX, int positionY, SpriteType spriteType) {
         super(positionX, positionY, SpriteType.EnemyA_Move);
         this.health = 60;
+        this.initialHealth = this.health;
         this.pointValue = 30;
         this.coinValue = 10;
         this.attackCooldown = Core.getCooldown(ATTACK_COOLDOWN);
@@ -136,9 +137,10 @@ public class EnemyTypeA extends EnemyShip {
     }
     
     private void performMeleeAttack(Set<Weapon> weapons) {
+        SpriteType weaponSprite = SpriteType.EnemyA_Weapon;
         int damage = ATTACK_DAMAGE;
-        int attackWidth = 32;
-        int attackHeight = 32;
+        int attackWidth = weaponSprite.getWidth();
+        int attackHeight = weaponSprite.getHeight();
         
         Weapon enemyWeaponA = new Weapon(
             this.positionX + this.width / 2 - attackWidth / 2,
