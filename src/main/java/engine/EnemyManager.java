@@ -3,6 +3,7 @@ package engine;
 import engine.AssetManager.SpriteType;
 import engine.utils.Cooldown;
 import entity.EnemyShip;
+import entity.EnemyTypeA;
 import entity.character.GameCharacter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,12 +49,14 @@ public class EnemyManager {
         Iterator<EnemyShip> iterator = enemies.iterator();
         while (iterator.hasNext()) {
             EnemyShip enemy = iterator.next();
-            
             // 가장 가까운 플레이어 찾기
             GameCharacter target = findTargetPlayer(enemy);
-            
-            // 타겟 정보를 넘겨주며 적 업데이트
-            enemy.update(target);
+            if (enemy instanceof EnemyTypeA) {
+                ((EnemyTypeA) enemy).update(target, this.enemies);
+                ((EnemyTypeA) enemy).tryAttack(target, gameScreen.getWeapons());
+            } else {
+                enemy.update(target);
+            }
             
             // 화면 아래로 나가면 삭제
             if (enemy.getPositionY() > gameScreen.getHeight()) {
@@ -80,14 +83,14 @@ public class EnemyManager {
         GameState gameState = gameScreen.getGameState();
         switch (type) { // TODO: enemy 타입 만든 후 수정 예정
             case 0:
-                enemy = new EnemyShip(x, y, SpriteType.EnemyShipA1);
+                enemy = new EnemyTypeA(x, y, SpriteType.EnemyA_Move);
                 break;
             case 1:
-                enemy = new EnemyShip(x, y, SpriteType.EnemyShipB1);
+                enemy = new EnemyShip(x, y, SpriteType.EnemyB_Move);
                 break;
             case 2:
             default:
-                enemy = new EnemyShip(x, y, SpriteType.EnemyShipC1);
+                enemy = new EnemyShip(x, y, SpriteType.EnemyC_move);
                 break;
         }
         this.enemies.add(enemy);

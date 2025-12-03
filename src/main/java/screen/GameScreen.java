@@ -537,7 +537,7 @@ public class GameScreen extends Screen {
         for (Weapon weapon : this.weapons) {
             weapon.update();
             if (weapon.getPositionY() < SEPARATION_LINE_HEIGHT
-                || weapon.getPositionY() > this.height) {
+                || weapon.getPositionY() > this.height || weapon.isExpired()) {
                 recyclable.add(weapon);
             }
         }
@@ -645,7 +645,6 @@ public class GameScreen extends Screen {
                 final int pIdx = (ownerId == 2) ? 1 : 0; // default to P1 when unset
                 boolean finalShip = this.enemyManager.lastShip();
                 
-                // Check collision with formation enemies
                 for (EnemyShip enemyShip : this.enemyManager.getEnemies()) {
                     if (!enemyShip.isDestroyed() && checkCollision(weapon, enemyShip)) {
                         recyclable.add(weapon);
@@ -676,6 +675,34 @@ public class GameScreen extends Screen {
                             checkAchievement();
                         }
                         break;
+                    }
+                }
+                
+                // player vs enemy body collision
+                for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
+                    GameCharacter player = this.characters[p];
+                    if (player == null || player.isDestroyed()) {
+                        continue;
+                    }
+                    for (EnemyShip enemy : this.enemyManager.getEnemies()) {
+                        if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
+                            
+                            // 플레이어 피해 (추후 체력 시스템 개발 완료 시 변경 필요)
+                            // 추후 GameCharacter에 무적 시간 쿨타임을 추가 필요.
+                            state.decLife(p);
+                            
+                            // enemy knockback
+                            double dx = enemy.getPositionX() - player.getPositionX();
+                            double dy = enemy.getPositionY() - player.getPositionY();
+                            double dist = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (dist > 0) {
+                                enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                            }
+                            
+                            this.LOGGER.info(
+                                "Collision! Player " + (p + 1) + " hit by enemy body.");
+                        }
                     }
                 }
                 
@@ -828,5 +855,9 @@ public class GameScreen extends Screen {
     
     public GameCharacter[] getCharacters() {
         return this.characters;
+    }
+    
+    public Set<Weapon> getWeapons() {
+        return this.weapons;
     }
 }

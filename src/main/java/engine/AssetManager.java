@@ -178,29 +178,21 @@ public final class AssetManager {
          */
         BigLaserBeam(SourceCategory.BULLET, 11, 20),
         /**
-         * First enemy ship - first form.
+         * Enemy A.
          */
-        EnemyShipA1(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
+        EnemyA_Move(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
+        EnemyA_Attack(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA_attack.png", 48, 48),
+        EnemyA_Weapon(SourceCategory.WEAPON, "enemy_type_a/typeA_weapon.png", 48, 48),
         /**
-         * First enemy ship - second form.
+         * Enemy B.
          */
-        EnemyShipA2(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
+        EnemyB_Move(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
+        EnemyB_Attack(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
         /**
-         * Second enemy ship - first form.
+         * Enemy C.
          */
-        EnemyShipB1(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
-        /**
-         * Second enemy ship - second form.
-         */
-        EnemyShipB2(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
-        /**
-         * Third enemy ship - first form.
-         */
-        EnemyShipC1(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
-        /**
-         * Third enemy ship - second form.
-         */
-        EnemyShipC2(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
+        EnemyC_move(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
+        EnemyC_attack(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC_attack.png", 48, 48),
         /**
          * Boss ship.
          */

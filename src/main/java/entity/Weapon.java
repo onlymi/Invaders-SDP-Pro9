@@ -1,10 +1,10 @@
 package entity;
 
 import engine.AssetManager.SpriteType;
-import entity.character.GameCharacter;
-import java.awt.Color;
 import engine.Core;
 import engine.utils.Cooldown;
+import entity.character.GameCharacter;
+import java.awt.Color;
 
 /**
  * Implements a bullet that moves vertically up or down.
@@ -18,7 +18,7 @@ public class Weapon extends Entity {
      * Speed of the bullet, positive or negative depending on direction - positive is down.
      */
     private int speed;
-
+    
     private int speedX = 0;
     private int speedY = 0;
     
@@ -26,7 +26,13 @@ public class Weapon extends Entity {
     private boolean isHoming = false;
     private static final double HOMING_AGILITY = 4.0;
     private Cooldown homingTimer;
-
+    
+    /**
+     * Variable for melee weapons that disappear after a certain period of time.
+     */
+    private long createTime;
+    private int duration = -1; // -1이면 무기가 사라지지 않음
+    
     /**
      * 2P mode: id number to specifying who fired the bullet - 0 = enemy, 1 = P1, 2 = P2
      **/
@@ -52,6 +58,7 @@ public class Weapon extends Entity {
         final int speed) {
         super(positionX, positionY, width, height, Color.WHITE);
         this.speed = speed;
+        this.createTime = System.currentTimeMillis();
     }
     
     /**
@@ -67,6 +74,7 @@ public class Weapon extends Entity {
         super(positionX, positionY, width, height, Color.WHITE);
         this.speed = speed;
         this.damage = damage;
+        this.createTime = System.currentTimeMillis();
         setSpriteMap();
     }
     
@@ -86,8 +94,7 @@ public class Weapon extends Entity {
         
         if (this.isBigLaser) {
             this.spriteType = SpriteType.BigLaserBeam;
-        }
-        else if (this.speed < 0) {
+        } else if (this.speed < 0) {
             this.spriteType = SpriteType.PlayerBullet; // player bullet fired, team remains NEUTRAL
         } else {
             this.spriteType = SpriteType.EnemyBullet; // enemy fired bullet
@@ -134,8 +141,10 @@ public class Weapon extends Entity {
             }
             
             if (this.target != null && !this.target.isDestroyed()) {
-                double dx = (target.getPositionX() + target.getWidth() / 2.0) - (this.positionX + this.width / 2.0);
-                double dy = (target.getPositionY() + target.getHeight() / 2.0) - (this.positionY + this.height / 2.0);
+                double dx = (target.getPositionX() + target.getWidth() / 2.0) - (this.positionX
+                    + this.width / 2.0);
+                double dy = (target.getPositionY() + target.getHeight() / 2.0) - (this.positionY
+                    + this.height / 2.0);
                 double angle = Math.atan2(dy, dx);
                 
                 this.speedX = (int) (HOMING_AGILITY * Math.cos(angle));
@@ -198,6 +207,7 @@ public class Weapon extends Entity {
     public int getDamage() {
         return this.damage;
     }
+    
     public void setHoming(GameCharacter target) {
         this.target = target;
         this.isHoming = true;
@@ -210,5 +220,16 @@ public class Weapon extends Entity {
         this.isHoming = false;
         this.rotation = 0;
         this.homingTimer = null;
+    }
+    
+    public void setDuration(final int duration) {
+        this.duration = duration;
+    }
+    
+    public boolean isExpired() {
+        if (duration == -1) {
+            return false;
+        }
+        return System.currentTimeMillis() - createTime > duration;
     }
 }

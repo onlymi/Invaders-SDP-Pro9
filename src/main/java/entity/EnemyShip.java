@@ -32,7 +32,7 @@ public class EnemyShip extends Entity {
     private double floatingPhase;
     private static final double FLOATING_AMPLITUDE = 5.0;
     private static final double FLOATING_SPEED = 0.005;
-    private boolean isFacingRight;
+    boolean isFacingRight;
     
     /**
      * Checks if the ship has been hit by a bullet.
@@ -57,6 +57,13 @@ public class EnemyShip extends Entity {
     protected double preciseX;
     protected double preciseY;
     
+    /**
+     * variable for enemy knockback.
+     */
+    protected double knockbackX = 0;
+    protected double knockbackY = 0;
+    protected double knockbackDecay = 0.9; // 넉벡 감쇠값
+    
     protected GameState gameState;
     
     /**
@@ -80,18 +87,18 @@ public class EnemyShip extends Entity {
     
     protected void initializeStats() {
         switch (this.spriteType) {
-            case EnemyShipA1:
-            case EnemyShipA2:
+            case EnemyA_Move:
+            case EnemyA_Attack:
                 this.pointValue = A_TYPE_POINTS;
                 this.coinValue = A_TYPE_COINS;
                 break;
-            case EnemyShipB1:
-            case EnemyShipB2:
+            case EnemyB_Move:
+            case EnemyB_Attack:
                 this.pointValue = B_TYPE_POINTS;
                 this.coinValue = B_TYPE_COINS;
                 break;
-            case EnemyShipC1:
-            case EnemyShipC2:
+            case EnemyC_move:
+            case EnemyC_attack:
                 this.pointValue = C_TYPE_POINTS;
                 this.coinValue = C_TYPE_COINS;
                 break;
@@ -181,6 +188,19 @@ public class EnemyShip extends Entity {
         double floatingOffset =
             Math.sin(currentTime * FLOATING_SPEED + this.floatingPhase) * FLOATING_AMPLITUDE;
         
+        // 넉벡 적용
+        this.preciseX += knockbackX;
+        this.preciseY += knockbackY;
+        
+        // 넉벡 감쇠
+        this.knockbackX *= knockbackDecay;
+        this.knockbackY *= knockbackDecay;
+        if (Math.abs(this.knockbackX) < 0.1) {
+            this.knockbackX = 0;
+        }
+        if (Math.abs(this.knockbackY) < 0.1) {
+            this.knockbackY = 0;
+        }
         this.positionX = (int) preciseX;
         this.positionY = (int) (preciseY + floatingOffset);
     }
@@ -240,18 +260,18 @@ public class EnemyShip extends Entity {
     }
     
     private void changeAnimationSprite() {
-        if (spriteType == SpriteType.EnemyShipA1) {
-            spriteType = SpriteType.EnemyShipA2;
-        } else if (spriteType == SpriteType.EnemyShipA2) {
-            spriteType = SpriteType.EnemyShipA1;
-        } else if (spriteType == SpriteType.EnemyShipB1) {
-            spriteType = SpriteType.EnemyShipB2;
-        } else if (spriteType == SpriteType.EnemyShipB2) {
-            spriteType = SpriteType.EnemyShipB1;
-        } else if (spriteType == SpriteType.EnemyShipC1) {
-            spriteType = SpriteType.EnemyShipC2;
-        } else if (spriteType == SpriteType.EnemyShipC2) {
-            spriteType = SpriteType.EnemyShipC1;
+        if (spriteType == SpriteType.EnemyA_Move) {
+            spriteType = SpriteType.EnemyA_Attack;
+        } else if (spriteType == SpriteType.EnemyA_Attack) {
+            spriteType = SpriteType.EnemyA_Move;
+        } else if (spriteType == SpriteType.EnemyB_Move) {
+            spriteType = SpriteType.EnemyB_Attack;
+        } else if (spriteType == SpriteType.EnemyB_Attack) {
+            spriteType = SpriteType.EnemyB_Move;
+        } else if (spriteType == SpriteType.EnemyC_move) {
+            spriteType = SpriteType.EnemyC_attack;
+        } else if (spriteType == SpriteType.EnemyC_attack) {
+            spriteType = SpriteType.EnemyC_move;
         }
     }
     
@@ -266,6 +286,17 @@ public class EnemyShip extends Entity {
     public final void destroy() {
         this.isDestroyed = true;
         this.spriteType = SpriteType.Explosion;
+    }
+    
+    /**
+     * applying a knockback force.
+     *
+     * @param dx
+     * @param dy
+     */
+    public void pushBack(double dx, double dy) {
+        this.knockbackX = dx;
+        this.knockbackY = dy;
     }
     
     /**
