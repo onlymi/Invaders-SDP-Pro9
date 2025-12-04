@@ -649,4 +649,7 @@ public class GameScreenRenderer {
             default -> Color.WHITE;
         };
     }
+    public void triggerCustomExplosion(int x, int y, Color color) {
+        explosions.add(new Explosion(x, y, color));
+    }
 }

@@ -17,5 +17,8 @@ public class WarriorCharacter extends GameCharacter {
             SpriteType.CharacterWarriorBasic.getWidth(),
             SpriteType.CharacterWarriorBasic.getHeight(), team, playerId);
         this.spriteType = SpriteType.CharacterWarriorBasic;
+        this.projectileSpriteType = SpriteType.CharacterWarriorDefaultProjectile;
+        this.projectileWidth = projectileSpriteType.getWidth();
+        this.projectileHeight = projectileSpriteType.getHeight();
     }
 }

@@ -71,7 +71,6 @@ public class BossShip extends EnemyShip {
     private List<Weapon> activeLeftLasers = new ArrayList<>();
     private List<Weapon> activeRightLasers = new ArrayList<>();
     
-    private final int BOSS_ATTACK_HP_THRESHOLD;
     private boolean isAttackEnabled;
     
     final int screenWidth = Core.getFrameWidth();
@@ -84,20 +83,17 @@ public class BossShip extends EnemyShip {
      * @param positionY Initial position of the ship in the Y axis.
      */
     public BossShip(final int positionX, final int positionY) {
-        super(positionX, positionY, SpriteType.BossShip1);
+        super(positionX, positionY, SpriteType.BossMainBody);
 
         // Set dimensions to match BossEnemy sprite (21x10, scaled by 2 = 42x20)
-        this.width = 21 * 2;
-        this.height = 10 * 2;
+        this.width = 240;
+        this.height = 160;
 
         // Apply boss-specific, high stats.
         this.health = BOSS_INITIAL_HEALTH;
         this.initialHealth = BOSS_INITIAL_HEALTH;
         this.pointValue = BOSS_POINTS;
         this.coinValue = BOSS_COINS;
-
-        // Set a BOSS_ATTACK_HP_THRESHOLD.
-        this.BOSS_ATTACK_HP_THRESHOLD = this.initialHealth / 2;
 
         // Set a prominent default color.
         this.changeColor(Color.CYAN);
@@ -113,19 +109,22 @@ public class BossShip extends EnemyShip {
         this.attackCooldown.reset();
         this.laserChargeCooldown = Core.getCooldown(LASER_CHARGE_TIME);
         this.spreadChargeCooldown = Core.getCooldown(SPREAD_CHARGE_TIME);
+        this.laserFireDelayCooldown = Core.getCooldown(LASER_FIRE_DELAY);
+        this.laserActiveCooldown = Core.getCooldown(LASER_DURATION);
+        this.bossAnimationCooldown = Core.getCooldown(500);
+        this.bossAnimationCooldown.reset();
+        
         this.laserChargeTimer = 0;
         this.spreadChargeTimer = 0;
         this.isAttackEnabled = true;
+        
     }
 
     /**
      * New shoot method to manage attacks
      */
     public final void shoot(final Set<Weapon> weapons, GameCharacter[] players) {
-        // Do nothing if the boss is not in an attacking state
-        if (!this.isAttackEnabled) {
-            return;
-        }
+        
         // Calculate the center position of the boss for spawning projectiles
         int spawnX = this.positionX + this.width / 2;
         int spawnY = this.positionY + this.height;
@@ -138,6 +137,8 @@ public class BossShip extends EnemyShip {
         if (this.attackPhase == ATTACK_HOMING_MISSILE) {
             // Missile Interval Cooldown Check
             if (this.attackCooldown.checkFinished()) {
+                
+                SoundManager.playOnce("shoot_enemies");
                 
                 // Create a missile projectile
                 Weapon missile = WeaponPool.getWeapon(spawnX, spawnY,
@@ -166,8 +167,8 @@ public class BossShip extends EnemyShip {
             if (this.laserChargeCooldown.checkFinished()) {
                 
                 // Constants for positioning
-                int xOffset = 100; // Horizontal distance from boss center
-                int skullY = spawnY - 40; // Y position for skulls
+                int xOffset = 180; // Horizontal distance from boss center
+                int skullY = spawnY - 100; // Y position for skulls
                 double laserY = spawnY + (SKULL_HEIGHT / 2.0); // Laser origin Y (center of skull)
                 
                 
@@ -295,6 +296,8 @@ public class BossShip extends EnemyShip {
         else if (this.attackPhase == ATTACK_SPREAD_CHARGE) {
             if (this.spreadChargeCooldown.checkFinished()) {
                 
+                SoundManager.playOnce("shoot_enemies");
+                
                 int bulletCount = 36;
                 int bulletSpeed = 5;
                 
@@ -331,12 +334,7 @@ public class BossShip extends EnemyShip {
     @Override
     public final void update() {
         
-        // Use the remaining time as a wide-ranging mode.
-        if (this.health <= BOSS_ATTACK_HP_THRESHOLD && !this.isAttackEnabled) {
-            this.isAttackEnabled = true;
-            this.attackCooldown.reset(); // Start attack cycle immediately
-        }
-
+        
         if (this.isAttackEnabled) {
             if (this.attackPhase == ATTACK_LASER_CHARGE) {
                 this.laserChargeTimer = this.laserChargeCooldown.getDuration();
@@ -344,7 +342,7 @@ public class BossShip extends EnemyShip {
                 this.spreadChargeTimer = this.spreadChargeCooldown.getDuration();
             }
         }
-
+        
         // Check Horizontal Boundary
         if (this.positionX + this.width >= screenWidth || this.positionX <= 0) {
             this.movingRight = !this.movingRight;
@@ -355,7 +353,7 @@ public class BossShip extends EnemyShip {
                 this.positionX = screenWidth - this.width - 1;
             }
         }
-
+        
         // Check Vertical Boundary
         if (this.positionY + this.height >= BOSS_MAX_Y || this.positionY <= TOP_BOUNDARY) {
             this.movingDown = !this.movingDown;
@@ -364,56 +362,6 @@ public class BossShip extends EnemyShip {
             }
             if (this.positionY + this.height >= BOSS_MAX_Y) {
                 this.positionY = BOSS_MAX_Y - this.height - 1;
-            }
-        }
-        
-        // Attack Pattern Logic
-        if (this.attackPhase == ATTACK_HOMING_MISSILE) {
-            // Missile Interval Cooldown
-            if (this.attackCooldown.checkFinished()) {
-                // **Placeholder for Homing Missile Logic**
-                
-                // Switch to Laser Charge phase
-                this.attackPhase = ATTACK_LASER_CHARGE;
-                this.laserChargeCooldown.reset();
-                this.laserChargeTimer = LASER_CHARGE_TIME; // Start charge timer
-                
-                // Visual feedback for charge (changes color to RED)
-                this.changeColor(Color.RED);
-            }
-        } else if (this.attackPhase == ATTACK_LASER_CHARGE) {
-            // Update the remaining charge time for rendering the charge bar
-            this.laserChargeTimer = this.laserChargeCooldown.getDuration();
-            
-            // Laser Charge Finished
-            if (this.laserChargeCooldown.checkFinished()) {
-                // **Placeholder for Laser Fire Logic**
-                
-                // Switch back to Homing Missile phase and reset colors
-                this.attackPhase = ATTACK_HOMING_MISSILE;
-                this.attackCooldown.reset();
-                this.changeColor(Color.CYAN);
-            }
-        }
-        // Inherited from EnemyShip, checks if 500ms animation interval is finished.
-        if (this.bossAnimationCooldown.checkFinished()) {
-            this.bossAnimationCooldown.reset();
-
-            // Cycles through BossShip1, BossShip2, BossShip3 for animation
-            switch (this.spriteType) {
-                case BossShip1:
-                    this.spriteType = SpriteType.BossShip1;
-                    break;
-                case BossShip2:
-                    this.spriteType = SpriteType.BossShip2;
-                    break;
-                case BossShip3:
-                    this.spriteType = SpriteType.BossShip3;
-                    break;
-                default:
-                    // Reverts to base sprite if an unknown sprite is encountered
-                    this.spriteType = SpriteType.BossShip1;
-                    break;
             }
         }
     }
@@ -454,9 +402,9 @@ public class BossShip extends EnemyShip {
             // Ensure full alpha upon destruction for explosion effect
             color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
             changeColor(color);
+        } else{
+            SoundManager.playOnce("boss_hit");
         }
-        // Note: No sprite flipping or animation logic is applied for the boss in hit().
-
     }
     
     private GameCharacter getNearestTarget(GameCharacter[] players, int x, int y) {
@@ -500,11 +448,6 @@ public class BossShip extends EnemyShip {
     /** Returns the laser charge timer value. */
     public final int getLaserChargeTimer() {
         return this.laserChargeTimer;
-    }
-
-    /** Returns the attack HP threshold. */
-    public final int getAttackHpThreshold() {
-        return this.BOSS_ATTACK_HP_THRESHOLD;
     }
 
     /** Returns the charge timer read. */
