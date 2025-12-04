@@ -64,7 +64,7 @@ public class GameScreen extends Screen {
     /**
      * Current difficulty level number.
      */
-    private int level;
+    private final int level;
     /**
      * Formation of enemy.
      */
@@ -180,6 +180,9 @@ public class GameScreen extends Screen {
         state.clearAllEffects();
         soundManager.playLoop("game_theme");
         
+        // New BasicGameSpace Code
+        this.basicGameSpace = new BasicGameSpace(100, this.width, this.height);
+        
         this.enemyManager = new EnemyManager(this);
         this.enemyKillCount = 0;
         // 각 스테이지 별 필요 kill 수
@@ -187,9 +190,11 @@ public class GameScreen extends Screen {
         
         // --- Character Initialization & Control Setup ---
         this.enemyManager = new EnemyManager(this);
-        if (this.level == 6) {
-            this.bossShip = new BossShip(this.width / 2 - 42, 120);
+        if (this.level == 1) {
+            int bossWidth = 240;
+            this.bossShip = new BossShip(this.width / 2 - bossWidth / 2, 120);
             this.LOGGER.info("Boss Stage Initialized!");
+            this.basicGameSpace.setBossStage(true);
         } else {
             this.bossShip = null;
         }
@@ -218,7 +223,7 @@ public class GameScreen extends Screen {
         this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
         this.weapons = new HashSet<Weapon>();
         this.items = new HashSet<Item>();
-        this.basicGameSpace = new BasicGameSpace(100, this.width, this.height);
+        
         
         this.gameStartTime = System.currentTimeMillis();
         this.inputDelay = Core.getCooldown(INPUT_DELAY);
@@ -249,6 +254,7 @@ public class GameScreen extends Screen {
     protected final void update() {
         super.update();
         
+        // Countdown beep once during pre-start
         if (!this.inputDelay.checkFinished() && !countdownSoundPlayed) {
             long elapsed = System.currentTimeMillis() - this.gameStartTime;
             if (elapsed > 1750) {
@@ -268,8 +274,10 @@ public class GameScreen extends Screen {
             this.pauseCooldown.reset();
             
             if (this.isPaused) {
+                // Pause game music when pausing - no sound during pause
                 SoundManager.loopStop();
             } else {
+                // Resume game music when unpausing
                 SoundManager.playLoop("game_theme");
             }
         }
@@ -277,7 +285,7 @@ public class GameScreen extends Screen {
         if (this.isPaused && inputManager.isKeyDown(KeyEvent.VK_BACK_SPACE)
             && this.returnMenuCooldown.checkFinished()) {
             SoundManager.playOnce("select");
-            SoundManager.stopAllMusic();
+            SoundManager.stopAllMusic(); // Stop all music before returning to menu
             returnCode = 1;
             this.isRunning = false;
         }
@@ -347,9 +355,12 @@ public class GameScreen extends Screen {
             
             manageCollisions();
             cleanBullets();
+            
+            // Item Entity Code
             cleanItems();
             manageItemPickups();
             
+            // check active item affects
             state.updateEffects();
             this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
             draw();
@@ -431,12 +442,14 @@ public class GameScreen extends Screen {
                     weapon.getPositionY());
         }
         
+        // draw items
         for (Item item : this.items) {
             drawManager.getEntityRenderer()
                 .drawEntity(drawManager.getBackBufferGraphics(), item, item.getPositionX(),
                     item.getPositionY());
         }
         
+        // Aggregate UI (team score & team lives)
         drawManager.getGameScreenRenderer()
             .drawScore(drawManager.getBackBufferGraphics(), this, state.getScore());
         drawManager.getGameScreenRenderer()
@@ -457,7 +470,7 @@ public class GameScreen extends Screen {
             .drawItemToast(drawManager.getBackBufferGraphics(), this);
         drawManager.getGameScreenRenderer()
             .drawActiveItemSlots(drawManager.getBackBufferGraphics(), this, state);
-        
+
         if (!this.inputDelay.checkFinished()) {
             int countdown = (int) ((INPUT_DELAY - (System.currentTimeMillis() - this.gameStartTime))
                 / 1000);
@@ -477,52 +490,60 @@ public class GameScreen extends Screen {
             drawManager.getHighScoreScreenRenderer().drawNewHighScoreNotice(this);
         }
         
+        // [ADD] draw achievement popups right before completing the frame
         drawManager.getGameScreenRenderer()
             .drawAchievementToasts(drawManager.getBackBufferGraphics(), this,
                 (this.achievementManager != null) ? this.achievementManager.getActiveToasts()
                     : Collections.emptyList());
-        
+
+        // === TIME FREEZE overlay ===
         if (this.state.areEnemiesFrozen()) {
             Graphics2D g2d = (Graphics2D) drawManager.getBackBufferGraphics().create();
             try {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-                
+
                 String text = "TIME FREEZE";
-                
+
                 // Use CommonRenderer's big font
                 g2d.setFont(drawManager.getCommonRenderer().getFontBig());
                 FontMetrics fm = g2d.getFontMetrics();
-                
+
                 int textWidth = fm.stringWidth(text);
                 int textHeight = fm.getHeight();
-                
+
                 int boxWidth = textWidth + 40;
                 int boxHeight = textHeight + 20;
-                
+
                 int x = (this.getWidth() - boxWidth) / 2;
                 int y = (this.getHeight() - boxHeight) / 2;
-                
+
                 // Translucent black background
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f));
                 g2d.setColor(Color.BLACK);
                 g2d.fillRoundRect(x, y, boxWidth, boxHeight, 16, 16);
+
+                // Border
                 g2d.setComposite(AlphaComposite.SrcOver);
                 g2d.setColor(new Color(0, 255, 255, 140));
                 g2d.setStroke(new BasicStroke(2f));
                 g2d.drawRoundRect(x, y, boxWidth, boxHeight, 16, 16);
+
+                // Text with slight shadow
                 int textX = x + (boxWidth - textWidth) / 2;
                 int textY = y + (boxHeight + fm.getAscent()) / 2 - 4;
+
                 g2d.setColor(new Color(0, 0, 0, 40));
                 g2d.drawString(text, textX + 2, textY + 2);
+
                 g2d.setColor(new Color(200, 255, 255, 70));
                 g2d.drawString(text, textX, textY);
-                
+
             } finally {
                 g2d.dispose();
             }
         }
-        
+
         if (this.isPaused) {
             drawManager.getCommonRenderer()
                 .drawPauseOverlay(drawManager.getBackBufferGraphics(), this);
@@ -531,6 +552,9 @@ public class GameScreen extends Screen {
         drawManager.completeDrawing(this);
     }
     
+    /**
+     * Cleans bullets that go off-screen.
+     */
     private void cleanBullets() {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
@@ -547,6 +571,9 @@ public class GameScreen extends Screen {
         WeaponPool.recycle(recyclable);
     }
     
+    /**
+     * Cleans items that go off-screen.
+     */
     private void cleanItems() {
         Set<Item> recyclableItems = new HashSet<Item>();
         for (Item item : this.items) {
@@ -559,6 +586,9 @@ public class GameScreen extends Screen {
         ItemPool.recycle(recyclableItems);
     }
     
+    /**
+     * Manages pickups between player and items.
+     */
     private void manageItemPickups() {
         Set<Item> collected = new HashSet<Item>();
         for (Item item : this.items) {
@@ -576,7 +606,7 @@ public class GameScreen extends Screen {
                     
                     int playerIndex = character.getPlayerId() - 1;
                     if (playerIndex < 0 || playerIndex >= GameState.NUM_PLAYERS) {
-                        playerIndex = 0;
+                        playerIndex = 0; // fallback
                     }
                     
                     ActivationType activationType = item.getActivationType();
@@ -585,19 +615,26 @@ public class GameScreen extends Screen {
                     switch (activationType) {
                         case INSTANT_ON_PICKUP:
                         case TEMPORARY_BUFF:
+                            // Legacy behavior: apply the effect immediately on pickup.
                             if (autoUseOnPickup) {
                                 boolean applied = item.applyEffect(getGameState(),
                                     character.getPlayerId());
                             } else {
+                                // Store the item for a later instant use.
                                 getGameState().addActiveItem(playerIndex, item.getData());
                             }
                             break;
+                        
                         case ACTIVE_ON_KEY:
+                            // Store as an active (key-activated) item.
                             getGameState().addActiveItem(playerIndex, item.getData());
                             break;
+                        
                         case PASSIVE:
+                            // Register as a passive item on the player.
                             getGameState().addPassiveItem(playerIndex, item.getData());
                             break;
+                        
                         default:
                             item.applyEffect(getGameState(), character.getPlayerId());
                             break;
@@ -635,13 +672,14 @@ public class GameScreen extends Screen {
                         // Record damage for Survivor achievement check
                         this.tookDamageThisLevel = true;
                         this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
+                        
                         this.LOGGER.info("Hit on player " + (p + 1) + ", team lives now: "
                             + state.getLivesRemaining());
                         break;
                     }
                 }
             } else {
-                // Player bullet vs Enemies
+                // Player bullet vs enemies
                 // map Bullet owner id (1 or 2) to per-player index (0 or 1)
                 final int ownerId = weapon.getOwnerPlayerId(); // 1 or 2 (0 if unset)
                 final int pIdx = (ownerId == 2) ? 1 : 0; // default to P1 when unset
@@ -692,13 +730,33 @@ public class GameScreen extends Screen {
                         state.addCoins(pIdx, this.bossShip.getCoinValue());
                         state.addScore(pIdx, points);
                         state.incShipsDestroyed(pIdx);
-                        
+
                         SoundManager.loopStop(); // Stop boss BGM
                         SoundManager.playOnce("explosion");
                         // Boss explosion is always large and final (true)
                         drawManager.getGameScreenRenderer()
                             .triggerExplosion(this.bossShip.getPositionX(),
                                 this.bossShip.getPositionY(), true, true);
+                        java.util.Random rand = new java.util.Random();
+                        for (int i = 0; i < 10; i++) {
+                            int offsetX = rand.nextInt(this.bossShip.getWidth()) - this.bossShip.getWidth()/2;
+                            int offsetY = rand.nextInt(this.bossShip.getHeight()) - this.bossShip.getHeight()/2;
+                            
+                            Color explosionColor = new Color(255, rand.nextInt(150), 0);
+                            
+                            drawManager.getGameScreenRenderer().triggerCustomExplosion(
+                                this.bossShip.getPositionX() + this.bossShip.getWidth() / 2 + offsetX,
+                                this.bossShip.getPositionY() + this.bossShip.getHeight() / 2 + offsetY,
+                                explosionColor
+                            );
+                        }
+                    }else {
+                        SoundManager.playOnce("boss_hit");
+                        
+                        drawManager.getGameScreenRenderer().triggerCustomExplosion(
+                            weapon.getPositionX() + weapon.getWidth() / 2,
+                            weapon.getPositionY(),
+                            new Color(255, 50, 50));
                     }
                     // Since the Boss is a single target, break is omitted to continue with the next bullet/enemy check.
                 }
@@ -758,11 +816,20 @@ public class GameScreen extends Screen {
         return !areaA.isEmpty();
     }
     
+    /**
+     * Returns a GameState object representing the status of the game.
+     *
+     * @return Current game state.
+     */
     public final GameState getGameState() {
         return this.state;
     }
     
+    /**
+     * check Achievement released;
+     */
     public void checkAchievement() {
+        // First Blood
         if (state.getShipsDestroyed() == 1) {
             achievementManager.unlock("First Blood");
         }
@@ -776,39 +843,56 @@ public class GameScreen extends Screen {
             if (!this.tookDamageThisLevel) {
                 achievementManager.unlock("Survivor");
             }
+            //Sharpshooter
             if (p1Acc >= 80) {
+                //1p
                 achievementManager.unlock("Sharpshooter");
+                //coop
                 if (p2Acc >= 80) {
                     achievementManager.unlock("Sharpshooter");
                 }
             }
         }
+        
+        //50 Bullets
         if (state.getBulletsShot() >= 50) {
             achievementManager.unlock("50 Bullets");
         }
+        //Get 3000 Score
         if (state.getScore() >= 3000) {
             achievementManager.unlock("Get 3000 Score");
         }
     }
     
+    /**
+     * Draws the stars background animation during the game
+     */
     public void updateGameSpace(Graphics g) {
         basicGameSpace.update();
+        
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
         g.setColor(Color.WHITE);
         int[][] positions = basicGameSpace.getStarLocations();
         for (int i = 0; i < basicGameSpace.getNumStars(); i++) {
+            
             int size = (positions[i][2] < 2) ? 2 : 1;
             int radius = size * 2;
+            
             float[] dist = {0.0f, 1.0f};
             Color[] colors = new Color[2];
-            if (basicGameSpace.isLastLife()) {
+            if (basicGameSpace.isBossStage()) {
+                colors[0] = new Color(200, 0, 255, 150);
+                colors[1] = new Color(255, 50, 50, 100);
+            } else if (basicGameSpace.isLastLife()) {
                 colors[0] = new Color(255, 0, 0, 100);
                 colors[1] = new Color(255, 0, 0, 50);
             } else {
                 colors[0] = new Color(255, 255, 200, 50);
                 colors[1] = new Color(255, 255, 200, 50);
             }
+            
             RadialGradientPaint paint = new RadialGradientPaint(
                 new Point(positions[i][0] + size / 2, positions[i][1] + size / 2),
                 radius, dist, colors);

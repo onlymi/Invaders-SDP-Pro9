@@ -14,6 +14,7 @@ public class BasicGameSpace {
     private int numStars;
     private final int screenWidth;
     private final int screenHeight;
+    private boolean bossStage = false;
     
     /**
      * Countdown to game start.
@@ -44,11 +45,14 @@ public class BasicGameSpace {
     public void update() {
         int i = 0;
         for (Star star : stars) {
-            if (this.speed != 3) {
-                star.y += star.speed;
-            } else {
+            if (this.bossStage) {
+                star.y += 10;
+            } else if (this.speed == 3) { // Last life condition
                 star.y += 3;
+            } else {
+                star.y += star.speed;
             }
+            
             positions[i][1] = star.y;
             
             if (star.y >= screenHeight + 5) {
@@ -71,6 +75,13 @@ public class BasicGameSpace {
         return this.speed == 3;
     }
     
+    public void setBossStage(boolean active) {
+        this.bossStage = active;
+    }
+    
+    public boolean isBossStage() {
+        return this.bossStage;
+    }
     
     public int[][] getStarLocations() {
         return this.positions;
