@@ -20,44 +20,51 @@ public class ArcherCharacterRenderer {
      */
     public void draw(Graphics g, ArcherCharacter character, int x, int y, Color color, int scale) {
         AssetManager assetManager = AssetManager.getInstance();
-        BufferedImage currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherStand);
+        BufferedImage currentSprite = assetManager.getSpriteImage(
+            SpriteType.CharacterArcherStand);
         
-        if (character.isInSelectScreen()) {
-            currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherBasic);
-        }
-        
-        if (character.isMoving()) {
-            // 캐릭터가 바라보는 방향에 따라 애니메이션 선택
-            BufferedImage[] walkFrames;
-            if (character.isFacingLeft()) {
-                walkFrames = assetManager.getAnimation(SpriteType.CharacterArcherLeftWalk);
-            } else if (character.isFacingRight()) {
-                walkFrames = assetManager.getAnimation(SpriteType.CharacterArcherRightWalk);
-            } else if (character.isFacingFront()) {
-                walkFrames = assetManager.getAnimation(SpriteType.CharacterArcherFrontWalk);
-            } else if (character.isFacingBack()) {
-                walkFrames = assetManager.getAnimation(SpriteType.CharacterArcherBackWalk);
-            } else {
-                walkFrames = assetManager.getAnimation(SpriteType.CharacterArcherRightWalk);
+        if (character.isDie()) {
+            currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherGravestone);
+        } else {
+            if (character.isInSelectScreen()) {
+                currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherBasic);
             }
             
-            // 현재 시간을 기준으로 프레임 인덱스 계산 (속도 조절 가능)
-            double speed = character.getCurrentStats().movementSpeed;
-            int frameSwitchTime = (int) (speed * 100);
-            if (frameSwitchTime <= 0) {
-                frameSwitchTime = 100; // 0으로 나누기 방지
+            if (character.isMoving()) {
+                // 캐릭터가 바라보는 방향에 따라 애니메이션 선택
+                BufferedImage[] walkFrames;
+                if (character.isFacingLeft()) {
+                    walkFrames = assetManager.getAnimation(SpriteType.CharacterArcherLeftWalk);
+                } else if (character.isFacingRight()) {
+                    walkFrames = assetManager.getAnimation(SpriteType.CharacterArcherRightWalk);
+                } else if (character.isFacingFront()) {
+                    walkFrames = assetManager.getAnimation(SpriteType.CharacterArcherFrontWalk);
+                } else if (character.isFacingBack()) {
+                    walkFrames = assetManager.getAnimation(SpriteType.CharacterArcherBackWalk);
+                } else {
+                    walkFrames = assetManager.getAnimation(SpriteType.CharacterArcherRightWalk);
+                }
+                
+                // 현재 시간을 기준으로 프레임 인덱스 계산 (속도 조절 가능)
+                double speed = character.getCurrentStats().movementSpeed;
+                int frameSwitchTime = (int) (speed * 100);
+                if (frameSwitchTime <= 0) {
+                    frameSwitchTime = 100; // 0으로 나누기 방지
+                }
+                
+                int frameIndex =
+                    (int) (System.currentTimeMillis() / frameSwitchTime) % walkFrames.length;
+                currentSprite = walkFrames[frameIndex];
             }
             
-            int frameIndex =
-                (int) (System.currentTimeMillis() / frameSwitchTime) % walkFrames.length;
-            currentSprite = walkFrames[frameIndex];
-        }
-        
-        if (character.isAttacking()) {
-            if (character.isFacingLeft()) {
-                currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherLeftAttack);
-            } else if (character.isFacingRight()) {
-                currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherRightAttack);
+            if (character.isAttacking()) {
+                if (character.isFacingLeft()) {
+                    currentSprite = assetManager.getSpriteImage(
+                        SpriteType.CharacterArcherLeftAttack);
+                } else if (character.isFacingRight()) {
+                    currentSprite = assetManager.getSpriteImage(
+                        SpriteType.CharacterArcherRightAttack);
+                }
             }
         }
         

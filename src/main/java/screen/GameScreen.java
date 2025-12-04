@@ -314,7 +314,14 @@ public class GameScreen extends Screen {
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     GameCharacter character = this.characters[p];
                     
-                    if (character == null || character.getCurrentHealthPoints() <= 0) {
+                    if (character == null) {
+                        continue;
+                    }
+                    
+                    // Update Character State
+                    character.update(deltaTime);
+                    
+                    if (character.getCurrentHealthPoints() <= 0) {
                         continue;
                     }
                     
@@ -334,9 +341,6 @@ public class GameScreen extends Screen {
                         SoundManager.playOnce("shoot");
                         state.incBulletsShot(p);
                     }
-                    
-                    // Update Character State
-                    character.update(deltaTime);
                 }
                 // -----------------------------
                 
@@ -452,8 +456,9 @@ public class GameScreen extends Screen {
         
         // Draw Characters
         for (GameCharacter character : this.characters) {
-            if (character != null && character.getCurrentHealthPoints() > 0) {
-                if (!character.isInvincible() || (System.currentTimeMillis() % 200 > 100)) {
+            if (character != null) {
+                if (character.getCurrentHealthPoints() <= 0 || !character.isInvincible()
+                    || (System.currentTimeMillis() % 200 > 100)) {
                     drawManager.getEntityRenderer()
                         .drawEntity(drawManager.getBackBufferGraphics(), character,
                             character.getPositionX(), character.getPositionY());
@@ -549,12 +554,12 @@ public class GameScreen extends Screen {
                 
                 int x = (this.getWidth() - boxWidth) / 2;
                 int y = (this.getHeight() - boxHeight) / 2;
-
+                
                 // Translucent black background
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f));
                 g2d.setColor(Color.BLACK);
                 g2d.fillRoundRect(x, y, boxWidth, boxHeight, 16, 16);
-
+                
                 // Border
                 g2d.setComposite(AlphaComposite.SrcOver);
                 g2d.setColor(new Color(0, 255, 255, 140));
@@ -697,7 +702,7 @@ public class GameScreen extends Screen {
                         
                         // Decrement life if HP reaches 0
                         if (character.getCurrentHealthPoints() <= 0) {
-                            this.state.decLife(p);
+                            // this.state.decLife(p);
                             this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
                                 + state.getLivesRemaining());
                         }
@@ -766,7 +771,7 @@ public class GameScreen extends Screen {
                         state.addCoins(pIdx, this.bossShip.getCoinValue());
                         state.addScore(pIdx, points);
                         state.incShipsDestroyed(pIdx);
-
+                        
                         SoundManager.loopStop(); // Stop boss BGM
                         SoundManager.playOnce("explosion");
                         // Boss explosion is always large and final (true)
@@ -775,14 +780,18 @@ public class GameScreen extends Screen {
                                 this.bossShip.getPositionY(), true, true);
                         Random rand = new Random();
                         for (int i = 0; i < 10; i++) {
-                            int offsetX = rand.nextInt(this.bossShip.getWidth()) - this.bossShip.getWidth()/2;
-                            int offsetY = rand.nextInt(this.bossShip.getHeight()) - this.bossShip.getHeight()/2;
+                            int offsetX = rand.nextInt(this.bossShip.getWidth())
+                                - this.bossShip.getWidth() / 2;
+                            int offsetY = rand.nextInt(this.bossShip.getHeight())
+                                - this.bossShip.getHeight() / 2;
                             
                             Color explosionColor = new Color(255, rand.nextInt(150), 0);
                             
                             drawManager.getGameScreenRenderer().triggerCustomExplosion(
-                                this.bossShip.getPositionX() + this.bossShip.getWidth() / 2 + offsetX,
-                                this.bossShip.getPositionY() + this.bossShip.getHeight() / 2 + offsetY,
+                                this.bossShip.getPositionX() + this.bossShip.getWidth() / 2
+                                    + offsetX,
+                                this.bossShip.getPositionY() + this.bossShip.getHeight() / 2
+                                    + offsetY,
                                 explosionColor
                             );
                         }
@@ -808,7 +817,7 @@ public class GameScreen extends Screen {
             
             for (EnemyShip enemy : this.enemyManager.getEnemies()) {
                 if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
-                    player.takeDamage(1);
+                    player.takeDamage(5);
                     
                     // [FIXED] Decrement life on collision death
                     if (player.getCurrentHealthPoints() <= 0) {

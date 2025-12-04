@@ -201,7 +201,7 @@ public abstract class GameCharacter extends Entity {
         if (stats.getStatLevel(7) > 0) {
             this.baseStats.physicalDefense += 2 * stats.getStatLevel(7);
         }
-
+        
         this.currentStats = new CharacterStats(this.baseStats);
     }
     

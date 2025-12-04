@@ -117,7 +117,7 @@ public class EnemyManager {
         double minClosestSq = Double.MAX_VALUE;
         
         for (GameCharacter player : gameScreen.getCharacters()) {
-            if (player == null) {
+            if (player == null || player.isDie()) {
                 continue;
             }
             double dx = player.getPositionX() - enemy.getPositionX();

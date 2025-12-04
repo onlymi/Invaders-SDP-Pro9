@@ -41,7 +41,7 @@ public final class Core {
     /**
      * Lives per player (used to compute team pool in shared mode).
      */
-    private static final int MAX_LIVES = 0;
+    private static final int MAX_LIVES = 1;
     private static final int EXTRA_LIFE_FREQUENCY = 3;
     
     /**
