@@ -5,22 +5,21 @@ import engine.Core;
 import engine.SoundManager;
 import engine.utils.Cooldown;
 import entity.character.GameCharacter;
-
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import java.awt.Color;
 import java.util.Set;
 
 /**
- * Implements a boss ship, to be destroyed by the player.
- * Extends EnemyShip with boss-specific logic.
+ * Implements a boss ship, to be destroyed by the player. Extends EnemyShip with boss-specific
+ * logic.
  */
 public class BossShip extends EnemyShip {
-
+    
     private static final int BOSS_INITIAL_HEALTH = 500;
     private static final int BOSS_POINTS = 5000;
     private static final int BOSS_COINS = 5000;
-
+    
     private static final int ATTACK_HOMING_MISSILE = 1;
     private static final int ATTACK_LASER_CHARGE = 2;
     private static final int HOMING_MISSILE_INTERVAL = 3000;
@@ -38,8 +37,6 @@ public class BossShip extends EnemyShip {
     private static final int LASER_DURATION = 700;
     
     
-    
-    
     /**
      * Boss-specific movement properties
      */
@@ -47,13 +44,13 @@ public class BossShip extends EnemyShip {
     private static final int BOSS_BASE_SPEED_Y = 1;
     private static final int TOP_BOUNDARY = 68;
     private static final int BOSS_MAX_Y = 340;
-
+    
     private int currentSpeedX;
     private int currentSpeedY;
-
+    
     boolean movingRight;
     private boolean movingDown;
-
+    
     private int attackPhase;
     private int laserChargeTimer;
     private int spreadChargeTimer;
@@ -97,13 +94,13 @@ public class BossShip extends EnemyShip {
 
         // Set a prominent default color.
         this.changeColor(Color.CYAN);
-
+        
         //Initialize movement state
         this.currentSpeedX = BOSS_BASE_SPEED_X;
         this.currentSpeedY = BOSS_BASE_SPEED_Y;
         this.movingRight = true;
         this.movingDown = true;
-
+        
         this.attackPhase = ATTACK_HOMING_MISSILE;
         this.attackCooldown = Core.getCooldown(HOMING_MISSILE_INTERVAL);
         this.attackCooldown.reset();
@@ -119,9 +116,9 @@ public class BossShip extends EnemyShip {
         this.isAttackEnabled = true;
         
     }
-
+    
     /**
-     * New shoot method to manage attacks
+     * New shoot method to manage attacks.
      */
     public final void shoot(final Set<Weapon> weapons, GameCharacter[] players) {
         
@@ -131,7 +128,6 @@ public class BossShip extends EnemyShip {
         
         // Find the nearest player to target
         GameCharacter target = getNearestTarget(players, spawnX, spawnY);
-        
         
         // === Phase 1: Homing Missile ===
         if (this.attackPhase == ATTACK_HOMING_MISSILE) {
@@ -171,14 +167,16 @@ public class BossShip extends EnemyShip {
                 int skullY = spawnY - 100; // Y position for skulls
                 double laserY = spawnY + (SKULL_HEIGHT / 2.0); // Laser origin Y (center of skull)
                 
-                
                 // [Step 1] Spawn Skulls & Aim (Warning Phase)
                 if (!this.hasSpawnedSkulls) {
                     SoundManager.playOnce("laser_big");
                     
                     // Determine target coordinates (default to bottom center if no player alive)
-                    double targetX = (target != null) ? target.getPositionX() + target.getWidth() / 2.0 : spawnX;
-                    double targetY = (target != null) ? target.getPositionY() + target.getHeight() / 2.0 : spawnY + 600;
+                    double targetX =
+                        (target != null) ? target.getPositionX() + target.getWidth() / 2.0 : spawnX;
+                    double targetY =
+                        (target != null) ? target.getPositionY() + target.getHeight() / 2.0
+                            : spawnY + 600;
                     
                     // Calculate angle for the Left Skull to aim at the target
                     double startXLeft = (spawnX - xOffset);
@@ -188,15 +186,16 @@ public class BossShip extends EnemyShip {
                     double startXRight = (spawnX + xOffset);
                     this.lockedAngleRight = Math.atan2(targetY - laserY, targetX - startXRight);
                     
-                    
                     // Spawn Left Skull and rotate it towards the target
-                    this.activeLeftSkull = WeaponPool.getWeapon(spawnX - xOffset, skullY, 0, SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
+                    this.activeLeftSkull = WeaponPool.getWeapon(spawnX - xOffset, skullY, 0,
+                        SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
                     this.activeLeftSkull.setSpriteType(SpriteType.GasterBlaster);
                     this.activeLeftSkull.setRotation(Math.toDegrees(this.lockedAngleLeft));
                     weapons.add(this.activeLeftSkull);
                     
                     // Spawn Right Skull and rotate it towards the target
-                    this.activeRightSkull = WeaponPool.getWeapon(spawnX + xOffset, skullY, 0, SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
+                    this.activeRightSkull = WeaponPool.getWeapon(spawnX + xOffset, skullY, 0,
+                        SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
                     this.activeRightSkull.setSpriteType(SpriteType.GasterBlaster);
                     this.activeRightSkull.setRotation(Math.toDegrees(this.lockedAngleRight));
                     weapons.add(this.activeRightSkull);
@@ -204,9 +203,7 @@ public class BossShip extends EnemyShip {
                     // Update flags and start the delay timer before firing
                     this.hasSpawnedSkulls = true;
                     this.laserFireDelayCooldown.reset();
-                }
-                // [Step 2] Fire Lasers (Active Phase)
-                else if (!this.isFiring) {
+                } else if (!this.isFiring) { // [Step 2] Fire Lasers (Active Phase)
                     // Check if the warning delay has passed
                     if (this.laserFireDelayCooldown.checkFinished()) {
                         SoundManager.playOnce("laser_big");
@@ -217,7 +214,8 @@ public class BossShip extends EnemyShip {
                         // Create Left Lasers (Stack 3 beams for persistence against single hits)
                         double startXLeft = spawnX - xOffset;
                         for (int i = 0; i < 3; i++) {
-                            Weapon leftLaser = WeaponPool.getWeapon((int)startXLeft, (int)laserY, 0, 11 * 4, laserLength, Entity.Team.ENEMY);
+                            Weapon leftLaser = WeaponPool.getWeapon((int) startXLeft, (int) laserY,
+                                0, 11 * 4, laserLength, Entity.Team.ENEMY);
                             leftLaser.setBigLaser(true);
                             leftLaser.setBossBullet(false);
                             leftLaser.setSpeedX(0); // No horizontal movement
@@ -231,7 +229,8 @@ public class BossShip extends EnemyShip {
                         // Create Right Lasers (Stack 3 beams)
                         double startXRight = spawnX + xOffset;
                         for (int i = 0; i < 3; i++) {
-                            Weapon rightLaser = WeaponPool.getWeapon((int)startXRight, (int)laserY, 0, 11 * 4, laserLength, Entity.Team.ENEMY);
+                            Weapon rightLaser = WeaponPool.getWeapon((int) startXRight,
+                                (int) laserY, 0, 11 * 4, laserLength, Entity.Team.ENEMY);
                             rightLaser.setBigLaser(true);
                             rightLaser.setBossBullet(false);
                             rightLaser.setSpeedX(0);
@@ -272,13 +271,15 @@ public class BossShip extends EnemyShip {
                         // Remove Left Skull
                         if (this.activeLeftSkull != null) {
                             weapons.remove(this.activeLeftSkull);
-                            WeaponPool.recycle(java.util.Collections.singleton(this.activeLeftSkull));
+                            WeaponPool.recycle(
+                                java.util.Collections.singleton(this.activeLeftSkull));
                             this.activeLeftSkull = null;
                         }
                         // Remove Right Skull
                         if (this.activeRightSkull != null) {
                             weapons.remove(this.activeRightSkull);
-                            WeaponPool.recycle(java.util.Collections.singleton(this.activeRightSkull));
+                            WeaponPool.recycle(
+                                java.util.Collections.singleton(this.activeRightSkull));
                             this.activeRightSkull = null;
                         }
                         
@@ -327,14 +328,13 @@ public class BossShip extends EnemyShip {
             }
         }
     }
-
+    
     /**
      * Updates attributes for boss movement and phases. Custom boss logic goes here.
      */
     @Override
     public final void update() {
-        
-        
+                
         if (this.isAttackEnabled) {
             if (this.attackPhase == ATTACK_LASER_CHARGE) {
                 this.laserChargeTimer = this.laserChargeCooldown.getDuration();
@@ -365,7 +365,7 @@ public class BossShip extends EnemyShip {
             }
         }
     }
-
+    
     /**
      * Moves the boss based on its internal speed and direction.
      */
@@ -373,14 +373,14 @@ public class BossShip extends EnemyShip {
     public final void move(final int distanceX, final int distanceY) {
         // The distanceX/Y arguments from EnemyShipFormation are ignored.
         // Boss moves based on its internal state.
-
+        
         int movementX = this.movingRight ? this.currentSpeedX : -this.currentSpeedX;
         int movementY = this.movingDown ? this.currentSpeedY : -this.currentSpeedY;
-
+        
         this.positionX += movementX;
         this.positionY += movementY;
     }
-
+    
     /**
      * Returns the current health of the boss ship.
      */
@@ -388,7 +388,7 @@ public class BossShip extends EnemyShip {
     public final int getHealth() {
         return this.health;
     }
-
+    
     /**
      * Reduces boss health by 1 and handles destruction or damage animation based on remaining HP.
      */
@@ -410,7 +410,9 @@ public class BossShip extends EnemyShip {
     private GameCharacter getNearestTarget(GameCharacter[] players, int x, int y) {
         GameCharacter nearest = null;
         double minDist = Double.MAX_VALUE;
-        if (players == null) return null;
+        if (players == null) {
+            return null;
+        }
         for (GameCharacter p : players) {
             if (p != null && !p.isDestroyed()) {
                 double dist = Math.pow(p.getPositionX() - x, 2) + Math.pow(p.getPositionY() - y, 2);
@@ -429,28 +431,37 @@ public class BossShip extends EnemyShip {
     public final int getAttackPhase() {
         return this.attackPhase;
     }
-
-    /** Returns whether the boss attack logic is currently enabled. */
+    
+    /**
+     * Returns whether the boss attack logic is currently enabled.
+     */
     public final boolean isAttackEnabled() {
         return this.isAttackEnabled;
     }
-
-    /** Returns whether the boss is currently moving right. */
+    
+    /**
+     * Returns whether the boss is currently moving right.
+     */
     public final boolean isMovingRight() {
         return this.movingRight;
     }
-
-    /** Returns whether the boss is currently moving down. */
+    
+    /**
+     * Returns whether the boss is currently moving down.
+     */
     public final boolean isMovingDown() {
         return this.movingDown;
     }
-
-    /** Returns the laser charge timer value. */
+    
+    /**
+     * Returns the laser charge timer value.
+     */
     public final int getLaserChargeTimer() {
         return this.laserChargeTimer;
     }
 
     /** Returns the charge timer read. */
     public int readChargeTimer() {
-        return this.spreadChargeTimer; }
+        return this.spreadChargeTimer;
+    }
 }

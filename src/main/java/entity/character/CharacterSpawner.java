@@ -18,7 +18,6 @@ public class CharacterSpawner {
             case ELECTRIC -> new ElectricCharacter(positionX, positionY, team, playerId);
             case BOMBER -> new BomberCharacter(positionX, positionY, team, playerId);
             case HEALER -> new HealerCharacter(positionX, positionY, team, playerId);
-            default -> new ArcherCharacter(positionX, positionY, team, playerId);
         };
     }
     

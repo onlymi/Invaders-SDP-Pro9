@@ -9,6 +9,7 @@ import entity.Entity;
 import entity.Ship;
 import entity.Weapon;
 import entity.character.ArcherCharacter;
+import entity.character.GameCharacter;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -17,9 +18,12 @@ import java.awt.image.BufferedImage;
 
 public class EntityRenderer {
     
-    private CommonRenderer commonRenderer;
-    private AssetManager assetManager;
-    private ArcherCharacterRenderer archerCharacterRenderer;
+    private final CommonRenderer commonRenderer;
+    private final AssetManager assetManager;
+    private final ArcherCharacterRenderer archerCharacterRenderer;
+    
+    // 디버깅용 히트박스 표시 여부
+    private static final boolean SHOW_HITBOX = false;
     
     public EntityRenderer(CommonRenderer commonRenderer) {
         this.commonRenderer = commonRenderer;
@@ -28,176 +32,205 @@ public class EntityRenderer {
     }
     
     /**
-     * Draws an entity, using the appropriate image.
+     * Entity의 중앙을 기준으로 x, y 좌표를 사용해 출력합니다.
      */
-    public void drawEntity(Graphics g, final Entity entity, final int positionX,
-        final int positionY) {
-        drawEntity(g, entity, positionX, positionY, getEntityColor(entity));
+    public void drawEntityWithCenterPoint(Graphics g, final Entity entity,
+        final int centerX, final int centerY, final Color color) {
+        // 중앙 좌표를 좌상단 좌표로 변환
+        int topLeftX = centerX - entity.getWidth() / 2;
+        int topLeftY = centerY - entity.getHeight() / 2;
+        drawEntity(g, entity, topLeftX, topLeftY, color, 1);
     }
     
     /**
-     * 지정된 색상으로 엔티티를 그립니다.
-     *
-     * @param entity    그릴 엔티티
-     * @param positionX X 좌표
-     * @param positionY Y 좌표
-     * @param color     적용할 색상
+     * 스케일을 지정하여 엔티티를 그립니다.
      */
-    public void drawEntity(Graphics g, final Entity entity, final int positionX,
-        final int positionY, final Color color) {
-        
-        // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
-        // Color debugColor = g.getColor();
-        // g.setColor(new Color(255, 0, 0, 128));
-        // g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
-        // g.setColor(debugColor); // 원래 색상 복구
-        // [DEBUG END]
-        
-        
-        if (entity instanceof ArcherCharacter) {
-            archerCharacterRenderer.draw(g, (ArcherCharacter) entity);
-            return;
-        }
-        
-        SpriteType type = entity.getSpriteType();
-        
-        if (type.isImage()) {
-            drawEntityAsImage(g, entity, positionX, positionY, color, 1);
-        } else {
-            drawEntityAsSprite(g, entity, positionX, positionY, color, 1);
-        }
-    }
-    
     public void drawEntityByScale(Graphics g, final Entity entity, final int positionX,
         final int positionY, int scale) {
-        drawEntityByScale(g, entity, positionX, positionY, getEntityColor(entity), scale);
+        drawEntity(g, entity, positionX, positionY, getEntityColor(entity), scale);
     }
     
     public void drawEntityByScale(Graphics g, final Entity entity, final int positionX,
         final int positionY, final Color color, final int scale) {
-        
-        // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
-        // Color debugColor = g.getColor();
-        // g.setColor(new Color(255, 0, 0, 128));
-        // 히트박스는 렌더링 스케일(scale)과 무관하게 엔티티의 실제 크기(width, height)를 따릅니다.
-        // g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
-        // g.setColor(debugColor);
-        // [DEBUG END]
-        
-        SpriteType type = entity.getSpriteType();
-        
-        if (type.isImage()) {
-            drawEntityAsImage(g, entity, positionX, positionY, color, scale);
-        } else {
-            drawEntityAsSprite(g, entity, positionX, positionY, color, scale);
-        }
-    }
-    
-    private void drawEntityAsImage(Graphics g, final Entity entity, final int positionX,
-        final int positionY, Color color, final int scale) {
-        BufferedImage image = assetManager.getSpriteImage(entity.getSpriteType());
-        if (image == null) {
-            drawMissingTexturePlaceholder(g, entity, positionX, positionY);
-            return;
-        }
-        
-        int entityWidth = image.getWidth() * scale;
-        int entityHeight = image.getWidth() * scale;
-        
-        int drawX = positionX + (entity.getWidth() - entityWidth) / 2;
-        int drawY = positionY + (entity.getHeight() - entityHeight) / 2;
-        
-        boolean flip = false;
-        if (entity instanceof EnemyShip) {
-            // 왼쪽을 보고 있다면 반전
-            if (!((EnemyShip) entity).isFacingRight()) {
-                flip = true;
-            }
-        }
-        
-        if (flip) {
-            g.drawImage(image, drawX + entityWidth, drawY, - entityWidth, entityHeight, null);
-        } else {
-            g.drawImage(image, positionX, positionY, entityWidth, entityHeight, null);
-        }
-        
-        if (color == Color.DARK_GRAY) {
-            g.setColor(new Color(0, 0, 0, 200));
-            g.fillRect(positionX, positionY, entityWidth, entityHeight);
-        }
+        drawEntity(g, entity, positionX, positionY, color, scale);
     }
     
     /**
-     * Draws an entity of the type of boolean array (Sprite).
+     * 기본 크기(scale=1)로 엔티티를 그립니다.
      */
-    private void drawEntityAsSprite(Graphics g, Entity entity, int positionX, int positionY,
-        Color color, int scale) {
+    public void drawEntity(Graphics g, final Entity entity, final int positionX,
+        final int positionY) {
+        drawEntity(g, entity, positionX, positionY, getEntityColor(entity), 1);
+    }
+    
+    /**
+     * 지정된 색상으로 엔티티를 그립니다.
+     */
+    public void drawEntity(Graphics g, final Entity entity, final int positionX,
+        final int positionY, final Color color) {
+        drawEntity(g, entity, positionX, positionY, color, 1);
+    }
+    
+    /**
+     * 실제 렌더링을 수행하는 메인 메서드입니다. (내부용)
+     */
+    private void drawEntity(Graphics g, final Entity entity, final int x,
+        final int y, final Color color, final int scale) {
+        
+        if (entity instanceof GameCharacter && !((GameCharacter) entity).isInSelectScreen()) {
+            drawHealthBar(g, entity, x, y);
+        }
+        
+        // 특수 캐릭터 처리 - 스케일 정보 전달
+        if (entity instanceof ArcherCharacter) {
+            if (SHOW_HITBOX) {
+                Color prev = g.getColor();
+                g.setColor(new Color(255, 0, 0, 128));
+                g.fillRect(x, y, entity.getWidth() * scale, entity.getHeight() * scale);
+                g.setColor(prev);
+            }
+            archerCharacterRenderer.draw(g, (ArcherCharacter) entity, x, y, color, scale);
+            return;
+        }
+        
+        Graphics2D g2d = (Graphics2D) g;
+        AffineTransform originalTransform = g2d.getTransform(); // 변환 상태 저장
+        
+        // 회전 처리 (Weapon 또는 회전값이 있는 엔티티)
+        if (entity instanceof Weapon || entity.getRotation() != 0) {
+            double centerX = x + (entity.getWidth() * scale) / 2.0;
+            double centerY = y + (entity.getHeight() * scale) / 2.0;
+            
+            // getRotation()은 라디안 값을 반환하므로 Math.toRadians()를 제거함
+            g2d.rotate(Math.toRadians(entity.getRotation()), centerX, centerY);
+        }
+        
+        // 디버그: 히트박스 그리기
+        if (SHOW_HITBOX) {
+            Color prev = g.getColor();
+            g.setColor(new Color(255, 0, 0, 128));
+            g.fillRect(x, y, entity.getWidth() * scale, entity.getHeight() * scale);
+            g.setColor(prev);
+        }
+        
+        // 타입에 따른 그리기 (이미지 vs 스프라이트)
         SpriteType type = entity.getSpriteType();
-        boolean[][] spriteMap = assetManager.getSpriteMap(type);
+        if (type.isImage()) {
+            drawEntityAsImage(g, entity, x, y, color, scale);
+        } else {
+            drawEntityAsSprite(g, entity, x, y, color, scale);
+        }
+        
+        g2d.setTransform(originalTransform); // 변환 상태 복구
+    }
+    
+    private void drawEntityAsImage(Graphics g, final Entity entity, int x, int y,
+        Color color, int scale) {
+        BufferedImage image = assetManager.getSpriteImage(entity.getSpriteType());
+        if (image == null) {
+            drawMissingTexturePlaceholder(g, entity, x, y);
+            return;
+        }
+        
+        int drawWidth = image.getWidth() * scale;
+        int drawHeight = image.getHeight() * scale;
+        
+        // EnemyShip의 방향에 따른 반전 처리
+        if (entity instanceof EnemyShip enemy) {
+            
+            // 이미지 크기와 엔티티 크기가 다를 경우 중앙 정렬 보정
+            int drawX = x + (entity.getWidth() - drawWidth) / 2;
+            int drawY = y + (entity.getHeight() - drawHeight) / 2;
+            
+            if (!enemy.isFacingRight()) {
+                // 왼쪽을 볼 때 좌우 반전 (width를 음수로 설정하고 x 위치 조정)
+                g.drawImage(image, drawX + drawWidth, drawY, -drawWidth, drawHeight, null);
+            } else {
+                g.drawImage(image, drawX, drawY, drawWidth, drawHeight, null);
+            }
+            
+            // 피격/상태 이상 시 색상 오버레이 (Dark Gray)
+            if (color == Color.DARK_GRAY) {
+                g.setColor(new Color(0, 0, 0, 200));
+                g.fillRect(x, y, drawWidth, drawHeight);
+            }
+            return;
+        }
+        
+        // 일반 엔티티 그리기
+        g.drawImage(image, x, y, drawWidth, drawHeight, null);
+        
+        if (color == Color.DARK_GRAY) {
+            g.setColor(new Color(0, 0, 0, 200));
+            g.fillRect(x, y, drawWidth, drawHeight);
+        }
+    }
+    
+    private void drawEntityAsSprite(Graphics g, Entity entity, int x, int y,
+        Color color, int scale) {
+        boolean[][] spriteMap = assetManager.getSpriteMap(entity.getSpriteType());
         if (spriteMap == null) {
             return;
         }
         
-        // Calculate scaling ratios compared to original sprite
-        int entityWidth = entity.getWidth();
-        int entityHeight = entity.getHeight();
-        
-        Graphics2D g2d = (Graphics2D) g;
-        AffineTransform old = g2d.getTransform();
-        
-        double anchorX = positionX + entityWidth / 2.0;
-        double anchorY = positionY + entityHeight / 2.0;
-        
-        if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
-            anchorY = positionY;
-        }
-        
-        if (entity.getRotation() != 0) {
-            g2d.rotate(Math.toRadians(entity.getRotation()), anchorX, anchorY);
-        }
-        // Set drawing color again
-        int spriteWidth = spriteMap.length;
-        int spriteHeight = spriteMap[0].length;
         g.setColor(color);
         
-        
         if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
-            g.fillRect(positionX, positionY, entityWidth, entityHeight);
-            
+            // 레이저 빔 특수 처리
+            int w = entity.getWidth();
+            int h = entity.getHeight();
+            g.fillRect(x, y, w, h);
             g.setColor(Color.WHITE);
-            g.fillRect(positionX + entityWidth / 4, positionY, entityWidth / 2, entityHeight);
+            g.fillRect(x + w / 4, y, w / 2, h);
         } else {
-            for (int i = 0; i < spriteWidth; i++) {
-                for (int j = 0; j < spriteHeight; j++) {
+            // 픽셀 스프라이트 그리기
+            for (int i = 0; i < spriteMap.length; i++) {
+                for (int j = 0; j < spriteMap[0].length; j++) {
                     if (spriteMap[i][j]) {
-                        g.fillRect(positionX + (i * scale), positionY + (j * scale), scale, scale);
+                        g.fillRect(x + (i * scale), y + (j * scale), scale, scale);
                     }
                 }
             }
         }
+    }
+    
+    public void drawHealthBar(Graphics g, final Entity entity, int x, int y) {
+        int maxHealth = ((GameCharacter) entity).getCurrentStats().maxHealthPoints;
+        int currentHealth = ((GameCharacter) entity).getCurrentHealthPoints();
+        int healthRatio = (currentHealth / maxHealth);
         
-        g2d.setTransform(old);
+        if (healthRatio > 1) {
+            healthRatio = 1;
+        } else if (healthRatio < 0) {
+            healthRatio = 0;
+        }
+        
+        int healthBarHeight = 10;
+        g.setColor(new Color(0, 255, 0, 110));
+        g.drawRect(x - 1, y - healthBarHeight - 4, entity.getWidth() + 1, healthBarHeight + 1);
+        g.setColor(new Color(255, 0, 0, 110));
+        g.fillRect(x, y - healthBarHeight - 3, entity.getWidth() * healthRatio, healthBarHeight);
     }
     
     private void drawMissingTexturePlaceholder(Graphics g, Entity entity, int x, int y) {
         g.setColor(Color.PINK);
         g.fillRect(x, y, entity.getWidth(), entity.getHeight());
-        System.err.println("EntityRenderer: Can't find sprite for " + entity.getSpriteType());
     }
     
     /**
-     * Determines the color based on the entity's status (physical strength, player ID, etc.).
+     * 엔티티의 상태(체력, 플레이어 ID 등)에 따른 색상을 결정합니다.
      */
     private static Color getEntityColor(Entity entity) {
         Color baseColor = entity.getColor();
         
         return switch (entity) {
             case Ship ship -> getPlayerColor(ship.getPlayerId(), Color.BLUE, Color.RED, baseColor);
-            case Weapon weapon ->
-                getPlayerColor(weapon.getPlayerId(), Color.CYAN, Color.MAGENTA, baseColor);
-            case EnemyShip enemy -> calculateDamageAlpha(enemy, baseColor);
+            case Weapon weapon -> getPlayerColor(weapon.getPlayerId(), Color.CYAN, Color.MAGENTA,
+                baseColor);
+            case EnemyShip enemyShip -> calculateDamageAlpha(enemyShip, baseColor);
             default -> baseColor;
         };
+        
     }
     
     private static Color getPlayerColor(int playerId, Color p1Color, Color p2Color,
@@ -216,11 +249,9 @@ public class EntityRenderer {
         int maxHp = enemy.getInitialHealth();
         
         if (currentHp > 0 && maxHp > 0) {
-            // 체력에 비례하여 투명도(Alpha) 조정 (체력이 낮을수록 투명해짐 혹은 그 반대 로직)
-            // 기존 로직: 70 + 150 * (비율)
             float healthRatio = (float) currentHp / maxHp;
             int alpha = (int) (70 + 150 * healthRatio);
-            alpha = Math.max(0, Math.min(255, alpha)); // Clamp 0~255
+            alpha = Math.max(0, Math.min(255, alpha));
             
             return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha);
         }

@@ -76,8 +76,8 @@ public final class Core {
         
         frame = new Frame(WIDTH, HEIGHT);
         InputManager input = InputManager.getInstance();
-        frame.addKeyListener(
-            input); // Register an instance to allow the window to receive keyboard event information
+        // Register an instance to allow the window to receive keyboard event information
+        frame.addKeyListener(input);
         DrawManager.getInstance().setFrame(frame);
         int width = frame.getWidth();
         int height = frame.getHeight();
@@ -89,7 +89,7 @@ public final class Core {
         GameState gameState = null;
         boolean coopSelected = false; // false = 1-player mode, true = 2-player mode
         
-        int returnCode = 9;
+        int returnCode = 6;
         
         CharacterType characterTypeP1 = CharacterType.ARCHER; // Player 1 Ship Type
         CharacterType characterTypeP2 = CharacterType.ARCHER; // Player 2 Ship Type

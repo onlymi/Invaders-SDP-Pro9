@@ -50,7 +50,7 @@ public class GameScreen extends Screen {
     /**
      * Height of the interface separation line.
      */
-    private static final int SEPARATION_LINE_HEIGHT = 68;
+    public static final int SEPARATION_LINE_HEIGHT = 68;
     private static final int HIGH_SCORE_NOTICE_DURATION = 2000;
     private static boolean sessionHighScoreNotified = false;
     
@@ -112,7 +112,6 @@ public class GameScreen extends Screen {
     private int killsToWin;
     private int enemyKillCount;
     
-    
     /**
      * Constructor, establishes the properties of the screen.
      *
@@ -160,7 +159,7 @@ public class GameScreen extends Screen {
                 state.addTeamLife(1); // two player
             } else {
                 // 1P legacy: grant to P1
-                state.addLife(0, 1);  // singleplayer
+                state.addLife(0, 1); // single player
             }
         }
         if (this.achievementManager == null) {
@@ -346,7 +345,7 @@ public class GameScreen extends Screen {
                 // Block enemy shooting while global freeze is active.
                 if (this.state == null || !this.state.areEnemiesFrozen()) {
                     int bulletsBefore = this.weapons.size();
-                    //this.enemyManager.shoot(this.weapons);
+                    // this.enemyManager.shoot(this.weapons);
                     if (this.weapons.size() > bulletsBefore) {
                         // At least one enemy bullet added
                         SoundManager.playOnce("shoot_enemies");
@@ -560,8 +559,11 @@ public class GameScreen extends Screen {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
             weapon.update();
-            if (weapon.getPositionY() < SEPARATION_LINE_HEIGHT
-                || weapon.getPositionY() > this.height) {
+            boolean isOffScreenY = weapon.getPositionY() < SEPARATION_LINE_HEIGHT
+                || weapon.getPositionY() > this.height;
+            boolean isOffScreenX = weapon.getPositionX() < 0
+                || weapon.getPositionX() > this.width;
+            if (isOffScreenY || isOffScreenX) {
                 recyclable.add(weapon);
             }
         }
