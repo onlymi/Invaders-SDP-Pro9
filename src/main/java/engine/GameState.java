@@ -187,6 +187,10 @@ public class GameState {
         return t;
     }
     
+    public int getScore(final int p) {
+        return (p >= 0 && p < NUM_PLAYERS) ? score[p] : 0;
+    }
+    
     public int getLivesRemaining() {
         return sharedLives ? teamLives : (lives[0] + lives[1]);
     }
@@ -199,23 +203,16 @@ public class GameState {
         return t;
     }
     
+    public int getBulletsShot(final int p) {
+        return (p >= 0 && p < NUM_PLAYERS) ? bulletsShot[p] : 0;
+    }
+    
     public int getShipsDestroyed() {
         int t = 0;
         for (int p = 0; p < NUM_PLAYERS; p++) {
             t += shipsDestroyed[p];
         }
         return t;
-        
-    }
-    
-    
-    /* ----- Per-player getters (needed by Score.java) ----- */
-    public int getScore(final int p) {
-        return (p >= 0 && p < NUM_PLAYERS) ? score[p] : 0;
-    }
-    
-    public int getBulletsShot(final int p) {
-        return (p >= 0 && p < NUM_PLAYERS) ? bulletsShot[p] : 0;
     }
     
     public int getShipsDestroyed(final int p) {

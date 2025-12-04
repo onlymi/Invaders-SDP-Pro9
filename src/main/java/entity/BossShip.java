@@ -467,7 +467,7 @@ public class BossShip extends EnemyShip {
             return null;
         }
         for (GameCharacter p : players) {
-            if (p != null && !p.isDestroyed()) {
+            if (p != null && !p.isInvincible()) {
                 double dist = Math.pow(p.getPositionX() - x, 2) + Math.pow(p.getPositionY() - y, 2);
                 if (dist < minDist) {
                     minDist = dist;

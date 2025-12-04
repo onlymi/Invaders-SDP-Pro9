@@ -34,8 +34,9 @@ public class PlayerSelectionScreenRenderer {
             int imageScale = 2;
             
             int drawX =
-                currentCharacter.getPositionX() - currentCharacter.getWidth();
-            int drawY = currentCharacter.getPositionY();
+                currentCharacter.getPositionX() - (currentCharacter.getWidth() / 2) * imageScale;
+            int drawY =
+                currentCharacter.getPositionY() - (currentCharacter.getHeight() / 2) * imageScale;
             
             if (i == selectedShipIndex) {
                 entityRenderer.drawEntityByScale(g, currentCharacter, drawX, drawY, Color.WHITE,

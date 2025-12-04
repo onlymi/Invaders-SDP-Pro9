@@ -99,7 +99,7 @@ class WeaponTest {
         when(mockTarget.getPositionY()).thenReturn(200);
         when(mockTarget.getWidth()).thenReturn(20);
         when(mockTarget.getHeight()).thenReturn(20);
-        when(mockTarget.isDestroyed()).thenReturn(false);
+        when(mockTarget.isInvincible()).thenReturn(false);
         
         // 유도 기능 활성화
         bullet.setHoming(mockTarget);

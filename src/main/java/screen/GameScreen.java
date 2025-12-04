@@ -1,6 +1,7 @@
 package screen;
 
 import animations.BasicGameSpace;
+import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.EnemyManager;
 import engine.GameSettings;
@@ -28,8 +29,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -84,6 +88,11 @@ public class GameScreen extends Screen {
      * Checks if the level is finished.
      */
     private boolean levelFinished;
+    /**
+     * [New] Checks if the level is cleared (win condition met).
+     */
+    private boolean levelCleared;
+    
     /**
      * Checks if a bonus life is received.
      */
@@ -184,9 +193,11 @@ public class GameScreen extends Screen {
         this.enemyKillCount = 0;
         // 각 스테이지 별 필요 kill 수
         this.killsToWin = 10 + (this.level * 5);
+        this.levelCleared = false; // Initialize to false
         
         // --- Character Initialization & Control Setup ---
-        this.enemyManager = new EnemyManager(this);
+        // (Note: enemyManager redundant init removed, kept the one above)
+        
         if (this.level == 6) {
             this.bossShip = new BossShip(this.width / 2 - 42, 120);
             this.LOGGER.info("Boss Stage Initialized!");
@@ -205,14 +216,14 @@ public class GameScreen extends Screen {
                 startX - gapBetweenCharacters, startY, Entity.Team.PLAYER1, 1);
             this.characters[1] = CharacterSpawner.createCharacter(this.characterTypeP2,
                 startX + gapBetweenCharacters, startY, Entity.Team.PLAYER2, 2);
-            // P2 Controls: A, D, Enter (Shoot) - Adjust keys as per your KeyConfig if needed
+            // P2 Controls
             this.characters[1].setControlKeys(Core.getInputManager().getPlayer2Keys());
         } else {
             this.characters[0] = CharacterSpawner.createCharacter(this.characterTypeP1,
                 startX, startY, Entity.Team.PLAYER1, 1);
             this.characters[1] = null;
         }
-        // P1 Controls: Left, Right, Space (Shoot)
+        // P1 Controls
         this.characters[0].setControlKeys(Core.getInputManager().getPlayer1Keys());
         
         this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
@@ -285,8 +296,7 @@ public class GameScreen extends Screen {
         if (!this.isPaused) {
             if (this.inputDelay.checkFinished() && !this.levelFinished) {
                 
-                // Calculate deltaTime (seconds per frame)
-                // Assuming fixed FPS from Screen.fps
+                // Calculate deltaTime
                 float deltaTime = 1.0f / this.fps;
                 
                 int lastPressed = inputManager.getLastPressedKey();
@@ -295,11 +305,11 @@ public class GameScreen extends Screen {
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     GameCharacter character = this.characters[p];
                     
-                    if (character == null || character.isDestroyed()) {
+                    if (character == null || character.getCurrentHealthPoints() <= 0) {
                         continue;
                     }
                     
-                    // Active Item Input (Handled here as it interacts with GameState directly)
+                    // Active Item Input
                     if (p == 0 && lastPressed == KeyEvent.VK_Q) {
                         state.useFirstActiveItem(0);
                     }
@@ -307,9 +317,8 @@ public class GameScreen extends Screen {
                         state.useFirstActiveItem(1);
                     }
                     
-                    // Handle Input (Movement & Shooting) via Character class
-                    // Pass deltaTime for smooth movement calculation
-                    boolean shotFired = character.handleMovement(inputManager, this, this.weapons,
+                    // Handle Input (Movement & Shooting)
+                    boolean shotFired = character.handleKeyboard(inputManager, this, this.weapons,
                         deltaTime);
                     
                     if (shotFired) {
@@ -317,7 +326,7 @@ public class GameScreen extends Screen {
                         state.incBulletsShot(p);
                     }
                     
-                    // Update Character State (Buffs, Cooldowns, etc.)
+                    // Update Character State
                     character.update(deltaTime);
                 }
                 // -----------------------------
@@ -337,9 +346,8 @@ public class GameScreen extends Screen {
                 // Block enemy shooting while global freeze is active.
                 if (this.state == null || !this.state.areEnemiesFrozen()) {
                     int bulletsBefore = this.weapons.size();
-                    // this.enemyManager.shoot(this.weapons);
+                    // this.enemyManager.shoot(this.weapons); // Assuming handled inside manager or uncomment if needed
                     if (this.weapons.size() > bulletsBefore) {
-                        // At least one enemy bullet added
                         SoundManager.playOnce("shoot_enemies");
                     }
                 }
@@ -351,7 +359,15 @@ public class GameScreen extends Screen {
             manageItemPickups();
             
             state.updateEffects();
-            this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
+            boolean lowHealth = false;
+            for (GameCharacter c : characters) {
+                if (c != null
+                    && c.getCurrentHealthPoints() <= c.getCurrentStats().maxHealthPoints * 0.2) {
+                    lowHealth = true;
+                    break;
+                }
+            }
+            this.basicGameSpace.setLastLife(lowHealth);
             draw();
             
             if (!sessionHighScoreNotified && this.state.getScore() > this.topScore) {
@@ -360,12 +376,19 @@ public class GameScreen extends Screen {
                 this.highScoreNoticeStartTime = System.currentTimeMillis();
             }
             
-            boolean bossDestroyed = (this.bossShip != null && this.bossShip.isDestroyed());
+            boolean teamAlive = false;
+            for (GameCharacter c : characters) {
+                if (c != null && c.getCurrentHealthPoints() > 0) {
+                    teamAlive = true;
+                    break;
+                }
+            }
             
-            // End condition: achieved kill count or TEAM lives exhausted.
-            if ((this.enemyKillCount >= this.killsToWin || !state.teamAlive())
+            // End condition: achieved kill count OR TEAM lives exhausted (!teamAlive).
+            // Changed teamAlive to !teamAlive
+            if ((this.enemyKillCount >= this.killsToWin || !teamAlive)
                 && !this.levelFinished) {
-                // The object managed by the object pool pattern must be recycled at the end of the level.
+                
                 WeaponPool.recycle(this.weapons);
                 this.weapons.removeAll(this.weapons);
                 ItemPool.recycle(items);
@@ -374,13 +397,20 @@ public class GameScreen extends Screen {
                 this.levelFinished = true;
                 this.screenFinishedCooldown.reset();
                 
-                if (!this.tookDamageThisLevel) {
-                    achievementManager.unlock("Survivor");
+                // Set levelCleared only if objective met
+                if (this.enemyKillCount >= this.killsToWin) {
+                    this.levelCleared = true;
+                    
+                    if (!this.tookDamageThisLevel) {
+                        achievementManager.unlock("Survivor");
+                    }
+                    if (state.getLevel() == Core.NUM_LEVELS) {
+                        achievementManager.unlock("Clear");
+                    }
+                    checkAchievement();
+                } else {
+                    this.levelCleared = false; // Game Over or Level Failed
                 }
-                if (state.getLevel() == 5) {
-                    achievementManager.unlock("Clear");
-                }
-                checkAchievement();
             }
             
             if (this.levelFinished && this.screenFinishedCooldown.checkFinished()) {
@@ -409,11 +439,12 @@ public class GameScreen extends Screen {
         
         // Draw Characters
         for (GameCharacter character : this.characters) {
-            if (character != null) {
-                drawManager.getEntityRenderer()
-                    .drawEntity(drawManager.getBackBufferGraphics(), character,
-                        character.getPositionX(),
-                        character.getPositionY());
+            if (character != null && character.getCurrentHealthPoints() > 0) {
+                if (!character.isInvincible() || (System.currentTimeMillis() % 200 > 100)) {
+                    drawManager.getEntityRenderer()
+                        .drawEntity(drawManager.getBackBufferGraphics(), character,
+                            character.getPositionX(), character.getPositionY());
+                }
             }
         }
         
@@ -439,9 +470,6 @@ public class GameScreen extends Screen {
         
         drawManager.getGameScreenRenderer()
             .drawScore(drawManager.getBackBufferGraphics(), this, state.getScore());
-        drawManager.getGameScreenRenderer()
-            .drawLives(drawManager.getBackBufferGraphics(), this, state.getLivesRemaining(),
-                state.isCoop());
         drawManager.getGameScreenRenderer()
             .drawCoins(drawManager.getBackBufferGraphics(), this, state.getCoins());
         drawManager.getGameScreenRenderer()
@@ -471,9 +499,9 @@ public class GameScreen extends Screen {
                 .drawHorizontalLine(drawManager.getBackBufferGraphics(), this,
                     this.height / 2 + this.height / 12);
         }
-        if (this.highScoreNotified &&
-            System.currentTimeMillis() - this.highScoreNoticeStartTime
-                < HIGH_SCORE_NOTICE_DURATION) {
+        if (this.highScoreNotified
+            && System.currentTimeMillis() - this.highScoreNoticeStartTime
+            < HIGH_SCORE_NOTICE_DURATION) {
             drawManager.getHighScoreScreenRenderer().drawNewHighScoreNotice(this);
         }
         
@@ -503,7 +531,6 @@ public class GameScreen extends Screen {
                 int x = (this.getWidth() - boxWidth) / 2;
                 int y = (this.getHeight() - boxHeight) / 2;
                 
-                // Translucent black background
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f));
                 g2d.setColor(Color.BLACK);
                 g2d.fillRoundRect(x, y, boxWidth, boxHeight, 16, 16);
@@ -619,35 +646,41 @@ public class GameScreen extends Screen {
                 // Enemy bullet vs Players
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     GameCharacter character = this.characters[p];
-                    if (character != null && !character.isDestroyed()
+                    if (character != null && character.getCurrentHealthPoints() > 0
                         && checkCollision(weapon, character) && !this.levelFinished) {
+                        if (character.isInvincible()) {
+                            continue;
+                        }
+                        
                         recyclable.add(weapon);
                         
                         this.drawManager.getGameScreenRenderer()
                             .triggerExplosion(character.getPositionX(), character.getPositionY(),
                                 false, state.getLivesRemaining() == 1);
                         
-                        character.destroy(); // Or implement HP reduction logic in GameCharacter
+                        character.takeDamage(weapon.getDamage());
+                        
+                        // [FIXED] Decrement life if HP reaches 0
+                        if (character.getCurrentHealthPoints() <= 0) {
+                            this.state.decLife(p);
+                            this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
+                                + state.getLivesRemaining());
+                        }
                         
                         SoundManager.playOnce("explosion");
-                        this.state.decLife(p);
                         
                         // Record damage for Survivor achievement check
                         this.tookDamageThisLevel = true;
                         this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
-                        this.LOGGER.info("Hit on player " + (p + 1) + ", team lives now: "
-                            + state.getLivesRemaining());
                         break;
                     }
                 }
             } else {
                 // Player bullet vs Enemies
-                // map Bullet owner id (1 or 2) to per-player index (0 or 1)
-                final int ownerId = weapon.getOwnerPlayerId(); // 1 or 2 (0 if unset)
-                final int pIdx = (ownerId == 2) ? 1 : 0; // default to P1 when unset
+                final int ownerId = weapon.getOwnerPlayerId();
+                final int pIdx = (ownerId == 2) ? 1 : 0;
                 boolean finalShip = this.enemyManager.lastShip();
                 
-                // Check collision with formation enemies
                 for (EnemyShip enemyShip : this.enemyManager.getEnemies()) {
                     if (!enemyShip.isDestroyed() && checkCollision(weapon, enemyShip)) {
                         recyclable.add(weapon);
@@ -693,17 +726,47 @@ public class GameScreen extends Screen {
                         state.addScore(pIdx, points);
                         state.incShipsDestroyed(pIdx);
                         
-                        SoundManager.loopStop(); // Stop boss BGM
+                        SoundManager.loopStop();
                         SoundManager.playOnce("explosion");
-                        // Boss explosion is always large and final (true)
                         drawManager.getGameScreenRenderer()
                             .triggerExplosion(this.bossShip.getPositionX(),
                                 this.bossShip.getPositionY(), true, true);
                     }
-                    // Since the Boss is a single target, break is omitted to continue with the next bullet/enemy check.
                 }
             }
         }
+        
+        // player vs enemy body collision
+        for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
+            GameCharacter player = this.characters[p];
+            if (player == null || player.getCurrentHealthPoints() <= 0 || player.isInvincible()) {
+                continue;
+            }
+            
+            for (EnemyShip enemy : this.enemyManager.getEnemies()) {
+                if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
+                    player.takeDamage(1);
+                    
+                    // [FIXED] Decrement life on collision death
+                    if (player.getCurrentHealthPoints() <= 0) {
+                        this.state.decLife(p);
+                    }
+                    
+                    // enemy knockback
+                    double dx = enemy.getPositionX() - player.getPositionX();
+                    double dy = enemy.getPositionY() - player.getPositionY();
+                    double dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist > 0) {
+                        enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                    }
+                    
+                    this.LOGGER.info(
+                        "Collision! Player " + (p + 1) + " hit by enemy body.");
+                }
+            }
+        }
+        
         this.weapons.removeAll(recyclable);
         WeaponPool.recycle(recyclable);
     }
@@ -716,29 +779,25 @@ public class GameScreen extends Screen {
      * @return Result of the collision test.
      */
     private boolean checkCollision(final Entity a, final Entity b) {
-        // 1. Create a basic rectangle (based on current position and size)
-        java.awt.Rectangle r1 = new java.awt.Rectangle(a.getPositionX(), a.getPositionY(),
+        Rectangle r1 = new Rectangle(a.getPositionX(), a.getPositionY(),
             a.getWidth(), a.getHeight());
-        java.awt.Rectangle r2 = new java.awt.Rectangle(b.getPositionX(), b.getPositionY(),
+        Rectangle r2 = new Rectangle(b.getPositionX(), b.getPositionY(),
             b.getWidth(), b.getHeight());
         
-        // 2. Without rotation (optimization): Perform fast quadrilateral collision detection as before.
         if (a.getRotation() == 0 && b.getRotation() == 0) {
             return r1.intersects(r2);
         }
         
-        // 3. When there is rotation: Precise shape collision detection (using Area)
-        java.awt.geom.Area areaA = new java.awt.geom.Area(r1);
-        java.awt.geom.Area areaB = new java.awt.geom.Area(r2);
+        Area areaA = new Area(r1);
+        Area areaB = new Area(r2);
         
-        // Apply rotation to an entity (usually a laser)
         if (a.getRotation() != 0) {
-            java.awt.geom.AffineTransform atA = new java.awt.geom.AffineTransform();
+            AffineTransform atA = new AffineTransform();
             
             double anchorX = r1.getCenterX();
             double anchorY = r1.getCenterY();
             
-            if (a.getSpriteType() == engine.AssetManager.SpriteType.BigLaserBeam) {
+            if (a.getSpriteType() == SpriteType.BigLaserBeam) {
                 anchorY = r1.getY();
             }
             
@@ -746,14 +805,12 @@ public class GameScreen extends Screen {
             areaA.transform(atA);
         }
         
-        // Apply rotation to b entity (mainly player) (possibly for scalability)
         if (b.getRotation() != 0) {
-            java.awt.geom.AffineTransform atB = new java.awt.geom.AffineTransform();
+            AffineTransform atB = new AffineTransform();
             atB.rotate(Math.toRadians(b.getRotation()), r2.getCenterX(), r2.getCenterY());
             areaB.transform(atB);
         }
         
-        // Check if there is an intersection (overlapping area) between two shapes
         areaA.intersect(areaB);
         return !areaA.isEmpty();
     }
@@ -762,27 +819,20 @@ public class GameScreen extends Screen {
         return this.state;
     }
     
+    /**
+     * Returns whether the level was cleared successfully (win condition met).
+     *
+     * @return true if cleared, false otherwise.
+     */
+    public boolean isLevelCleared() {
+        return this.levelCleared;
+    }
+    
     public void checkAchievement() {
         if (state.getShipsDestroyed() == 1) {
             achievementManager.unlock("First Blood");
         }
-        // Clear
-        if (levelFinished && this.enemyManager.isEmpty() && state.getLevel() == 5) {
-            achievementManager.unlock("Clear");
-            float p1Acc = state.getBulletsShot(0) > 0
-                ? (float) state.getShipsDestroyed(0) / state.getBulletsShot(0) * 100 : 0f;
-            float p2Acc = state.getBulletsShot(1) > 0
-                ? (float) state.getShipsDestroyed(1) / state.getBulletsShot(1) * 100 : 0f;
-            if (!this.tookDamageThisLevel) {
-                achievementManager.unlock("Survivor");
-            }
-            if (p1Acc >= 80) {
-                achievementManager.unlock("Sharpshooter");
-                if (p2Acc >= 80) {
-                    achievementManager.unlock("Sharpshooter");
-                }
-            }
-        }
+        // Clear logic handled in update now to avoid premature unlocks
         if (state.getBulletsShot() >= 50) {
             achievementManager.unlock("50 Bullets");
         }

@@ -132,37 +132,30 @@ public class EntityRenderer {
             return;
         }
         
-        int drawWidth = image.getWidth() * scale;
-        int drawHeight = image.getHeight() * scale;
+        int entityWidthByScale = image.getWidth() * scale;
+        int entityHeightByScale = image.getHeight() * scale;
         
-        // EnemyShip의 방향에 따른 반전 처리
         if (entity instanceof EnemyShip enemy) {
+            boolean flip = !enemy.isFacingRight();
             
-            // 이미지 크기와 엔티티 크기가 다를 경우 중앙 정렬 보정
-            int drawX = x + (entity.getWidth() - drawWidth) / 2;
-            int drawY = y + (entity.getHeight() - drawHeight) / 2;
+            int drawX = x + (entity.getWidth() - entityWidthByScale) / 2;
+            int drawY = y + (entity.getHeight() - entityHeightByScale) / 2;
             
-            if (!enemy.isFacingRight()) {
-                // 왼쪽을 볼 때 좌우 반전 (width를 음수로 설정하고 x 위치 조정)
-                g.drawImage(image, drawX + drawWidth, drawY, -drawWidth, drawHeight, null);
+            if (flip) {
+                g.drawImage(image, drawX + entityWidthByScale, drawY, -entityWidthByScale,
+                    entityHeightByScale, null);
             } else {
-                g.drawImage(image, drawX, drawY, drawWidth, drawHeight, null);
+                g.drawImage(image, drawX, drawY, entityWidthByScale, entityHeightByScale, null);
             }
             
-            // 피격/상태 이상 시 색상 오버레이 (Dark Gray)
-            if (color == Color.DARK_GRAY) {
-                g.setColor(new Color(0, 0, 0, 200));
-                g.fillRect(x, y, drawWidth, drawHeight);
-            }
             return;
         }
         
-        // 일반 엔티티 그리기
-        g.drawImage(image, x, y, drawWidth, drawHeight, null);
+        g.drawImage(image, x, y, entityWidthByScale, entityHeightByScale, null);
         
         if (color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
-            g.fillRect(x, y, drawWidth, drawHeight);
+            g.fillRect(x, y, entityWidthByScale, entityHeightByScale);
         }
     }
     
@@ -197,7 +190,7 @@ public class EntityRenderer {
     public void drawHealthBar(Graphics g, final Entity entity, int x, int y) {
         int maxHealth = ((GameCharacter) entity).getCurrentStats().maxHealthPoints;
         int currentHealth = ((GameCharacter) entity).getCurrentHealthPoints();
-        int healthRatio = (currentHealth / maxHealth);
+        double healthRatio = (double) currentHealth / maxHealth;
         
         if (healthRatio > 1) {
             healthRatio = 1;
@@ -209,7 +202,8 @@ public class EntityRenderer {
         g.setColor(new Color(0, 255, 0, 110));
         g.drawRect(x - 1, y - healthBarHeight - 4, entity.getWidth() + 1, healthBarHeight + 1);
         g.setColor(new Color(255, 0, 0, 110));
-        g.fillRect(x, y - healthBarHeight - 3, entity.getWidth() * healthRatio, healthBarHeight);
+        g.fillRect(x, y - healthBarHeight - 3,
+            (int) (entity.getWidth() * healthRatio), healthBarHeight);
     }
     
     private void drawMissingTexturePlaceholder(Graphics g, Entity entity, int x, int y) {

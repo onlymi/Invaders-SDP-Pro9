@@ -63,15 +63,15 @@ public class ArcherCharacterRenderer {
         
         // 이미지 그리기 (스케일 적용)
         if (currentSprite != null) {
-            int width = currentSprite.getWidth() * scale;
-            int height = currentSprite.getHeight() * scale;
+            int widthByScale = currentSprite.getWidth() * scale;
+            int heightByScale = currentSprite.getHeight() * scale;
             
             // character.getPositionX() 대신 인자로 받은 x, y 사용 (렌더러에서 좌표 보정을 할 수 있으므로)
-            g.drawImage(currentSprite, x, y, width, height, null);
+            g.drawImage(currentSprite, x, y, widthByScale, heightByScale, null);
             
             if (color == Color.DARK_GRAY) {
                 g.setColor(new Color(0, 0, 0, 200));
-                g.fillRect(x, y, width, height);
+                g.fillRect(x, y, widthByScale, heightByScale);
             }
         }
     }

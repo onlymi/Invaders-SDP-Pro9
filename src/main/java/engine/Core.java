@@ -41,7 +41,7 @@ public final class Core {
     /**
      * Lives per player (used to compute team pool in shared mode).
      */
-    private static final int MAX_LIVES = 3;
+    private static final int MAX_LIVES = 0;
     private static final int EXTRA_LIFE_FREQUENCY = 3;
     
     /**
@@ -49,11 +49,13 @@ public final class Core {
      */
     private static Frame frame;
     private static Screen currentScreen;
-    private static List<GameSettings> gameSettings;
+    private static List<GameSettings> gameSettings = GameSettings.getGameSettings();
     private static final Logger LOGGER = Logger.getLogger(Core.class.getSimpleName());
     private static Handler fileHandler;
     private static ConsoleHandler consoleHandler;
     private static UserStats currentUserStats;
+    
+    public static final int NUM_LEVELS = gameSettings.size(); // Initialize total number of levels
     
     /**
      * Test implementation.
@@ -81,9 +83,6 @@ public final class Core {
         DrawManager.getInstance().setFrame(frame);
         int width = frame.getWidth();
         int height = frame.getHeight();
-        
-        gameSettings = GameSettings.getGameSettings();
-        int NUM_LEVELS = gameSettings.size(); // Initialize total number of levels
         
         // 2P mode: modified to null to allow for switch between 2 modes
         GameState gameState = null;
@@ -417,8 +416,9 @@ public final class Core {
             }
             
             gameState = ((GameScreen) currentScreen).getGameState();
+            boolean isCleared = ((GameScreen) currentScreen).isLevelCleared();
             
-            if (gameState.teamAlive()) {
+            if (gameState.teamAlive() && isCleared) {
                 gameState.nextLevel();
             }
             
@@ -557,9 +557,9 @@ public final class Core {
     /**
      * Activate sign up screen system.
      *
-     * @ param width Sign up screen contents box width.
-     * @ param height Sign up screen contents box height.
-     * @ return Next return code.
+     * @param width  Sign up screen contents box width.
+     * @param height Sign up screen contents box height.
+     * @return Next return code.
      */
     public static int signUpSystem(int width, int height) {
         currentScreen = new SignUpScreen(width, height, FPS);

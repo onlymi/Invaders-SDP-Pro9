@@ -200,7 +200,7 @@ public class Weapon extends Entity {
                 return;
             }
             
-            if (this.target != null && !this.target.isDestroyed()) {
+            if (this.target != null && !this.target.isInvincible()) {
                 double dx = (target.getPositionX() + target.getWidth() / 2.0)
                     - (this.positionX + this.width / 2.0);
                 double dy = (target.getPositionY() + target.getHeight() / 2.0)
