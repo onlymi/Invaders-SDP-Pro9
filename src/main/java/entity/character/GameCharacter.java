@@ -481,4 +481,19 @@ public abstract class GameCharacter extends Entity {
     public boolean isFacingBack() {
         return isFacingBack;
     }
+    
+    /**
+     * 특정 타입의 버프를 가지고 있는지 확인합니다.
+     *
+     * @param buffClass 확인할 버프 클래스
+     * @return 해당 버프가 활성화되어 있으면 true
+     */
+    public boolean hasBuff(Class<? extends Buff> buffClass) {
+        for (Buff buff : activeBuffs) {
+            if (buffClass.isInstance(buff)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
