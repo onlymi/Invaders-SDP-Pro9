@@ -3,6 +3,7 @@ package entity.character;
 import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.InputManager;
+import engine.UserStats;
 import engine.utils.Cooldown;
 import entity.Entity;
 import entity.Weapon;
@@ -147,7 +148,7 @@ public abstract class GameCharacter extends Entity {
      * additive bonuses to the base stats.
      */
     protected void applyUserUpgrades() { // Test에서 오버라이딩 및 호출이 가능하도록 protected로 변경.
-        engine.UserStats stats = engine.Core.getUserStats();
+        UserStats stats = Core.getUserStats();
         if (stats == null) {
             return;
         }
@@ -386,6 +387,10 @@ public abstract class GameCharacter extends Entity {
         this.projectileWidth = projectileWidth;
         this.projectileHeight = projectileHeight;
         this.projectileSpeed = projectileSpeed;
+    }
+    
+    public void setCurrentHealthPoints(int playerHealth) {
+        this.currentHealthPoints = playerHealth;
     }
     
     public CharacterStats getBaseStats() {

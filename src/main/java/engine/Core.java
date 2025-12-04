@@ -49,7 +49,7 @@ public final class Core {
      */
     private static Frame frame;
     private static Screen currentScreen;
-    private static List<GameSettings> gameSettings = GameSettings.getGameSettings();
+    private static final List<GameSettings> gameSettings = GameSettings.getGameSettings();
     private static final Logger LOGGER = Logger.getLogger(Core.class.getSimpleName());
     private static Handler fileHandler;
     private static ConsoleHandler consoleHandler;
@@ -73,7 +73,7 @@ public final class Core {
             LOGGER.addHandler(consoleHandler);
             LOGGER.setLevel(Level.ALL);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.severe(e.getMessage());
         }
         
         frame = new Frame(WIDTH, HEIGHT);

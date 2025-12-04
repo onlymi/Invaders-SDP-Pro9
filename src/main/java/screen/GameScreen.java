@@ -223,6 +223,9 @@ public class GameScreen extends Screen {
                 startX + gapBetweenCharacters, startY, Entity.Team.PLAYER2, 2);
             // P2 Controls
             this.characters[1].setControlKeys(Core.getInputManager().getPlayer2Keys());
+            if (state.getLevel() > 1 && state.getPlayerHealth(1) > 0) {
+                this.characters[1].setCurrentHealthPoints(state.getPlayerHealth(1));
+            }
         } else {
             this.characters[0] = CharacterSpawner.createCharacter(this.characterTypeP1,
                 startX, startY, Entity.Team.PLAYER1, 1);
@@ -230,6 +233,10 @@ public class GameScreen extends Screen {
         }
         // P1 Controls
         this.characters[0].setControlKeys(Core.getInputManager().getPlayer1Keys());
+        
+        if (state.getLevel() > 1 && state.getPlayerHealth(0) > 0) {
+            this.characters[0].setCurrentHealthPoints(state.getPlayerHealth(0));
+        }
         
         this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
         this.weapons = new HashSet<Weapon>();
@@ -417,6 +424,13 @@ public class GameScreen extends Screen {
                 // Set levelCleared only if objective met
                 if (this.enemyKillCount >= this.killsToWin) {
                     this.levelCleared = true;
+                    
+                    if (this.characters[0] != null) {
+                        state.setPlayerHealth(0, this.characters[0].getCurrentHealthPoints());
+                    }
+                    if (state.isCoop() && this.characters[1] != null) {
+                        state.setPlayerHealth(1, this.characters[1].getCurrentHealthPoints());
+                    }
                     
                     if (!this.tookDamageThisLevel) {
                         achievementManager.unlock("Survivor");
@@ -702,7 +716,7 @@ public class GameScreen extends Screen {
                         
                         // Decrement life if HP reaches 0
                         if (character.getCurrentHealthPoints() <= 0) {
-                            // this.state.decLife(p);
+                            this.state.decLife(p);
                             this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
                                 + state.getLivesRemaining());
                         }

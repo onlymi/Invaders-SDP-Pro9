@@ -23,7 +23,7 @@ public class ArcherCharacterRenderer {
         BufferedImage currentSprite = assetManager.getSpriteImage(
             SpriteType.CharacterArcherStand);
         
-        if (character.isDie()) {
+        if (character.isDie() || character.getCurrentHealthPoints() <= 0) {
             currentSprite = assetManager.getSpriteImage(SpriteType.CharacterArcherGravestone);
         } else {
             if (character.isInSelectScreen()) {
