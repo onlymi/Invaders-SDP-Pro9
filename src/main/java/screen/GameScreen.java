@@ -338,18 +338,17 @@ public class GameScreen extends Screen {
                 // Block enemy shooting while global freeze is active.
                 if (this.state == null || !this.state.areEnemiesFrozen()) {
                     int bulletsBefore = this.weapons.size();
-                    //this.enemyManager.shoot(this.weapons);
+                    // this.enemyManager.shoot(this.weapons);
                     if (this.weapons.size() > bulletsBefore) {
                         // At least one enemy bullet added
                         SoundManager.playOnce("shoot_enemies");
                     }
                 }
+                manageCollisions();
+                cleanBullets();
+                cleanItems();
+                manageItemPickups();
             }
-            
-            manageCollisions();
-            cleanBullets();
-            cleanItems();
-            manageItemPickups();
             
             state.updateEffects();
             this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
@@ -721,7 +720,7 @@ public class GameScreen extends Screen {
                     double dist = Math.sqrt(dx * dx + dy * dy);
                     
                     if (dist > 0) {
-                        enemy.pushBack((dx / dist) * 20.0, (dy / dist) * 20.0);
+                        enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
                     }
                     
                     this.LOGGER.info(

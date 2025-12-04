@@ -47,12 +47,11 @@ public class EntityRenderer {
         final int positionY, final Color color) {
         
         // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
-        // Color debugColor = g.getColor();
-        // g.setColor(new Color(255, 0, 0, 128));
-        // g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
-        // g.setColor(debugColor); // 원래 색상 복구
+        Color debugColor = g.getColor();
+        g.setColor(new Color(255, 0, 0, 128));
+        g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+        g.setColor(debugColor); // 원래 색상 복구
         // [DEBUG END]
-        
         
         if (entity instanceof ArcherCharacter) {
             archerCharacterRenderer.draw(g, (ArcherCharacter) entity);
@@ -77,11 +76,11 @@ public class EntityRenderer {
         final int positionY, final Color color, final int scale) {
         
         // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
-        // Color debugColor = g.getColor();
-        // g.setColor(new Color(255, 0, 0, 128));
+        Color debugColor = g.getColor();
+        g.setColor(new Color(255, 0, 0, 128));
         // 히트박스는 렌더링 스케일(scale)과 무관하게 엔티티의 실제 크기(width, height)를 따릅니다.
-        // g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
-        // g.setColor(debugColor);
+        g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+        g.setColor(debugColor);
         // [DEBUG END]
         
         SpriteType type = entity.getSpriteType();
@@ -95,6 +94,7 @@ public class EntityRenderer {
     
     private void drawEntityAsImage(Graphics g, final Entity entity, final int positionX,
         final int positionY, Color color, final int scale) {
+        
         BufferedImage image = assetManager.getSpriteImage(entity.getSpriteType());
         if (image == null) {
             drawMissingTexturePlaceholder(g, entity, positionX, positionY);
@@ -102,7 +102,7 @@ public class EntityRenderer {
         }
         
         int entityWidth = image.getWidth() * scale;
-        int entityHeight = image.getWidth() * scale;
+        int entityHeight = image.getHeight() * scale;
         
         int drawX = positionX + (entity.getWidth() - entityWidth) / 2;
         int drawY = positionY + (entity.getHeight() - entityHeight) / 2;
@@ -115,15 +115,26 @@ public class EntityRenderer {
             }
         }
         
-        if (flip) {
-            g.drawImage(image, drawX + entityWidth, drawY, - entityWidth, entityHeight, null);
-        } else {
-            g.drawImage(image, positionX, positionY, entityWidth, entityHeight, null);
+        Graphics2D g2d = (Graphics2D) g;
+        java.awt.Composite originalComposite = g2d.getComposite();
+        
+        if (color.getAlpha() < 255) {
+            float alpha = color.getAlpha() / 255f;
+            g2d.setComposite(
+                java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, alpha));
         }
+        
+        if (flip) {
+            g.drawImage(image, drawX + entityWidth, drawY, -entityWidth, entityHeight, null);
+        } else {
+            g.drawImage(image, drawX, drawY, entityWidth, entityHeight, null);
+        }
+        
+        g2d.setComposite(originalComposite);
         
         if (color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
-            g.fillRect(positionX, positionY, entityWidth, entityHeight);
+            g.fillRect(drawX, drawY, entityWidth, entityHeight);
         }
     }
     
@@ -159,7 +170,6 @@ public class EntityRenderer {
         int spriteWidth = spriteMap.length;
         int spriteHeight = spriteMap[0].length;
         g.setColor(color);
-        
         
         if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
             g.fillRect(positionX, positionY, entityWidth, entityHeight);
@@ -212,17 +222,8 @@ public class EntityRenderer {
     }
     
     private static Color calculateDamageAlpha(EnemyShip enemy, Color baseColor) {
-        int currentHp = enemy.getHealth();
-        int maxHp = enemy.getInitialHealth();
-        
-        if (currentHp > 0 && maxHp > 0) {
-            // 체력에 비례하여 투명도(Alpha) 조정 (체력이 낮을수록 투명해짐 혹은 그 반대 로직)
-            // 기존 로직: 70 + 150 * (비율)
-            float healthRatio = (float) currentHp / maxHp;
-            int alpha = (int) (70 + 150 * healthRatio);
-            alpha = Math.max(0, Math.min(255, alpha)); // Clamp 0~255
-            
-            return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha);
+        if (enemy.isHitRecently()) {
+            return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), 128);
         }
         return baseColor;
     }

@@ -34,6 +34,8 @@ public class EnemyShip extends Entity {
     private static final double FLOATING_SPEED = 0.005;
     boolean isFacingRight;
     
+    private long lastHitTime = 0;
+    
     /**
      * Checks if the ship has been hit by a bullet.
      */
@@ -248,10 +250,16 @@ public class EnemyShip extends Entity {
         if (this.isDestroyed) {
             return;
         }
+        this.lastHitTime = System.currentTimeMillis();
         this.health -= damage;
         if (this.health <= 0) {
             destroy();
         }
+    }
+    
+    public boolean isHitRecently() {
+        // 0.1초 내 피격되었는지 확인
+        return (System.currentTimeMillis() - this.lastHitTime) < 500;
     }
     
     private void changeAnimationSprite() {
