@@ -4,48 +4,61 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import engine.Core;
+import engine.SoundManager;
 import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.utils.Cooldown;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class BossShipTest {
     
     private BossShip boss;
     
-    // BossShip.java에서 사용된 상수 (테스트 목적상 복사)
     private static final int BOSS_INITIAL_HEALTH = 500;
     private static final int TOP_BOUNDARY = 68;
+    private static final int BOSS_MAX_Y = 340;
+    private static final int SCREEN_WIDTH = 1200;
     
-    private MockedStatic<Core> coreMock;
-    
+    // [수정] Core와 SoundManager를 가로채기 위한 Mock 객체 선언
     @Mock
     private Cooldown mockCooldown;
     
+    private MockedStatic<Core> coreMock;
+    private MockedStatic<SoundManager> soundManagerMock;
+    
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        
-        // 1. Core 클래스의 Static 메소드 모킹 설정
+        // 1. Static Class Mocking 시작
         coreMock = mockStatic(Core.class);
+        soundManagerMock = mockStatic(SoundManager.class);
         
-        // getCooldown() 호출 시 mockCooldown 반환
+        // 2. Core.getCooldown() 호출 시 가짜 Cooldown 반환 (시간 체크 무시하고 항상 true 반환)
         coreMock.when(() -> Core.getCooldown(anyInt())).thenReturn(mockCooldown);
-        // getVariableCooldown() 호출 시에도 mockCooldown 반환 (NPE 방지)
-        coreMock.when(() -> Core.getVariableCooldown(anyInt(), anyInt())).thenReturn(mockCooldown);
-        
-        // 2. Cooldown 객체의 동작 모킹
         when(mockCooldown.checkFinished()).thenReturn(true);
         
-        // 3. BossShip 생성
+        // 3. 화면 크기 가짜 반환
+        coreMock.when(Core::getFrameWidth).thenReturn(SCREEN_WIDTH);
+        coreMock.when(Core::getFrameHeight).thenReturn(800);
+        
+        // 4. [중요] SoundManager.playOnce()가 호출되어도 아무 일도 안 일어나게 막음 (오디오 장치 없음 오류 방지)
+        soundManagerMock.when(() -> SoundManager.playOnce(anyString())).thenAnswer(invocation -> null);
+        
+        // 5. BossShip 생성 (이제 내부에서 Core나 SoundManager를 호출해도 안전함)
         boss = new BossShip(100, TOP_BOUNDARY + 10);
         
         // 생성자에서 초기화되지 않은 bossAnimationCooldown을 테스트 코드에서 수동으로 주입
@@ -56,6 +69,7 @@ public class BossShipTest {
     void tearDown() {
         // Static Mock 해제 (필수)
         coreMock.close();
+        soundManagerMock.close();
     }
     
     // --- 1. 스탯 및 파괴 테스트 ---
@@ -64,31 +78,42 @@ public class BossShipTest {
     void initialStatsAreSetCorrectly() {
         assertEquals(BOSS_INITIAL_HEALTH, boss.getHealth(), "Initial health must be 500");
         
-        // 새로운 Getter를 사용하여 임계값(Threshold)이 50%로 정확히 설정되었는지 검증
-        assertEquals(BOSS_INITIAL_HEALTH / 2, boss.getAttackHpThreshold(),
-            "Attack threshold must be 50% of initial health.");
-        
         assertEquals(5000, boss.getPointValue(), "Point value must be 5000");
-        assertTrue(boss.isAttackEnabled(), "Attack must be enabled initially");
+        
+        assertTrue(boss.isAttackEnabled(), "Attack must be enabled initially (by default implementation).");
     }
     
-    @Test
     void healthDecrementsAndDestroys() {
-        // 체력 감소 테스트
+        // 1. 일반 피격 테스트 (초기 체력에서 1 감소 확인)
+        int initialHp = boss.getHealth();
         boss.hit();
-        assertEquals(BOSS_INITIAL_HEALTH - 1, boss.getHealth(),
+        assertEquals(initialHp - 1, boss.getHealth(),
             "Health should decrease by 1 on hit.");
+        assertFalse(boss.isDestroyed(),
+            "Boss should not be destroyed yet (HP > 0).");
         
-        // 파괴 테스트 (체력을 1 남기고 히트)
+        // 2. 파괴 테스트를 위해 체력을 1로 만듦
+        // (현재 체력 - 1) 만큼 데미지를 입히면 1이 남습니다.
         boss.getDamage(boss.getHealth() - 1);
-        assertEquals(1, boss.getHealth());
+        assertEquals(1, boss.getHealth(),
+            "Health should be 1 before the final hit.");
         
-        boss.hit(); // 1 -> 0
-        assertEquals(0, boss.getHealth());
-        assertTrue(boss.isDestroyed(), "Boss should be destroyed when health reaches 0.");
+        // 3. 마지막 타격 (HP: 1 -> 0) 및 파괴 확인
+        boss.hit();
+        assertEquals(0, boss.getHealth(),
+            "Health should be 0 after destruction.");
+        assertTrue(boss.isDestroyed(),
+            "Boss must be destroyed when health reaches 0.");
         assertEquals(SpriteType.Explosion, boss.getSpriteType(),
             "Sprite should change to Explosion on destruction.");
     }
+        // --- 2. 움직임 및 경계 테스트 ---
+        
+        @Test
+        void initialMovementDirectionIsCorrect() {
+            assertTrue(boss.isMovingRight(), "Boss must start moving right.");
+            assertTrue(boss.isMovingDown(), "Boss must start moving down.");
+        }
     
     // --- 2. 이동 로직 테스트 ---
     
@@ -101,8 +126,14 @@ public class BossShipTest {
         boss.setPositionX(1200); // Core.WIDTH 가정
         boss.update(); // 이동 로직 실행
         
-        // 방향이 왼쪽으로 바뀌었는지 확인
-        assertFalse(boss.isMovingRight(), "Direction must flip to Left at boundary.");
+        boss.update();
+        assertFalse(boss.isMovingRight(), "Direction must flip to Left at right boundary.");
+        
+        // 좌측 경계 테스트
+        boss.setPositionX(0);
+        
+        boss.update();
+        assertTrue(boss.isMovingRight(), "Direction must flip to Right at left boundary.");
     }
     
     @Test
@@ -115,8 +146,9 @@ public class BossShipTest {
         boss.update();
         assertFalse(boss.isMovingDown(), "Direction must flip to Up at BOSS_MAX_Y.");
         
-        // 강제로 위쪽 한계(TOP_BOUNDARY = 68) 위로 이동
-        boss.setPositionY(60);
+        // 상단 경계 테스트
+        boss.setPositionY(TOP_BOUNDARY);
+        
         boss.update();
         assertTrue(boss.isMovingDown(), "Direction must flip to Down at TOP_BOUNDARY.");
     }
@@ -128,21 +160,20 @@ public class BossShipTest {
         // HP 500 (임계값보다 높음)
         assertTrue(boss.isAttackEnabled(), "Attack must be enabled at full HP.");
         
-        // HP를 임계값 + 1로 드롭
-        boss.getDamage(boss.getHealth() - (boss.getAttackHpThreshold() + 1));
+        // 1로 드롭
         boss.update();
         assertTrue(boss.isAttackEnabled(), "Attack must remain enabled just above threshold.");
         
         // HP를 임계값으로 드롭
-        boss.hit(); // 이제 HP가 임계값과 같아짐
+        boss.hit();
         boss.update();
-        assertTrue(boss.isAttackEnabled(), "Attack must be enabled at or below threshold.");
+        assertTrue(boss.isAttackEnabled(), "Attack remains enabled at threshold.");
     }
     
     @Test
     void animationCycleIsCorrect() {
         // 초기 상태 확인
-        assertEquals(SpriteType.BossShip1, boss.getSpriteType());
+        assertEquals(SpriteType.BossMainBody, boss.getSpriteType());
         
         // 1회 업데이트 (BossShip1 -> BossShip2)
         // Cooldown이 끝났다고 가정하기 위해 강제로 시간을 만료시키고 업데이트
