@@ -1,92 +1,134 @@
 package entity.character;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
-import engine.AssetManager.SpriteType;
-import engine.Core;
-import engine.UserStats;
-import engine.utils.Cooldown;
 import entity.Entity.Team;
-import entity.Weapon;
-import entity.WeaponPool;
-import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Set;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import entity.skill.EvasionShotSkill;
+import entity.skill.PiercingArrowSkill;
+import entity.skill.RapidFireSkill;
+import entity.skill.Skill;
+import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.MockitoAnnotations;
 
-class ArcherCharacterAttackTest {
+public class ArcherCharacterTest {
     
-    private MockedStatic<Core> coreMock;
-    
-    @Mock
-    private UserStats userStats;
-    @Mock
-    private Cooldown mockCooldown;
-    
-    private ArcherCharacter archer;
-    private final int START_X = 100;
-    private final int START_Y = 500;
-    private final int PLAYER_ID = 1;
-    
-    @BeforeEach
-    void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
+    @Test
+    void testCharacter_ArcherCharacter_healthPoints() {
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
-        // WeaponPool 초기화
-        Field poolField = WeaponPool.class.getDeclaredField("pool");
-        poolField.setAccessible(true);
-        ((Set<?>) poolField.get(null)).clear();
+        int[] expectedValue = {90, 90};
+        int[] actualValue = {character.getBaseStats().maxHealthPoints,
+            character.currentHealthPoints};
         
-        // Core Mocking
-        coreMock = mockStatic(Core.class);
-        coreMock.when(() -> Core.getCooldown(anyInt())).thenReturn(mockCooldown);
-        coreMock.when(Core::getUserStats).thenReturn(userStats);
-        
-        archer = new ArcherCharacter(START_X, START_Y, Team.PLAYER1, PLAYER_ID);
-    }
-    
-    @AfterEach
-    void tearDown() {
-        coreMock.close();
+        assertArrayEquals(expectedValue, actualValue,
+            "Archer character health points is set incorrectly.");
     }
     
     @Test
-    void testArcherProjectileProperties() {
-        // Given: 쿨다운이 완료된 상태
-        Set<Weapon> weapons = new HashSet<>();
-        when(mockCooldown.checkFinished()).thenReturn(true);
+    void testCharacter_ArcherCharacter_manaPoints() {
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
-        // When: 공격 실행
-        boolean isFired = archer.launchBasicAttack(weapons);
+        int[] expectedValue = {100, 100};
+        int[] actualValue = {character.getBaseStats().maxManaPoints, character.currentManaPoints};
         
-        // Then: 발사된 투사체의 속성이 아처 전용 설정과 일치하는지 검증
-        assertTrue(isFired, "공격이 발사되어야 합니다.");
-        assertEquals(1, weapons.size());
-        
-        Weapon weapon = weapons.iterator().next();
-        
-        // ArcherCharacter 생성자에서 설정된 투사체 속성 검증
-        // this.projectileSpriteType = SpriteType.CharacterArcherDefaultProjectile;
-        assertEquals(SpriteType.CharacterArcherDefaultProjectile, weapon.getSpriteType(),
-            "투사체 이미지가 아처 전용 화살이어야 합니다.");
-        
-        // ArcherCharacter 생성자 로직: projectileSpeed = (int) (attackSpeed * 10)
-        // 기본 attackSpeed가 1.5f 이므로 15가 되어야 함 (CharacterType.ARCHER 기준)
-        int expectedSpeed = (int) (archer.getCurrentStats().attackSpeed * 10);
-        assertEquals(expectedSpeed, weapon.getSpeed(),
-            "투사체 속도가 스탯에 비례하여 올바르게 설정되어야 합니다.");
-        
-        // 투사체 크기 검증
-        assertEquals(SpriteType.CharacterArcherDefaultProjectile.getWidth(), weapon.getWidth());
-        assertEquals(SpriteType.CharacterArcherDefaultProjectile.getHeight(), weapon.getHeight());
+        assertArrayEquals(expectedValue, actualValue,
+            "Archer character mana points is set incorrectly.");
     }
+    
+    @Test
+    void testCharacter_ArcherCharacter_movementSpeed() {
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
+        
+        float expectedValue = 1.2f;
+        float actualValue = character.getBaseStats().movementSpeed;
+        
+        assertEquals(expectedValue, actualValue,
+            "Archer character movement speed is set incorrectly.");
+    }
+    
+    @Test
+    void testCharacter_ArcherCharacter_damage() {
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
+        
+        int[] expectedValue = {18, 0};
+        int[] actualValue = {character.getBaseStats().physicalDamage,
+            character.getBaseStats().magicalDamage};
+        
+        assertArrayEquals(expectedValue, actualValue,
+            "Archer character damage stat is set incorrectly.");
+    }
+    
+    @Test
+    void testCharacter_ArcherCharacter_attackSpeed() {
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
+        
+        float expectedValue = 1.5f;
+        float actualValue = character.getBaseStats().attackSpeed;
+        
+        assertEquals(expectedValue, actualValue,
+            "Archer character attack speed is set incorrectly.");
+    }
+    
+    @Test
+    void testCharacter_ArcherCharacter_attackRange() {
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
+        
+        float expectedValue = 12.0f;
+        float actualValue = character.getBaseStats().attackRange;
+        
+        assertEquals(expectedValue, actualValue,
+            "Archer character attack range is set incorrectly.");
+    }
+    
+    @Test
+    void testCharacter_ArcherCharacter_critical() {
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
+        
+        float[] expectedValue = {0.15f, 2.0f};
+        float[] actualValue = {character.getBaseStats().critChance,
+            character.getBaseStats().critDamageMultiplier};
+        
+        assertArrayEquals(expectedValue, actualValue,
+            "Archer character critical stat is set incorrectly.");
+    }
+    
+    @Test
+    void testCharacter_ArcherCharacter_physicalDefense() {
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
+        
+        int expectedValue = 8;
+        int actualValue = character.getBaseStats().physicalDefense;
+        
+        assertEquals(expectedValue, actualValue,
+            "Archer character physical defense is set incorrectly.");
+    }
+    
+    @Test
+    void testCharacter_ArcherCharacter_unlocked() {
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
+        
+        boolean expectedValue = true;
+        boolean actualValue = character.unlocked;
+        
+        assertEquals(expectedValue, actualValue,
+            "Archer character unlock or not is set incorrectly.");
+    }
+    
+    @Test
+    void testCharacter_ArcherCharacter_skills() {
+        ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
+        ArrayList<Skill> actualValue = character.skills;
+        
+        assertEquals(3, actualValue.size(),
+            "Archer character skill count is incorrect. Expected 3.");
+        assertInstanceOf(RapidFireSkill.class, actualValue.get(0),
+            "Skill at index 0 is not RapidFireSkill.");
+        assertInstanceOf(EvasionShotSkill.class, actualValue.get(1),
+            "Skill at index 1 is not EvasionShotSkill.");
+        assertInstanceOf(PiercingArrowSkill.class, actualValue.get(2),
+            "Skill at index 2 is not PiercingArrowSkill.");
+    }
+    
 }
