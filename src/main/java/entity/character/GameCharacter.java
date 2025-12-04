@@ -44,6 +44,9 @@ public abstract class GameCharacter extends Entity {
     private int upKey;
     private int downKey;
     private int defaultAttackKey;
+    private int firstSkillKey;
+    private int secondSkillKey;
+    private int ultimateSkillKey;
     
     private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
     protected boolean isAttacking;
@@ -107,6 +110,9 @@ public abstract class GameCharacter extends Entity {
         this.upKey = KeyEvent.VK_W;
         this.downKey = KeyEvent.VK_S;
         this.defaultAttackKey = KeyEvent.VK_SPACE;
+        this.firstSkillKey = KeyEvent.VK_1;
+        this.secondSkillKey = KeyEvent.VK_2;
+        this.ultimateSkillKey = KeyEvent.VK_3;
         
         initializeKeyboardPressing();
         
@@ -147,7 +153,7 @@ public abstract class GameCharacter extends Entity {
      * Applies stat upgrades from the user's store purchases. Upgrades are applied as percentage or
      * additive bonuses to the base stats.
      */
-    protected void applyUserUpgrades() { // Test에서 오버라이딩 및 호출이 가능하도록 protected로 변경.
+    protected void applyUserUpgrades() {
         UserStats stats = Core.getUserStats();
         if (stats == null) {
             return;
@@ -214,6 +220,7 @@ public abstract class GameCharacter extends Entity {
     public void addBuff(Buff buff) {
         buff.applyToStats(currentStats);
         this.activeBuffs.add(buff);
+        recalculateStats();
     }
     
     public void decreaseMana(int manaCost) {
@@ -224,15 +231,18 @@ public abstract class GameCharacter extends Entity {
      * Reapply all buffs that are currently active, starting with the base stat.
      */
     public void recalculateStats() {
-        float tempAttackSpeed = baseStats.attackSpeed;
-        int tempPhysDamage = baseStats.physicalDamage;
+        this.currentStats.attackSpeed = this.baseStats.attackSpeed;
+        this.currentStats.physicalDamage = this.baseStats.physicalDamage;
+        this.currentStats.movementSpeed = this.baseStats.movementSpeed;
         
         for (Buff buff : activeBuffs) {
             buff.applyToStats(this.currentStats);
         }
         
-        this.currentStats.attackSpeed = tempAttackSpeed;
-        this.currentStats.physicalDamage = tempPhysDamage;
+        int newCooldownTime = (int) (BASE_SHOOTING_COOLDOWN
+            - this.currentStats.attackSpeed * SHOOTING_COOLDOWN_FACTOR);
+        this.shootingCooldown = Core.getCooldown(newCooldownTime);
+        this.projectileSpeed = (int) (this.currentStats.attackSpeed * ATTACK_SPEED_FACTOR);
     }
     
     /**
@@ -246,12 +256,20 @@ public abstract class GameCharacter extends Entity {
         this.upKey = keys[2];
         this.downKey = keys[3];
         this.defaultAttackKey = keys[4];
+        this.firstSkillKey = keys[6];
+        this.secondSkillKey = keys[7];
+        this.ultimateSkillKey = keys[8];
     }
     
-    public boolean handleKeyboard(InputManager inputManager, Screen screen, Set<Weapon> weapons,
+    public void handleKeyboard(InputManager inputManager, Screen screen, Set<Weapon> weapons,
         float deltaTime) {
         initializeKeyboardPressing();
         
+        handleMovement(inputManager, screen, deltaTime);
+        handleAttack(inputManager, weapons);
+    }
+    
+    public void handleMovement(InputManager inputManager, Screen screen, float deltaTime) {
         float dx = 0;
         float dy = 0;
         
@@ -306,21 +324,38 @@ public abstract class GameCharacter extends Entity {
                 this.positionY += movementY;
             }
         }
-        
+    }
+    
+    public void handleAttack(InputManager inputManager, Set<Weapon> weapons) {
         if (inputManager.isKeyDown(this.defaultAttackKey)) {
+            launchBasicAttack(weapons);
             this.isAttacking = true;
-            return launchBasicAttack(weapons);
+        } else if (inputManager.isKeyDown(this.firstSkillKey)) {
+            if (!skills.isEmpty()) {
+                skills.get(0).activate(this);
+            }
+            this.isAttacking = true;
+        } else if (inputManager.isKeyDown(this.secondSkillKey)) {
+            if (skills.size() > 1) {
+                skills.get(1).activate(this);
+            }
+            this.isAttacking = true;
+        } else if (inputManager.isKeyDown(this.ultimateSkillKey)) {
+            if (skills.size() > 2) {
+                skills.get(2).activate(this);
+            }
+            this.isAttacking = true;
+        } else {
+            this.isAttacking = false;
         }
-        return false;
     }
     
     /**
      * Launch a basic attack.
      *
      * @param weapons The set of weapons to add the new weapon to.
-     * @return True if a weapon was fired, false if on cooldown.
      */
-    public boolean launchBasicAttack(Set<Weapon> weapons) {
+    public void launchBasicAttack(Set<Weapon> weapons) {
         if (this.shootingCooldown.checkFinished()) {
             this.shootingCooldown.reset();
             
@@ -352,9 +387,7 @@ public abstract class GameCharacter extends Entity {
             weapon.setPlayerId(this.playerId);
             weapon.setRange(this.currentStats.attackRange);
             weapons.add(weapon);
-            return true;
         }
-        return false;
     }
     
     /**

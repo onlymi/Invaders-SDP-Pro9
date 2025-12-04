@@ -102,7 +102,8 @@ class GameCharacterAttackTest {
         character.setFacingState(false, false, true, false);
         
         // When
-        boolean result = character.launchBasicAttack(weapons);
+        character.launchBasicAttack(weapons);
+        boolean result = character.isAttacking;
         
         // Then
         assertTrue(result, "쿨타임이 끝났으면 공격이 성공해야 합니다.");
@@ -119,7 +120,8 @@ class GameCharacterAttackTest {
         when(shootingCooldown.checkFinished()).thenReturn(false);
         
         // When
-        boolean result = character.launchBasicAttack(weapons);
+        character.launchBasicAttack(weapons);
+        boolean result = character.isAttacking;
         
         // Then
         assertFalse(result, "쿨타임 중일 때는 공격이 실패해야 합니다.");
