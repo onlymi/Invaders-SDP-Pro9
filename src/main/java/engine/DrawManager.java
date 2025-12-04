@@ -10,15 +10,19 @@ import engine.renderer.GameScreenRenderer;
 import engine.renderer.HighScoreScreenRenderer;
 import engine.renderer.LogInScreenRenderer;
 import engine.renderer.PlayModeSelectionScreenRenderer;
+import engine.renderer.PlayerSelectionScreenRenderer;
 import engine.renderer.ScoreScreenRenderer;
 import engine.renderer.SettingScreenRenderer;
-import engine.renderer.ShipSelectionMenuRenderer;
 import engine.renderer.SignUpScreenRenderer;
+import engine.renderer.StoreScreenRenderer;
 import engine.renderer.TitleScreenRenderer;
+import entity.BossShip;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,12 +92,13 @@ public final class DrawManager {
     private HighScoreScreenRenderer highScoreScreenRenderer;
     private SettingScreenRenderer settingScreenRenderer;
     private PlayModeSelectionScreenRenderer playModeSelectionScreenRenderer;
-    private ShipSelectionMenuRenderer shipSelectionMenuRenderer;
+    private PlayerSelectionScreenRenderer playerSelectionScreenRenderer;
     private GameScreenRenderer gameScreenRenderer;
     private ScoreScreenRenderer scoreScreenRenderer;
     private AuthScreenRenderer authScreenRenderer;
     private SignUpScreenRenderer signUpScreenRenderer;
     private LogInScreenRenderer logInScreenRenderer;
+    private StoreScreenRenderer storeScreenRenderer;
     
     private final List<Explosion> explosions = new ArrayList<>();
     
@@ -119,13 +124,14 @@ public final class DrawManager {
         this.settingScreenRenderer = new SettingScreenRenderer(this.commonRenderer);
         this.playModeSelectionScreenRenderer = new PlayModeSelectionScreenRenderer(
             this.commonRenderer);
-        this.shipSelectionMenuRenderer = new ShipSelectionMenuRenderer(this.commonRenderer);
+        this.playerSelectionScreenRenderer = new PlayerSelectionScreenRenderer(this.commonRenderer);
         this.gameScreenRenderer = new GameScreenRenderer(this.commonRenderer,
             ItemManager.getInstance());
         this.scoreScreenRenderer = new ScoreScreenRenderer(this.commonRenderer);
         this.authScreenRenderer = new AuthScreenRenderer(this.commonRenderer);
         this.signUpScreenRenderer = new SignUpScreenRenderer(this.commonRenderer);
         this.logInScreenRenderer = new LogInScreenRenderer(this.commonRenderer);
+        this.storeScreenRenderer = new StoreScreenRenderer(this.commonRenderer);
         
         fontRegular = this.assetManager.getFontRegular();
         fontBig = this.assetManager.getFontBig();
@@ -182,8 +188,8 @@ public final class DrawManager {
         return this.playModeSelectionScreenRenderer;
     }
     
-    public ShipSelectionMenuRenderer getShipSelectionMenuRenderer() {
-        return this.shipSelectionMenuRenderer;
+    public PlayerSelectionScreenRenderer getShipSelectionMenuRenderer() {
+        return this.playerSelectionScreenRenderer;
     }
     
     public GameScreenRenderer getGameScreenRenderer() {
@@ -204,6 +210,10 @@ public final class DrawManager {
     
     public LogInScreenRenderer getLogInScreenRenderer() {
         return this.logInScreenRenderer;
+    }
+    
+    public StoreScreenRenderer getStoreScreenRenderer() {
+        return this.storeScreenRenderer;
     }
     
     /**
@@ -244,7 +254,25 @@ public final class DrawManager {
      * @param screen Screen to draw on.
      */
     public void completeDrawing(final Screen screen) {
-        graphics.drawImage(backBuffer, frame.getInsets().left, frame.getInsets().top, frame);
+        // [수정] Graphics2D로 캐스팅하여 고급 렌더링 옵션 사용
+        Graphics2D g2d = (Graphics2D) graphics;
+        
+        if (g2d != null) {
+            // 1. 보간법 비활성화 (픽셀을 뭉개지 않고 그대로 확대) -> 픽셀 아트가 선명해짐
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            
+            // 2. 렌더링 품질보다는 속도 우선 (선택 사항)
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_SPEED);
+            
+            // 3. 안티앨리어싱 끄기 (픽셀 아트의 경우 끄는 것이 좋음)
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_OFF);
+            
+            // 실제 그리기 (기존 코드)
+            g2d.drawImage(backBuffer, frame.getInsets().left, frame.getInsets().top, frame);
+        }
     }
     
     
@@ -263,7 +291,39 @@ public final class DrawManager {
         backBufferGraphics.drawLine(0, screen.getHeight() - 1, screen.getWidth() - 1,
             screen.getHeight() - 1);
     }
-    
+    /**
+     * Draws the Boss HP bar at the top of the screen.
+     *
+     * @param boss The boss ship instance.
+     */
+    public void drawBossHpBar(final BossShip boss, final screen.Screen screen) {
+        if (boss == null || boss.isDestroyed()) {
+            return;
+        }
+
+        int barWidth = 600;
+        int barHeight = 20;
+        int x = (screen.getWidth() - barWidth) / 2;
+        int y = 40;
+        
+        double hpRatio = (double) boss.getHealth() / boss.getInitialHealth();
+        
+        int filledWidth = (int) (barWidth * hpRatio);
+        
+        backBufferGraphics.setColor(Color.GRAY);
+        backBufferGraphics.fillRect(x, y, barWidth, barHeight);
+        
+        backBufferGraphics.setColor(Color.RED);
+        backBufferGraphics.fillRect(x, y, filledWidth, barHeight);
+        
+        backBufferGraphics.setColor(Color.WHITE);
+        backBufferGraphics.drawRect(x, y, barWidth, barHeight);
+        
+        backBufferGraphics.setFont(fontRegular);
+        backBufferGraphics.setColor(Color.WHITE);
+        int textWidth = backBufferGraphics.getFontMetrics().stringWidth("BOSS HP");
+        backBufferGraphics.drawString("BOSS HP", x + (barWidth - textWidth) / 2, y - 5);
+    }
     /**
      * For debugging purposes, draws a grid over the canvas.
      *

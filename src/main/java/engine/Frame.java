@@ -42,13 +42,13 @@ public class Frame extends JFrame {
         
         Insets insets = getInsets();
         this.width = width - insets.left - insets.right;
-        this.height = height - insets.top + insets.bottom;
+        this.height = height - insets.top - insets.bottom;
         setTitle("Invaders");
         
         addKeyListener(Core.getInputManager());
         
-        addMouseListener(Core.getInputManager());//add this line
-        addMouseMotionListener(Core.getInputManager());//add this line
+        addMouseListener(Core.getInputManager());
+        addMouseMotionListener(Core.getInputManager());
         
     }
     

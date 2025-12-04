@@ -4,6 +4,7 @@ import engine.Core;
 import engine.GameState;
 import engine.Score;
 import engine.SoundManager;
+import engine.UserStats;
 import engine.gameplay.achievement.AchievementManager;
 import engine.utils.Cooldown;
 import java.awt.event.KeyEvent;
@@ -130,6 +131,9 @@ public class ScoreScreen extends Screen {
         this.achievementManager = achievementManager;
         this.mode = gameState.getCoop() ? "2P" : "1P";
         
+        // 획득한 코인 저장 로직 호출
+        saveUserCoins();
+        
         try {
             this.highScores = Core.getFileManager().loadHighScores(this.mode);
             if (highScores.size() < MAX_HIGH_SCORE_NUM
@@ -205,11 +209,9 @@ public class ScoreScreen extends Screen {
                         // System.out.println("too short!!");
                         this.showNameError = true;
                     }
-                }
-                
-                // Check if it's a valid character (alphanumeric only)
-                else if ((Character.isLetterOrDigit(typedChar))
-                    && this.name.length() < MAX_NAME_LENGTH) {
+                } else if ((Character.isLetterOrDigit(typedChar))
+                    && this.name.length()
+                    < MAX_NAME_LENGTH) { // Check if it's a valid character (alphanumeric only)
                     this.name.append(Character.toUpperCase(typedChar));
                     
                 }
@@ -337,4 +339,22 @@ public class ScoreScreen extends Screen {
         drawManager.completeDrawing(this);
     }
     
+    /**
+     * Saves the coins earned in this game session to the user's permanent stats.
+     */
+    public void saveUserCoins() {
+        UserStats userStats = Core.getUserStats();
+        if (userStats != null) {
+            int earnedCoins = this.coins; // gameState.getCoins()와 동일
+            if (earnedCoins > 0) {
+                userStats.addCoin(earnedCoins);
+                try {
+                    Core.getFileManager().saveUserStats(userStats);
+                    LOGGER.info("Saved " + earnedCoins + " coins to user stats.");
+                } catch (IOException e) {
+                    LOGGER.warning("Failed to save user coins: " + e.getMessage());
+                }
+            }
+        }
+    }
 }

@@ -2,8 +2,9 @@ package entity;
 
 import engine.AssetManager.SpriteType;
 import engine.Core;
-import engine.GameSettings;
+import engine.GameState;
 import engine.utils.Cooldown;
+import entity.character.GameCharacter;
 import java.awt.Color;
 
 
@@ -14,85 +15,85 @@ import java.awt.Color;
  *
  */
 public class EnemyShip extends Entity {
-
+    
     /**
-     * Point value of a type A enemy.
+     * Point value & Coin of enemy type.
      */
     private static final int A_TYPE_POINTS = 10;
-    /**
-     * Point value of a type B enemy.
-     */
     private static final int B_TYPE_POINTS = 20;
-    /**
-     * Point value of a type C enemy.
-     */
     private static final int C_TYPE_POINTS = 30;
-    /**
-     * Point value of a bonus enemy.
-     */
-    private static final int BONUS_TYPE_POINTS = 100;
-
+    
     private static final int A_TYPE_COINS = 2;
     private static final int B_TYPE_COINS = 3;
     private static final int C_TYPE_COINS = 5;
-    private static final int BONUS_TYPE_COINS = 10;
-
     /**
-     * Cooldown between sprite changes.
+     * Floating animation variable.
      */
-    protected Cooldown animationCooldown;
-    protected Cooldown bossAnimationCooldown;
+    private double floatingPhase;
+    private static final double FLOATING_AMPLITUDE = 5.0;
+    private static final double FLOATING_SPEED = 0.005;
+    private boolean isFacingRight;
+    
     /**
      * Checks if the ship has been hit by a bullet.
      */
     protected boolean isDestroyed;
     /**
+     * Cooldown between sprite changes.
+     */
+    protected Cooldown animationCooldown;
+    /**
      * Values of the ship, in points, when destroyed.
      */
     protected int pointValue;
-
     protected int coinValue;
-
+    protected Cooldown bossAnimationCooldown;
     /**
-     * Current health of the enemy ship
+     * Current health of the enemy ship.
      */
     protected int health;
     protected int initialHealth;
-
+    
+    protected double preciseX;
+    protected double preciseY;
+    
+    protected GameState gameState;
+    
     /**
-     * Constructor, establishes the ship's properties.
+     * Constructor, establishes the ship's properties. Used by EnemyShipFormation and BossShip.
      *
      * @param positionX  Initial position of the ship in the X axis.
      * @param positionY  Initial position of the ship in the Y axis.
      * @param spriteType Sprite type, image corresponding to the ship.
      */
-    public EnemyShip(final int positionX, final int positionY,
-        final SpriteType spriteType) {
-        super(positionX, positionY, 12 * 2, 8 * 2, Color.WHITE);
-
+    public EnemyShip(int positionX, int positionY, SpriteType spriteType) {
+        super(positionX, positionY, 24, 36, Color.WHITE);
         this.spriteType = spriteType;
         this.animationCooldown = Core.getCooldown(500);
-        this.bossAnimationCooldown = Core.getCooldown(500);
         this.isDestroyed = false;
-
+        this.preciseX = positionX;
+        this.preciseY = positionY;
+        this.floatingPhase = Math.random() * Math.PI * 2;
+        
+        initializeStats();
+    }
+    
+    protected void initializeStats() {
         switch (this.spriteType) {
             case EnemyShipA1:
             case EnemyShipA2:
                 this.pointValue = A_TYPE_POINTS;
                 this.coinValue = A_TYPE_COINS;
-                this.health = 2;
                 break;
             case EnemyShipB1:
             case EnemyShipB2:
                 this.pointValue = B_TYPE_POINTS;
                 this.coinValue = B_TYPE_COINS;
-                this.health = 1;
                 break;
             case EnemyShipC1:
             case EnemyShipC2:
                 this.pointValue = C_TYPE_POINTS;
                 this.coinValue = C_TYPE_COINS;
-                this.health = 1;
                 break;
             case BossShip1:
             case BossShip2:
@@ -104,37 +105,20 @@ public class EnemyShip extends Entity {
             default:
                 this.pointValue = 0;
                 this.coinValue = 0;
-                this.health = 1;
                 break;
         }
-
-        this.initialHealth = this.health;
     }
 
-    public void changeShip(GameSettings.ChangeData changeData) {
-        this.health *= changeData.hp;
-        this.initialHealth = this.health;
-
-        this.changeColor(changeData.color);
-
-        this.pointValue *= changeData.multiplier;
-        this.coinValue *= changeData.multiplier;
-    }
-
-    /**
-     * Constructor, establishes the ship's properties for a special ship, with known starting
-     * properties.
-     */
-    public EnemyShip() {
-        super(-32, 80, 16 * 2, 7 * 2, Color.RED);
-
-        this.spriteType = SpriteType.EnemyShipSpecial;
-        this.isDestroyed = false;
-        this.pointValue = BONUS_TYPE_POINTS;
-        this.coinValue = BONUS_TYPE_COINS;
-        this.health = 1;
-    }
-
+//    public void changeShip(GameSettings.ChangeData changeData) {
+//        this.health *= changeData.hp;
+//        this.initialHealth = this.health;
+//
+//        this.changeColor(changeData.color);
+//
+//        this.pointValue *= changeData.multiplier;
+//        this.coinValue *= changeData.multiplier;
+//    }
+    
     /**
      * Getter for the score bonus if this ship is destroyed.
      *
@@ -143,7 +127,11 @@ public class EnemyShip extends Entity {
     public final int getPointValue() {
         return this.pointValue;
     }
-
+    
+    public void move() {
+        this.positionX += 2;
+    }
+    
     /**
      * Moves the ship the specified distance.
      *
@@ -154,39 +142,21 @@ public class EnemyShip extends Entity {
         this.positionX += distanceX;
         this.positionY += distanceY;
     }
-
+    
     /**
      * Updates attributes, mainly used for animation purposes.
      */
     public void update() {
+        if (this.isDestroyed) {
+            return;
+        }
         if (this.animationCooldown.checkFinished()) {
             this.animationCooldown.reset();
-
-            switch (this.spriteType) {
-                case EnemyShipA1:
-                    this.spriteType = SpriteType.EnemyShipA2;
-                    break;
-                case EnemyShipA2:
-                    this.spriteType = SpriteType.EnemyShipA1;
-                    break;
-                case EnemyShipB1:
-                    this.spriteType = SpriteType.EnemyShipB2;
-                    break;
-                case EnemyShipB2:
-                    this.spriteType = SpriteType.EnemyShipB1;
-                    break;
-                case EnemyShipC1:
-                    this.spriteType = SpriteType.EnemyShipC2;
-                    break;
-                case EnemyShipC2:
-                    this.spriteType = SpriteType.EnemyShipC1;
-                    break;
-                default:
-                    break;
-            }
+            changeAnimationSprite();
         }
+        move();
     }
-
+    
     /**
      * Updates the enemy ship with support for global freeze effects. If the GameState indicates
      * that enemies are frozen, the ship will not update.
@@ -196,55 +166,100 @@ public class EnemyShip extends Entity {
             // Skip animation update while enemies are frozen.
             return;
         }
-
         // Fallback to the original update logic.
         update();
     }
-
+    
+    public void update(GameCharacter player) {
+        update();
+        
+        if (player != null && !player.isDestroyed()) {
+            moveTowards(player);
+        }
+        
+        long currentTime = System.currentTimeMillis();
+        double floatingOffset =
+            Math.sin(currentTime * FLOATING_SPEED + this.floatingPhase) * FLOATING_AMPLITUDE;
+        
+        this.positionX = (int) preciseX;
+        this.positionY = (int) (preciseY + floatingOffset);
+    }
+    
+    private void moveTowards(GameCharacter player) {
+        double targetX = player.positionX;
+        double targetY = player.positionY;
+        
+        double dirX = targetX - this.positionX;
+        double dirY = targetY - this.positionY;
+        
+        if (dirX < 0) {
+            this.isFacingRight = false;
+        } else {
+            this.isFacingRight = true;
+        }
+        
+        double distance = Math.sqrt(dirX * dirX + dirY * dirY);
+        
+        if (distance > 0) {
+            // 단위 벡터로 만들기
+            dirX /= distance;
+            dirY /= distance;
+            
+            // 속도 적용
+            double speed = 1.0;
+            
+            // if (type == Type.B && distance < 200) { speed = -speed; }
+            this.preciseX += dirX * speed;
+            this.preciseY += dirY * speed;
+        }
+    }
+    
     /**
-     * Returns the current health of the enemy ship
+     * Returns the current health of the enemy ship.
      */
     public int getHealth() {
         return this.health;
     }
-
+    
     /**
-     * Reduces enemy health by 1 and handles destruction or damage animation if health drops to 0
+     * Reduces enemy health by 1 and handles destruction or damage animation if health drops to 0.
      */
-
+    
     public void hit() {
-        this.health--;
+        hit(1);
+    }
+    
+    public void hit(int damage) {
+        if (this.isDestroyed) {
+            return;
+        }
+        this.health -= damage;
         if (this.health <= 0) {
-            this.isDestroyed = true;
-            this.spriteType = SpriteType.Explosion;
-            Color color = this.getColor();
-            color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
-            changeColor(color);
-        } else {
-            switch (this.spriteType) {
-                case EnemyShipA1:
-                case EnemyShipA2:
-                    this.spriteType = SpriteType.EnemyShipA2;
-                    break;
-                case EnemyShipB1:
-                case EnemyShipB2:
-                    this.spriteType = SpriteType.EnemyShipB2;
-                    break;
-                case EnemyShipC1:
-                case EnemyShipC2:
-                    this.spriteType = SpriteType.EnemyShipC2;
-                    break;
-                default:
-                    break;
-            }
+            destroy();
         }
     }
-
+    
+    private void changeAnimationSprite() {
+        if (spriteType == SpriteType.EnemyShipA1) {
+            spriteType = SpriteType.EnemyShipA2;
+        } else if (spriteType == SpriteType.EnemyShipA2) {
+            spriteType = SpriteType.EnemyShipA1;
+        } else if (spriteType == SpriteType.EnemyShipB1) {
+            spriteType = SpriteType.EnemyShipB2;
+        } else if (spriteType == SpriteType.EnemyShipB2) {
+            spriteType = SpriteType.EnemyShipB1;
+        } else if (spriteType == SpriteType.EnemyShipC1) {
+            spriteType = SpriteType.EnemyShipC2;
+        } else if (spriteType == SpriteType.EnemyShipC2) {
+            spriteType = SpriteType.EnemyShipC1;
+        }
+    }
+    
     public final int getDamage(int dmg) {
         this.health -= dmg;
         return this.health;
     }
-
+    
     /**
      * Destroys the ship, causing an explosion.
      */
@@ -252,7 +267,7 @@ public class EnemyShip extends Entity {
         this.isDestroyed = true;
         this.spriteType = SpriteType.Explosion;
     }
-
+    
     /**
      * Checks if the ship has been destroyed.
      *
@@ -261,15 +276,16 @@ public class EnemyShip extends Entity {
     public boolean isDestroyed() {
         return this.isDestroyed;
     }
-
+    
     public int getCoinValue() {
         return this.coinValue;
     }
-
-    /**
-     * Returns the initial health of the enemy ship
-     */
-    public final int getInitialHealth() {
+    
+    public int getInitialHealth() {
         return this.initialHealth;
+    }
+    
+    public boolean isFacingRight() {
+        return this.isFacingRight;
     }
 }

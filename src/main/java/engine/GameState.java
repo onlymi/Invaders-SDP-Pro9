@@ -157,11 +157,11 @@ public class GameState {
      * @param livesRemaining Lives currently remaining.
      * @param bulletsShot    Bullets shot until now.
      * @param shipsDestroyed Ships destroyed until now.
-     * @param coins          // ADD THIS LINE Current coin count. // ADD THIS LINE
+     * @param coins          Current coin count.
      */
     public GameState(final int level, final int score,
         final int livesRemaining, final int bulletsShot,
-        final int shipsDestroyed, final int coins) { // MODIFY THIS LINE
+        final int shipsDestroyed, final int coins) {
         this.level = level;
         this.sharedLives = false;
         this.teamLives = 0;
@@ -172,7 +172,7 @@ public class GameState {
         this.bulletsShot[0] = bulletsShot;
         this.shipsDestroyed[0] = shipsDestroyed;
         
-        this.coins = coins; // ADD THIS LINE - edited for 2P mode
+        this.coins = coins;
         this.coop = false; // 2P: single-player mode
         
         initializeEffectStates();
@@ -312,7 +312,6 @@ public class GameState {
         }
     }
     
-    
     public int getLevel() {
         return level;
     }
@@ -419,7 +418,7 @@ public class GameState {
     }
     
     /**
-     * Gets the effect value for a specific player and effect type
+     * Gets the effect value for a specific player and effect type.
      *
      * @param playerIndex Index of the player (0 or 1)
      * @param type        Type of effect to check
@@ -503,7 +502,7 @@ public class GameState {
     }
     
     /**
-     * Clear all active effects for all players
+     * Clear all active effects for all players.
      */
     public void clearAllEffects() {
         for (int p = 0; p < NUM_PLAYERS; p++) {
@@ -545,6 +544,8 @@ public class GameState {
         if (pis == null) {
             return;
         }
+        
+        pis.activeItems.add(new ActiveItemInstance(data));
         
         setActiveSlot(playerIndex, new ActiveItemInstance(data));
         
@@ -665,8 +666,8 @@ public class GameState {
                 }
             }
         }
-        // TODO: 다른 active 아이템들 추가 예정
         
+        // 슬롯 비우기
         if (applied) {
             clearActiveSlot(playerIndex);
             logger.info("[GameState] Player " + (playerIndex + 1)

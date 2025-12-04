@@ -51,9 +51,9 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
      */
     private static final int Y_SPEED = 4;
     /**
-     * Speed of the bullets shot by the members.
+     * Speed of the weapons shot by the members.
      */
-    private static final int BULLET_SPEED = 4;
+    private static final int weapon_SPEED = 4;
     /**
      * Proportion of differences between shooting times.
      */
@@ -253,7 +253,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
             if (changeData.hp == 0) {
                 destroy(ship);
             } else {
-                ship.changeShip(changeData);
+                //ship.changeShip(changeData);
             }
         }
         
@@ -453,12 +453,12 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
     }
     
     /**
-     * Shoots a bullet downwards. Fires bullets from C-type and B-type enemies in the formation.
-     * C-type fires double bullets, B-type fires faster bullets.
+     * Shoots a weapon downwards. Fires weapons from C-type and B-type enemies in the formation.
+     * C-type fires double weapons, B-type fires faster weapons.
      *
-     * @param bullets Bullets set to add the bullet being shot.
+     * @param weapons weapons set to add the weapon being shot.
      */
-    public final void shoot(final Set<Bullet> bullets) {
+    public final void shoot(final Set<Weapon> weapons) {
         if (this.shooters.isEmpty()) {
             return;
         }
@@ -469,36 +469,36 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
         if (this.shootingCooldown.checkFinished()) {
             this.shootingCooldown.reset();
             
-            int bulletWidth = 3 * 2;
-            int bulletHeight = 5 * 2;
+            int weaponWidth = 3 * 2;
+            int weaponHeight = 5 * 2;
             int spawnY = shooter.getPositionY() + shooter.getHeight();
             
-            int bulletSpeed = BULLET_SPEED;
+            int weaponSpeed = weapon_SPEED;
             
             if (shooter.getSpriteType() == SpriteType.EnemyShipB1
                 || shooter.getSpriteType() == SpriteType.EnemyShipB2) {
-                bulletSpeed = BULLET_SPEED * 2;
+                weaponSpeed = weapon_SPEED * 2;
             }
             
             if (shooter.getSpriteType() == SpriteType.EnemyShipC1
                 || shooter.getSpriteType() == SpriteType.EnemyShipC2) {
                 int offset = 6;
                 
-                Bullet b1 = BulletPool.getBullet(
+                Weapon b1 = WeaponPool.getWeapon(
                     shooter.getPositionX() + shooter.getWidth() / 2 - offset,
-                    spawnY, bulletSpeed, bulletWidth, bulletHeight, Entity.Team.ENEMY);
-                bullets.add(b1);
+                    spawnY, weaponWidth, weaponHeight, weaponSpeed, Entity.Team.ENEMY);
+                weapons.add(b1);
                 
-                Bullet b2 = BulletPool.getBullet(
+                Weapon b2 = WeaponPool.getWeapon(
                     shooter.getPositionX() + shooter.getWidth() / 2 + offset,
-                    spawnY, bulletSpeed, bulletWidth, bulletHeight, Entity.Team.ENEMY);
-                bullets.add(b2);
+                    spawnY, weaponWidth, weaponHeight, weaponSpeed, Entity.Team.ENEMY);
+                weapons.add(b2);
                 
             } else {
-                Bullet b = BulletPool.getBullet(
+                Weapon b = WeaponPool.getWeapon(
                     shooter.getPositionX() + shooter.getWidth() / 2,
-                    spawnY, bulletSpeed, bulletWidth, bulletHeight, Entity.Team.ENEMY);
-                bullets.add(b);
+                    spawnY, weaponWidth, weaponHeight, weaponSpeed, Entity.Team.ENEMY);
+                weapons.add(b);
             }
         }
     }

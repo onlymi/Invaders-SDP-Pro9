@@ -17,8 +17,8 @@ import java.util.Set;
 public class Ship extends Entity {
     
     // Default Bullet Variables
-    private static final int BASE_BULLET_SPEED = -6;
-    private static final int BASE_SHOOTING_INTERVAL = 750;
+    private static final int BASE_BULLET_SPEED = -4;
+    private static final int BASE_SHOOTING_INTERVAL = 700;
     private static final int BASE_BULLET_WIDTH = 6;  // 3 * 2
     private static final int BASE_BULLET_HEIGHT = 10;
     // special bullet variables
@@ -152,10 +152,10 @@ public class Ship extends Entity {
     /**
      * Shoots a bullet based on ship type and active effects.
      *
-     * @param bullets List of bullets on screen, to add the new bullet.
+     * @param weapons List of bullets on screen, to add the new bullet.
      * @return True if shooting was successful, false if on cooldown
      */
-    public final boolean shoot(final Set<Bullet> bullets) {
+    public final boolean shoot(final Set<Weapon> weapons) {
         
         if (!this.shootingCooldown.checkFinished()) {
             return false;
@@ -168,7 +168,7 @@ public class Ship extends Entity {
         int bulletY = this.positionY - this.bulletHeight;
         
         // Default shooting based on ship type
-        shootBasedOnType(bullets, bulletX, bulletY);
+        shootBasedOnType(weapons, bulletX, bulletY);
         return true;
     }
     
@@ -267,17 +267,17 @@ public class Ship extends Entity {
     /**
      * Fires bullets based on ship type.
      */
-    private void shootBasedOnType(final Set<Bullet> bullets, final int centerX, final int bulletY) {
+    private void shootBasedOnType(final Set<Weapon> weapons, final int centerX, final int bulletY) {
         switch (this.type) {
             case DOUBLE_SHOT:
-                addBullet(bullets, centerX - DOUBLE_SHOT_OFFSET, bulletY);
-                addBullet(bullets, centerX + DOUBLE_SHOT_OFFSET, bulletY);
+                addBullet(weapons, centerX - DOUBLE_SHOT_OFFSET, bulletY);
+                addBullet(weapons, centerX + DOUBLE_SHOT_OFFSET, bulletY);
                 break;
             case BIG_SHOT:
             case MOVE_FAST:
             case NORMAL:
             default:
-                addBullet(bullets, centerX, bulletY);
+                addBullet(weapons, centerX, bulletY);
                 break;
         }
     }
@@ -285,13 +285,14 @@ public class Ship extends Entity {
     /**
      * Creates and adds a bullet to the game.
      */
-    private void addBullet(final Set<Bullet> bullets, final int x, final int y) {
-        int currentBulletSpeed = this.bulletSpeed;
+    private void addBullet(final Set<Weapon> weapons, final int x, final int y) {
+        int speedMultiplier = getBulletSpeedMultiplier();
+        int currentBulletSpeed = this.bulletSpeed * speedMultiplier;
         
-        Bullet bullet = BulletPool.getBullet(x, y, currentBulletSpeed,
-            this.bulletWidth, this.bulletHeight, this.getTeam());
-        bullet.setOwnerPlayerId(this.getPlayerId());
-        bullets.add(bullet);
+        Weapon weapon = WeaponPool.getWeapon(x, y, this.bulletWidth, this.bulletHeight,
+            currentBulletSpeed, this.getTeam());
+        weapon.setOwnerPlayerId(this.getPlayerId());
+        weapons.add(weapon);
     }
     
     /** ========================= Item Effect check ========================= **/

@@ -10,12 +10,21 @@ public class ArcherCharacter extends GameCharacter {
     /**
      * Constructor, establishes the entity's generic properties.
      *
-     * @param positionX Initial position of the entity in the X axis.
-     * @param positionY Initial position of the entity in the Y axis.
+     * @param positionX Initial position of the entity in the X axis
+     * @param positionY Initial position of the entity in the Y axis
+     * @param team      Team of character
+     * @param playerId  ID of Player
      */
-    public ArcherCharacter(int positionX, int positionY) {
-        super(positionX, positionY, SpriteType.CharacterArcherBasic.getWidth(),
-            SpriteType.CharacterArcherBasic.getHeight(), CharacterType.ARCHER);
+    public ArcherCharacter(int positionX, int positionY, Team team, int playerId) {
+        super(CharacterType.ARCHER, positionX, positionY,
+            SpriteType.CharacterArcherBasic.getWidth(),
+            SpriteType.CharacterArcherBasic.getHeight(), team, playerId);
+        this.spriteType = SpriteType.CharacterArcherBasic;
+        this.projectileSpriteType = SpriteType.CharacterArcherDefaultProjectile;
+        this.projectileWidth = projectileSpriteType.getWidth(); // 화살 이미지 너비
+        this.projectileHeight = projectileSpriteType.getHeight(); // 화살 이미지 높이
+        this.projectileSpeed =
+            (int) (this.currentStats.attackSpeed * ATTACK_SPEED_FACTOR); // 투사체(화살) 속도
         this.skills.add(new RapidFireSkill()); // First skill
         this.skills.add(new EvasionShotSkill()); // Second skill
         this.skills.add(new PiercingArrowSkill()); // Ultimate skill

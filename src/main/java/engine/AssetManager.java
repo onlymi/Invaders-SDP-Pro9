@@ -2,6 +2,8 @@ package engine;
 
 import java.awt.Font;
 import java.awt.FontFormatException;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,38 +22,19 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
- * 게임에 필요한 모든 Asset(스프라이트, 폰트 등)을 로드하고 저장 및 관리하는 클래스
+ * Classes that load, store, and manage all the assets (Sprite, fonts, etc.) needed for the game.
  */
 public final class AssetManager {
     
-    /**
-     * 6개의 그래픽 소스 파일을 구분하기 위한 Enum
-     */
-    private enum SourceCategory {
-        WARRIOR_CHARACTER("graphics/character/warrior_graphics"),
-        ARCHER_CHARACTER("graphics/character/archer_graphics"),
-        WIZARD_CHARACTER("graphics/character/wizard_graphics"),
-        LASER_CHARACTER("graphics/character/laser_graphics"),
-        ELECTRIC_CHARACTER("graphics/character/electric_graphics"),
-        BOMBER_CHARACTER("graphics/character/bomber_graphics"),
-        HEALER_CHARACTER("graphics/character/healer_graphics"),
-        
-        PLAYERSHIP("graphics/playersShip_graphics"),
-        ENEMY("graphics/enemy_graphics"),
-        BOSS("graphics/boss_graphics"),
-        BULLET("graphics/bullet_graphics"),
-        MUTUAL("graphics/mutual_graphics"),
-        ITEM("graphics/item_graphics");
-        
-        private final String filePath;
-        
-        SourceCategory(String path) {
-            this.filePath = path;
-        }
-        
-        public String getFilePath() {
-            return this.filePath;
-        }
+    private static final int characterWidth = 64;
+    private static final int characterHeight = 64;
+    
+    public int getCharacterWidth() {
+        return characterWidth;
+    }
+    
+    public int getCharacterHeight() {
+        return characterHeight;
     }
     
     /**
@@ -61,52 +44,114 @@ public final class AssetManager {
         /**
          * Warrior Character.
          */
-        CharacterWarriorBasic(SourceCategory.WARRIOR_CHARACTER, 19, 15),
-        CharacterWarriorAttack1(SourceCategory.WARRIOR_CHARACTER, 19, 15),
-        CharacterWarriorWalk1(SourceCategory.WARRIOR_CHARACTER, 19, 15),
-        CharacterWarriorWalk2(SourceCategory.WARRIOR_CHARACTER, 19, 15),
+        CharacterWarriorBasic(SourceCategory.CHARACTER, "warrior/warrior_basic.png",
+            characterWidth, characterHeight),
+        CharacterWarriorAttack1(SourceCategory.CHARACTER, "warrior/warrior_basic.png",
+            characterWidth, characterHeight),
+        CharacterWarriorWalk1(SourceCategory.CHARACTER, "warrior/warrior_basic.png",
+            characterWidth, characterHeight),
+        CharacterWarriorWalk2(SourceCategory.CHARACTER, "warrior/warrior_basic.png",
+            characterWidth, characterHeight),
+        CharacterWarriorDefaultProjectile(SourceCategory.WEAPON,
+            "warrior/default_attack_warrior.png", 32, characterHeight),
         /**
          * Archer Character.
          */
-        CharacterArcherBasic(SourceCategory.ARCHER_CHARACTER, 17, 13),
-        CharacterArcherAttack1(SourceCategory.ARCHER_CHARACTER, 17, 13),
-        CharacterArcherWalk1(SourceCategory.ARCHER_CHARACTER, 17, 13),
-        CharacterArcherWalk2(SourceCategory.ARCHER_CHARACTER, 17, 13),
+        CharacterArcherBasic(SourceCategory.CHARACTER, "archer/archer_basic.png",
+            characterWidth, characterHeight),
+        CharacterArcherShadow(SourceCategory.CHARACTER, "archer/archer_shadow.png",
+            characterWidth, characterHeight),
+        CharacterArcherLeftAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_left_attack.png", characterWidth, characterHeight),
+        CharacterArcherRightAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_right_attack.png", characterWidth, characterHeight),
+        CharacterArcherFrontAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_front_attack.png", characterWidth, characterHeight),
+        CharacterArcherBackAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_back_attack.png", characterWidth, characterHeight),
+        CharacterArcherStand(SourceCategory.CHARACTER, "archer/archer_stand.png",
+            characterWidth, characterHeight),
+        CharacterArcherLeftWalk(SourceCategory.CHARACTER, "archer/walk/archer_left_walk",
+            characterWidth, characterHeight, 4),
+        CharacterArcherRightWalk(SourceCategory.CHARACTER, "archer/walk/archer_right_walk",
+            characterWidth, characterHeight, 4),
+        CharacterArcherFrontWalk(SourceCategory.CHARACTER, "archer/walk/archer_front_walk",
+            characterWidth, characterHeight, 4),
+        CharacterArcherBackWalk(SourceCategory.CHARACTER, "archer/walk/archer_back_walk",
+            characterWidth, characterHeight, 4),
+        CharacterArcherDefaultProjectile(SourceCategory.WEAPON,
+            "archer/default_attack_archer.png",
+            14, 32),
         /**
          * Wizard Character.
          */
-        CharacterWizardBasic(SourceCategory.WIZARD_CHARACTER, 19, 15),
-        CharacterWizardAttack1(SourceCategory.WIZARD_CHARACTER, 19, 15),
-        CharacterWizardWalk1(SourceCategory.WIZARD_CHARACTER, 19, 15),
-        CharacterWizardWalk2(SourceCategory.WIZARD_CHARACTER, 19, 15),
+        CharacterWizardBasic(SourceCategory.CHARACTER, "wizard/wizard_basic.png",
+            characterWidth, characterHeight),
+        CharacterWizardAttack1(SourceCategory.CHARACTER, "wizard/wizard_basic.png",
+            characterWidth, characterHeight),
+        CharacterWizardWalk1(SourceCategory.CHARACTER, "wizard/wizard_basic.png",
+            characterWidth, characterHeight),
+        CharacterWizardWalk2(SourceCategory.CHARACTER, "wizard/wizard_basic.png",
+            characterWidth, characterHeight),
+        CharacterWizardDefaultProjectile(SourceCategory.WEAPON,
+            "wizard/default_attack_wizard.png",
+            16, 16),
         /**
          * Laser Character.
          */
-        CharacterLaserBasic(SourceCategory.LASER_CHARACTER, 19, 17),
-        CharacterLaserAttack1(SourceCategory.LASER_CHARACTER, 19, 17),
-        CharacterLaserWalk1(SourceCategory.LASER_CHARACTER, 19, 17),
-        CharacterLaserWalk2(SourceCategory.LASER_CHARACTER, 19, 17),
+        CharacterLaserBasic(SourceCategory.CHARACTER, "laser/laser_basic.png",
+            characterWidth, characterHeight),
+        CharacterLaserAttack1(SourceCategory.CHARACTER, "laser/laser_basic.png",
+            characterWidth, characterHeight),
+        CharacterLaserWalk1(SourceCategory.CHARACTER, "laser/laser_basic.png",
+            characterWidth, characterHeight),
+        CharacterLaserWalk2(SourceCategory.CHARACTER, "laser/laser_basic.png",
+            characterWidth, characterHeight),
+        CharacterLaserDefaultProjectile(SourceCategory.WEAPON,
+            "laser/default_attack_laser.png",
+            32, 32),
         /**
          * Electric Character.
          */
-        CharacterElectricBasic(SourceCategory.ELECTRIC_CHARACTER, 18, 18),
-        CharacterElectricAttack1(SourceCategory.ELECTRIC_CHARACTER, 18, 18),
-        CharacterElectricWalk1(SourceCategory.ELECTRIC_CHARACTER, 18, 18),
-        CharacterElectricWalk2(SourceCategory.ELECTRIC_CHARACTER, 18, 18),
+        CharacterElectricBasic(SourceCategory.CHARACTER, "electric/electric_basic.png",
+            characterWidth, characterHeight),
+        CharacterElectricAttack1(SourceCategory.CHARACTER, "electric/electric_basic.png",
+            characterWidth, characterHeight),
+        CharacterElectricWalk1(SourceCategory.CHARACTER, "electric/electric_basic.png",
+            characterWidth, characterHeight),
+        CharacterElectricWalk2(SourceCategory.CHARACTER, "electric/electric_basic.png",
+            characterWidth, characterHeight),
+        CharacterElectricDefaultProjectile(SourceCategory.WEAPON,
+            "electric/default_attack_electric.png",
+            32, 32),
         /**
          * Bomber Character.
          */
-        CharacterBomberBasic(SourceCategory.BOMBER_CHARACTER, 19, 16),
-        CharacterBomberAttack1(SourceCategory.BOMBER_CHARACTER, 19, 16),
-        CharacterBomberWalk1(SourceCategory.BOMBER_CHARACTER, 19, 16),
-        CharacterBomberWalk2(SourceCategory.BOMBER_CHARACTER, 19, 16),
+        CharacterBomberBasic(SourceCategory.CHARACTER, "bomber/bomber_basic.png",
+            characterWidth, characterHeight),
+        CharacterBomberAttack1(SourceCategory.CHARACTER, "bomber/bomber_basic.png",
+            characterWidth, characterHeight),
+        CharacterBomberWalk1(SourceCategory.CHARACTER, "bomber/bomber_basic.png",
+            characterWidth, characterHeight),
+        CharacterBomberWalk2(SourceCategory.CHARACTER, "bomber/bomber_basic.png",
+            characterWidth, characterHeight),
+        CharacterBomberDefaultProjectile(SourceCategory.WEAPON,
+            "bomber/default_attack_bomber.png",
+            32, 32),
         /**
          * Healer Character.
          */
-        CharacterHealerBasic(SourceCategory.HEALER_CHARACTER, 17, 15),
-        CharacterHealerAttack1(SourceCategory.HEALER_CHARACTER, 17, 15),
-        CharacterHealerWalk1(SourceCategory.HEALER_CHARACTER, 17, 15),
-        CharacterHealerWalk2(SourceCategory.HEALER_CHARACTER, 17, 15),
+        CharacterHealerBasic(SourceCategory.CHARACTER, "healer/healer_basic.png",
+            characterWidth, characterHeight),
+        CharacterHealerAttack1(SourceCategory.CHARACTER, "healer/healer_basic.png",
+            characterWidth, characterHeight),
+        CharacterHealerWalk1(SourceCategory.CHARACTER, "healer/healer_basic.png",
+            characterWidth, characterHeight),
+        CharacterHealerWalk2(SourceCategory.CHARACTER, "healer/healer_basic.png",
+            characterWidth, characterHeight),
+        
+        BossMainBody(SourceCategory.ENEMY, "boss_main.png", 240, 160),
+        
         /**
          * Player ship.
          */
@@ -124,39 +169,47 @@ public final class AssetManager {
         /**
          * Player bullet.
          */
-        Bullet(SourceCategory.BULLET, 3, 5),
+        PlayerBullet(SourceCategory.BULLET, 3, 5),
+        /**
+         * GasterBlaster of boss.
+         */
+        GasterBlaster(SourceCategory.BULLET, 128, 128),
         /**
          * Enemy bullet.
          */
         EnemyBullet(SourceCategory.BULLET, 3, 5),
         /**
+         * Boss bullet.
+         */
+        BossBullet(SourceCategory.BULLET, 5, 5),
+        /**
+         * Boss laser.
+         */
+        BigLaserBeam(SourceCategory.BULLET, 11, 20),
+        /**
          * First enemy ship - first form.
          */
-        EnemyShipA1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipA1(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
         /**
          * First enemy ship - second form.
          */
-        EnemyShipA2(SourceCategory.ENEMY, 12, 8),
+        EnemyShipA2(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
         /**
          * Second enemy ship - first form.
          */
-        EnemyShipB1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipB1(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
         /**
          * Second enemy ship - second form.
          */
-        EnemyShipB2(SourceCategory.ENEMY, 12, 8),
+        EnemyShipB2(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
         /**
          * Third enemy ship - first form.
          */
-        EnemyShipC1(SourceCategory.ENEMY, 12, 8),
+        EnemyShipC1(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
         /**
          * Third enemy ship - second form.
          */
-        EnemyShipC2(SourceCategory.ENEMY, 12, 8),
-        /**
-         * Bonus ship.
-         */
-        EnemyShipSpecial(SourceCategory.ENEMY, 16, 7),
+        EnemyShipC2(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
         /**
          * Boss ship.
          */
@@ -172,7 +225,7 @@ public final class AssetManager {
          */
         Heart(SourceCategory.MUTUAL, 11, 10),
         /**
-         * Item Graphics Temp
+         * Item Graphics Temp.
          */
         ItemScore(SourceCategory.ITEM, 5, 5),
         ItemCoin(SourceCategory.ITEM, 5, 5),
@@ -187,19 +240,42 @@ public final class AssetManager {
         
         // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;
+        private final String filename;
         private final int width;
         private final int height;
+        private final boolean isImage;
+        private final int frameCount;
         
-        // Enum 생성자
-        SpriteType(SourceCategory category, int width, int height) {
+        SpriteType(SourceCategory category, String filename, int width, int height) {
+            this(category, filename, width, height, 1);
+        }
+        
+        SpriteType(SourceCategory category, String filename, int width, int height,
+            int frameCount) {
             this.category = category;
+            this.filename = filename;
             this.width = width;
             this.height = height;
+            this.isImage = true;
+            this.frameCount = frameCount;
+        }
+        
+        SpriteType(SourceCategory category, int width, int height) {
+            this.category = category;
+            this.filename = null;
+            this.width = width;
+            this.height = height;
+            this.isImage = false;
+            this.frameCount = 1;
         }
         
         // Getter 메서드
         public SourceCategory getCategory() {
             return this.category;
+        }
+        
+        public String getFilename() {
+            return this.filename;
         }
         
         public int getWidth() {
@@ -209,6 +285,14 @@ public final class AssetManager {
         public int getHeight() {
             return this.height;
         }
+        
+        public boolean isImage() {
+            return this.isImage;
+        }
+        
+        public int getFrameCount() {
+            return this.frameCount;
+        }
     }
     
     private static AssetManager instance;
@@ -216,7 +300,10 @@ public final class AssetManager {
     private static final FileManager fileManager = Core.getFileManager();
     
     Map<SpriteType, boolean[][]> spriteMap;
+    Map<SpriteType, BufferedImage> spriteImageMap;
+    Map<SpriteType, BufferedImage[]> animationMap;
     HashMap<String, Clip> soundMap;
+    HashMap<String, File> csvDataMap;
     private Font fontRegular;
     private Font fontBig;
     
@@ -224,12 +311,10 @@ public final class AssetManager {
         LOGGER.info("Started loading resources.");
         
         try {
-            spriteMap = new LinkedHashMap<SpriteType, boolean[][]>();
-            for (SpriteType type : SpriteType.values()) {
-                spriteMap.put(type, new boolean[type.getWidth()][type.getHeight()]);
-            }
-            // Sprite graphics loading
-            this.loadSprite(spriteMap);
+            spriteMap = new LinkedHashMap<>();
+            spriteImageMap = new LinkedHashMap<>();
+            animationMap = new LinkedHashMap<>();
+            this.loadResources();
             LOGGER.info("Finished loading the sprites.");
             
             // Font loading
@@ -260,10 +345,95 @@ public final class AssetManager {
             soundMap.put("special_ship_sound", loadSound("sound/special_ship_sound.wav"));
             soundMap.put("win", loadSound("sound/win.wav"));
             soundMap.put("lose", loadSound("sound/lose.wav"));
-            
+            soundMap.put("laser_big", loadSound("sound/shoot_enemies.wav"));
+            soundMap.put("boss_hit", loadSound("sound/invader_killed.wav"));
+
             LOGGER.info("Finished loading the sounds.");
         } catch (Exception e) {
             LOGGER.warning("Sound loading failed.");
+        }
+        
+        try {
+            csvDataMap = new HashMap<String, File>();
+            // 모든 CSV 파일을 미리 로드
+            csvDataMap.put("user_acct_info", loadCsv("game_data/user_acct_info.csv"));
+            csvDataMap.put("user_stats", loadCsv("game_data/user_stats.csv"));
+            csvDataMap.put("key_config", loadCsv("game_data/key_config.csv"));
+            csvDataMap.put("1p_scores", loadCsv("game_data/1p_scores.csv"));
+            csvDataMap.put("2p_scores", loadCsv("game_data/2p_scores.csv"));
+            csvDataMap.put("item_db", loadCsv("game_data/item_db.csv"));
+            csvDataMap.put("achievement", loadCsv("game_data/achievement.csv"));
+            csvDataMap.put("level", loadCsv("game_data/level.csv"));
+            
+            LOGGER.info("Finished loading the game data file.");
+        } catch (Exception e) {
+            LOGGER.warning("Game data file loading failed.");
+        }
+    }
+    
+    private boolean isPixelMapCategory(SourceCategory category) {
+        String path = category.getFilePath();
+        return !path.contains("character");
+    }
+    
+    public void loadResources() throws IOException {
+        Map<SourceCategory, InputStream> streamMap = new EnumMap<>(SourceCategory.class);
+        
+        for (SourceCategory category : SourceCategory.values()) {
+            if (isPixelMapCategory(category)) {
+                streamMap.put(category, AssetManager.class.getClassLoader()
+                    .getResourceAsStream(category.getFilePath()));
+            }
+        }
+        
+        try {
+            for (SpriteType type : SpriteType.values()) {
+                if (type.isImage()) {
+                    String basePath = type.getCategory().getFilePath() + type.getFilename();
+                    int targetWidth = type.getWidth();
+                    int targetHeight = type.getHeight();
+                    
+                    if (type.getFrameCount() == 1) {
+                        BufferedImage img = engine.utils.ImageLoader.loadImage(
+                            basePath, targetWidth, targetHeight
+                        );
+                        spriteImageMap.put(type, img);
+                    } else {
+                        BufferedImage[] frames = new BufferedImage[type.getFrameCount()];
+                        
+                        for (int i = 0; i < type.getFrameCount(); i++) {
+                            String fullPath = basePath + (i + 1) + ".png";
+                            
+                            frames[i] = engine.utils.ImageLoader.loadImage(fullPath, targetWidth,
+                                targetHeight);
+                        }
+                        animationMap.put(type, frames);
+                    }
+                    
+                } else {
+                    boolean[][] data = new boolean[type.getWidth()][type.getHeight()];
+                    InputStream stream = streamMap.get(type.getCategory());
+                    
+                    if (stream != null) {
+                        char c;
+                        for (int i = 0; i < type.getWidth(); i++) {
+                            for (int j = 0; j < type.getHeight(); j++) {
+                                do {
+                                    c = (char) stream.read();
+                                } while (c != '0' && c != '1');
+                                data[i][j] = (c == '1');
+                            }
+                        }
+                        spriteMap.put(type, data);
+                    }
+                }
+            }
+        } finally {
+            for (InputStream is : streamMap.values()) {
+                if (is != null) {
+                    is.close();
+                }
+            }
         }
     }
     
@@ -295,8 +465,7 @@ public final class AssetManager {
         try {
             // Font loading.
             inputStream = FileManager.class.getClassLoader().getResourceAsStream("font/font.ttf");
-            font = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(
-                size);
+            font = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(size);
         } finally {
             if (inputStream != null) {
                 inputStream.close();
@@ -307,49 +476,9 @@ public final class AssetManager {
     }
     
     /**
-     * Loads sprites from disk.
-     *
-     * @param spriteMap Mapping of sprite type and empty boolean matrix that will contain the
-     *                  image.
-     * @throws IOException In case of loading problems.
-     */
-    public void loadSprite(final Map<SpriteType, boolean[][]> spriteMap) throws IOException {
-        Map<SourceCategory, InputStream> streamMap = new EnumMap<>(SourceCategory.class);
-        for (SourceCategory category : SourceCategory.values()) {
-            streamMap.put(category,
-                AssetManager.class.getClassLoader().getResourceAsStream(category.getFilePath()));
-        }
-        
-        try {
-            char c;
-            for (Map.Entry<SpriteType, boolean[][]> sprite : spriteMap.entrySet()) {
-                SpriteType type = sprite.getKey();
-                boolean[][] data = sprite.getValue();
-                InputStream selectedStream = streamMap.get(type.getCategory());
-                for (int i = 0; i < sprite.getValue().length; i++) {
-                    for (int j = 0; j < sprite.getValue()[i].length; j++) {
-                        do {
-                            c = (char) selectedStream.read();
-                        } while (c != '0' && c != '1');
-                        
-                        data[i][j] = (c == '1');
-                    }
-                }
-                LOGGER.fine("Sprite " + sprite.getKey() + " loaded.");
-            }
-        } finally {
-            for (InputStream stream : streamMap.values()) {
-                if (stream != null) {
-                    stream.close();
-                }
-            }
-        }
-    }
-    
-    /**
      * 지정된 리소스 경로에서 오디오 파일을 읽어와 재생 준비가 완료된 Clip 객체로 반환합니다.
      *
-     * @param resourcePath 리소스 폴더 내의 사운드 파일 경로 (예: "sound/shoot.wav")
+     * @param resourcePath 리소스 폴더 내의 사운드 파일 경로
      * @return 메모리에 로드된 Clip 객체
      * @throws UnsupportedAudioFileException 오디오 파일 형식이 지원되지 않는 경우
      * @throws IOException                   파일 입출력 오류가 발생한 경우
@@ -392,8 +521,7 @@ public final class AssetManager {
     /**
      * Ensures the audio stream is PCM_SIGNED for Clip compatibility on all JVMs.
      */
-    public static AudioInputStream toPcmSigned(AudioInputStream source)
-        throws UnsupportedAudioFileException, IOException {
+    public static AudioInputStream toPcmSigned(AudioInputStream source) {
         AudioFormat format = source.getFormat();
         if (format.getEncoding() == AudioFormat.Encoding.PCM_SIGNED) {
             return source;
@@ -411,12 +539,15 @@ public final class AssetManager {
         return AudioSystem.getAudioInputStream(targetFormat, source);
     }
     
-    public Clip getSound(String soundName) {
-        return soundMap.get(soundName);
-    }
-    
-    public boolean[][] getSprite(SpriteType type) {
-        return spriteMap.get(type);
+    /**
+     * Loads a CSV file from the given path.
+     *
+     * @param filePath Path to the CSV file.
+     * @return File object for the CSV file.
+     */
+    private File loadCsv(String filePath) {
+        String rootDir = System.getProperty("user.dir");
+        return new File(rootDir + File.separator + filePath);
     }
     
     public Font getFontRegular() {
@@ -425,5 +556,25 @@ public final class AssetManager {
     
     public Font getFontBig() {
         return fontBig;
+    }
+    
+    public File getCsvData(String fileName) {
+        return csvDataMap.get(fileName);
+    }
+    
+    public Clip getSound(String soundName) {
+        return soundMap.get(soundName);
+    }
+    
+    public boolean[][] getSpriteMap(SpriteType type) {
+        return spriteMap.get(type);
+    }
+    
+    public BufferedImage getSpriteImage(SpriteType type) {
+        return spriteImageMap.get(type);
+    }
+    
+    public BufferedImage[] getAnimation(SpriteType type) {
+        return animationMap.get(type);
     }
 }

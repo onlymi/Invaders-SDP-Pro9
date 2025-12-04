@@ -35,6 +35,10 @@ public final class FileManager {
      */
     private String userAccountPath = "src/main/resources/game_data/user_acct_info.csv";
     /**
+     * user account stats info file path.
+     */
+    private String userStatsPath = "src/main/resources/game_data/user_stats.csv";
+    /**
      * Singleton instance of the class.
      */
     private static FileManager instance;
@@ -42,6 +46,10 @@ public final class FileManager {
      * Application logger.
      */
     private static Logger LOGGER;
+    /**
+     * user_stats.csv Header.
+     */
+    private static final String USER_STATS_HEADER = "id,coin,healthLevel,manaLevel,speedLevel,damageLevel,attackSpeedLevel,attackRangeLevel,criticalLevel,defenceLevel";
     
     /**
      * Enum indicating login result status.
@@ -528,5 +536,83 @@ public final class FileManager {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+    
+    /**
+     * Load stat information with the user ID. If the stat file does not exist, create the file and
+     * save the default value.
+     *
+     * @param userId user account ID
+     * @return UserStats objects that match userId
+     * @throws IOException user stats data file does not exist
+     */
+    public UserStats loadUserStats(String userId) throws IOException {
+        File file = new File(userStatsPath);
+        if (!file.exists()) {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        }
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().equals(USER_STATS_HEADER)) {
+                    continue;
+                }
+                if (line.startsWith(userId + ",")) {
+                    return UserStats.fromCSV(line);
+                }
+            }
+        }
+        
+        // 정보가 없으면 새로 생성 후 저장
+        UserStats newStats = new UserStats(userId);
+        saveUserStats(newStats);
+        return newStats;
+    }
+    
+    /**
+     * 유저 스탯 정보를 파일에 저장(업데이트)합니다.
+     *
+     * @param stats current user stats
+     * @throws IOException
+     */
+    public void saveUserStats(UserStats stats) throws IOException {
+        File file = new File(userStatsPath);
+        List<String> lines = new ArrayList<>();
+        boolean found = false;
+        boolean hasHeader = false;
+        
+        if (file.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.trim().equals(USER_STATS_HEADER)) {
+                        lines.add(line);
+                        hasHeader = true;
+                        continue;
+                    }
+                    if (line.startsWith(stats.getUserId() + ",")) {
+                        lines.add(stats.toCSV());
+                        found = true;
+                    } else {
+                        lines.add(line);
+                    }
+                }
+            }
+        }
+        if (!hasHeader) {
+            lines.addFirst(USER_STATS_HEADER);
+        }
+        // 신규 유저 추가
+        if (!found) {
+            lines.add(stats.toCSV());
+        }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            for (String line : lines) {
+                writer.write(line);
+                writer.newLine();
+            }
+        }
     }
 }

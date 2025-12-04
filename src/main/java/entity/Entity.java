@@ -28,6 +28,14 @@ public class Entity {
      */
     protected int height;
     /**
+     * Rotation of the entity.
+     */
+    protected double rotation = 0;
+    /**
+     * Alpha of the entity.
+     */
+    protected float alpha = 1.0f;
+    /**
      * Color of the entity.
      */
     private Color color;
@@ -89,6 +97,14 @@ public class Entity {
     
     public final void changeColor(Color color) {
         this.color = color;
+    }
+    
+    public final double getRotation() {
+        return this.rotation;
+    }
+    
+    public final void setRotation(double rotation) {
+        this.rotation = rotation;
     }
     
     /**
@@ -164,4 +180,11 @@ public class Entity {
         this.team = (t == null ? Team.NEUTRAL : t);
     }
     
+    public final float getAlpha() {
+        return this.alpha;
+    }
+    
+    public final void setAlpha(float alpha) {
+        this.alpha = Math.max(0.0f, Math.min(1.0f, alpha));
+    }
 }
