@@ -9,6 +9,7 @@ import entity.Entity;
 import entity.Ship;
 import entity.Weapon;
 import entity.character.ArcherCharacter;
+import entity.character.GameCharacter;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -75,6 +76,10 @@ public class EntityRenderer {
      */
     private void drawEntity(Graphics g, final Entity entity, final int x,
         final int y, final Color color, final int scale) {
+        
+        if (entity instanceof GameCharacter && !((GameCharacter) entity).isInSelectScreen()) {
+            drawHealthBar(g, entity, x, y);
+        }
         
         // 특수 캐릭터 처리 - 스케일 정보 전달
         if (entity instanceof ArcherCharacter) {
@@ -187,6 +192,24 @@ public class EntityRenderer {
                 }
             }
         }
+    }
+    
+    public void drawHealthBar(Graphics g, final Entity entity, int x, int y) {
+        int maxHealth = ((GameCharacter) entity).getCurrentStats().maxHealthPoints;
+        int currentHealth = ((GameCharacter) entity).getCurrentHealthPoints();
+        int healthRatio = (currentHealth / maxHealth);
+        
+        if (healthRatio > 1) {
+            healthRatio = 1;
+        } else if (healthRatio < 0) {
+            healthRatio = 0;
+        }
+        
+        int healthBarHeight = 10;
+        g.setColor(new Color(0, 255, 0, 110));
+        g.drawRect(x - 1, y - healthBarHeight - 4, entity.getWidth() + 1, healthBarHeight + 1);
+        g.setColor(new Color(255, 0, 0, 110));
+        g.fillRect(x, y - healthBarHeight - 3, entity.getWidth() * healthRatio, healthBarHeight);
     }
     
     private void drawMissingTexturePlaceholder(Graphics g, Entity entity, int x, int y) {
