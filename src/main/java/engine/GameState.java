@@ -151,16 +151,8 @@ public class GameState {
         initializePlayerItemStates();
     }
     
-    // 2P mode: per-player tallies (used for stats/scoring; lives[] unused in shared
-    // mode).
-    private final int[] score = new int[NUM_PLAYERS];
-    private final int[] lives = new int[NUM_PLAYERS];
-    private final int[] bulletsShot = new int[NUM_PLAYERS];
-    private final int[] shipsDestroyed = new int[NUM_PLAYERS];
+    // Legacy 6-arg - kept for old call sites.
     
-    /* ---------- Constructors ---------- */
-    
-    /** Legacy 6-arg - kept for old call sites */
     /**
      * Constructor.
      *

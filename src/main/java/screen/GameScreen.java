@@ -752,7 +752,7 @@ public class GameScreen extends Screen {
                                 state.getLivesRemaining() == 1
                             );
                         
-                        character.destroy();
+                        character.takeDamage(1);
                         SoundManager.playOnce("explosion");
                         // this.state.decLife(p);
                         
@@ -1052,7 +1052,7 @@ public class GameScreen extends Screen {
     private void updatePetsFromEffects() {
         for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
             GameCharacter owner = this.characters[p];
-            if (owner == null || owner.isDestroyed()) {
+            if (owner == null || owner.isInvincible()) {
                 continue;
             }
             
@@ -1134,7 +1134,7 @@ public class GameScreen extends Screen {
             GameCharacter owner =
                 (idx >= 0 && idx < GameState.NUM_PLAYERS) ? characters[idx] : null;
             
-            if (owner == null || owner.isDestroyed()) {
+            if (owner == null || owner.isInvincible()) {
                 continue;
             }
             
