@@ -232,11 +232,13 @@ public final class AssetManager {
         ItemScore(SourceCategory.ITEM, 5, 5),
         ItemCoin(SourceCategory.ITEM, 5, 5),
         ItemHeal(SourceCategory.ITEM, 5, 5),
-        ItemTripleShot(SourceCategory.ITEM, 5, 5),
         ItemScoreBooster(SourceCategory.ITEM, 5, 5),
-        ItemBulletSpeedUp(SourceCategory.ITEM, 5, 5),
         ItemMoveSpeedUp(SourceCategory.ITEM, 5, 5),
-        ItemTimeFreeze(SourceCategory.ITEM, 5, 5);
+        ItemTimeFreeze(SourceCategory.ITEM, 5, 5),
+        ItemTimeSlow(SourceCategory.ITEM, 5, 5),
+        ItemDash(SourceCategory.ITEM, 5, 5),
+        ItemPetGun(SourceCategory.ITEM, 5, 5),
+        ItemShield(SourceCategory.ITEM, 5, 5);
         
         // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;

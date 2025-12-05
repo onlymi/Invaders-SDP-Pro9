@@ -16,6 +16,7 @@ import entity.EnemyShip;
 import entity.Entity;
 import entity.Item;
 import entity.ItemPool;
+import entity.Pet;
 import entity.Weapon;
 import entity.WeaponPool;
 import entity.character.CharacterSpawner;
@@ -63,7 +64,7 @@ public class GameScreen extends Screen {
     private GameSettings gameSettings;
     private BasicGameSpace basicGameSpace;
     /**
-     * EnemyShip for Multi-hit.
+     * Boss ship for boss stage.
      */
     private BossShip bossShip;
     /**
@@ -71,11 +72,11 @@ public class GameScreen extends Screen {
      */
     private final int level;
     /**
-     * Formation of enemy.
+     * Enemy manager.
      */
     private EnemyManager enemyManager;
     /**
-     * Characters (Players) in the game. Replaces the old 'ships' array.
+     * Characters (Players) in the game.
      */
     private GameCharacter[] characters;
     /**
@@ -111,6 +112,9 @@ public class GameScreen extends Screen {
     private int bulletsShot;
     private int shipsDestroyed;
     
+    /**
+     * checks if player took damage 2025-10-02 add new variable
+     */
     private boolean tookDamageThisLevel;
     private boolean countdownSoundPlayed = false;
     
@@ -121,6 +125,10 @@ public class GameScreen extends Screen {
     
     private int killsToWin;
     private int enemyKillCount;
+    
+    private final Set<Pet> pets = new HashSet<>();
+    
+    private Cooldown inputDelay;
     
     /**
      * Constructor, establishes the properties of the screen.
@@ -190,7 +198,7 @@ public class GameScreen extends Screen {
         state.clearAllEffects();
         soundManager.playLoop("game_theme");
         
-        // New BasicGameSpace Code
+        // Background
         this.basicGameSpace = new BasicGameSpace(100, this.width, this.height);
         
         this.enemyManager = new EnemyManager(this);
@@ -210,12 +218,11 @@ public class GameScreen extends Screen {
             this.bossShip = null;
         }
         
-        // Player 1
         int startX = this.width / 2 - Core.getAssetManager().getCharacterWidth() / 2;
         int startY = this.height - Core.getAssetManager().getCharacterHeight() - 10;
         int gapBetweenCharacters = 64;
         
-        // Player 2
+        // Characters & controls
         if (state.isCoop()) {
             this.characters[0] = CharacterSpawner.createCharacter(this.characterTypeP1,
                 startX - gapBetweenCharacters, startY, Entity.Team.PLAYER1, 1);
@@ -229,6 +236,7 @@ public class GameScreen extends Screen {
         } else {
             this.characters[0] = CharacterSpawner.createCharacter(this.characterTypeP1,
                 startX, startY, Entity.Team.PLAYER1, 1);
+            this.characters[0].setControlKeys(Core.getInputManager().getPlayer1Keys());
             this.characters[1] = null;
         }
         // P1 Controls
@@ -242,6 +250,7 @@ public class GameScreen extends Screen {
         this.weapons = new HashSet<Weapon>();
         this.items = new HashSet<Item>();
         this.basicGameSpace = new BasicGameSpace(100, this.width, this.height);
+        this.pets.clear();
         
         this.gameStartTime = System.currentTimeMillis();
         this.inputDelay = Core.getCooldown(INPUT_DELAY);
@@ -281,29 +290,26 @@ public class GameScreen extends Screen {
             }
         }
         
-        if (this.getGameState().areEnemiesFrozen()) {
-            return;
-        }
-        
         checkAchievement();
+        
+        // Pause toggle
         if (this.inputDelay.checkFinished() && inputManager.isKeyDown(KeyEvent.VK_ESCAPE)
             && this.pauseCooldown.checkFinished()) {
             this.isPaused = !this.isPaused;
             this.pauseCooldown.reset();
             
             if (this.isPaused) {
-                // Pause game music when pausing - no sound during pause
                 SoundManager.loopStop();
             } else {
-                // Resume game music when unpausing
                 SoundManager.playLoop("game_theme");
             }
         }
         
+        // Return to menu
         if (this.isPaused && inputManager.isKeyDown(KeyEvent.VK_BACK_SPACE)
             && this.returnMenuCooldown.checkFinished()) {
             SoundManager.playOnce("select");
-            SoundManager.stopAllMusic(); // Stop all music before returning to menu
+            SoundManager.stopAllMusic();
             returnCode = 1;
             this.isRunning = false;
         }
@@ -311,13 +317,10 @@ public class GameScreen extends Screen {
         if (!this.isPaused) {
             if (this.inputDelay.checkFinished() && !this.levelFinished) {
                 
-                // Calculate deltaTime (seconds per frame)
-                // Assuming fixed FPS from Screen.fps
                 float deltaTime = 1.0f / this.fps;
-                
                 int lastPressed = inputManager.getLastPressedKey();
                 
-                // --- Character Update Loop ---
+                // Characters update
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     GameCharacter character = this.characters[p];
                     
@@ -349,21 +352,21 @@ public class GameScreen extends Screen {
                         state.incBulletsShot(p);
                     }
                 }
-                // -----------------------------
                 
-                // Update bossShip
+                // despawn based on active effect
+                updatePetsFromEffects();
+                
+                // Boss or enemy manager
                 if (this.bossShip != null) {
                     this.bossShip.update();
                     if (!this.bossShip.isDestroyed()) {
                         this.bossShip.shoot(this.weapons, this.characters);
                     }
-                    if (!this.state.areEnemiesFrozen()) {
-                        this.bossShip.update();
-                    }
                 } else {
                     this.enemyManager.update();
                 }
-                // Block enemy shooting while global freeze is active.
+                
+                // Enemy shooting (respecting freeze if GameState uses it)
                 if (this.state == null || !this.state.areEnemiesFrozen()) {
                     int bulletsBefore = this.weapons.size();
                     // this.enemyManager.shoot(this.weapons); // Assuming handled inside manager or uncomment if needed
@@ -373,14 +376,13 @@ public class GameScreen extends Screen {
                 }
             }
             
+            updatePetsLogic();
             manageCollisions();
             cleanBullets();
             
-            // Item Entity Code
             cleanItems();
             manageItemPickups();
             
-            // check active item affects
             state.updateEffects();
             boolean lowHealth = false;
             for (GameCharacter c : characters) {
@@ -412,7 +414,7 @@ public class GameScreen extends Screen {
             // End condition: achieved kill count or TEAM lives exhausted.
             if ((this.enemyKillCount >= this.killsToWin || !state.teamAlive())
                 && !this.levelFinished) {
-                // The object managed by the object pool pattern must be recycled at the end of the level.
+                
                 WeaponPool.recycle(this.weapons);
                 this.weapons.removeAll(this.weapons);
                 ItemPool.recycle(items);
@@ -468,7 +470,7 @@ public class GameScreen extends Screen {
             .drawExplosions(drawManager.getBackBufferGraphics(), this);
         updateGameSpace(drawManager.getBackBufferGraphics());
         
-        // Draw Characters
+        // Characters
         for (GameCharacter character : this.characters) {
             if (character != null) {
                 if (character.getCurrentHealthPoints() <= 0 || !character.isInvincible()
@@ -480,28 +482,42 @@ public class GameScreen extends Screen {
             }
         }
         
+        // Pets
+        for (Pet pet : this.pets) {
+            if (pet.isDead() || pet.isExpired()) {
+                continue;
+            }
+            
+            drawManager.getEntityRenderer()
+                .drawEntity(drawManager.getBackBufferGraphics(), pet,
+                    pet.getPositionX(), pet.getPositionY());
+        }
+        
+        // Boss
         if (this.bossShip != null) {
             drawManager.getEntityRenderer()
                 .drawEntity(drawManager.getBackBufferGraphics(), this.bossShip,
                     this.bossShip.getPositionX(), this.bossShip.getPositionY());
         }
         
+        // Enemies
         this.enemyManager.draw();
         
+        // Weapons
         for (Weapon weapon : this.weapons) {
             drawManager.getEntityRenderer()
                 .drawEntity(drawManager.getBackBufferGraphics(), weapon, weapon.getPositionX(),
                     weapon.getPositionY());
         }
         
-        // draw items
+        // Items
         for (Item item : this.items) {
             drawManager.getEntityRenderer()
                 .drawEntity(drawManager.getBackBufferGraphics(), item, item.getPositionX(),
                     item.getPositionY());
         }
         
-        // Aggregate UI (team score & team lives)
+        // Aggregate UI
         drawManager.getGameScreenRenderer()
             .drawScore(drawManager.getBackBufferGraphics(), this, state.getScore());
         // drawManager.getGameScreenRenderer()
@@ -514,7 +530,7 @@ public class GameScreen extends Screen {
         drawManager.getCommonRenderer()
             .drawHorizontalLine(drawManager.getBackBufferGraphics(), this,
                 SEPARATION_LINE_HEIGHT - 1);
-        // Remaining Kills
+        
         int remainingKills = Math.max(0, this.killsToWin - this.enemyKillCount);
         drawManager.getGameScreenRenderer().drawShipCount(drawManager.getBackBufferGraphics(), this,
             remainingKills);
@@ -547,7 +563,7 @@ public class GameScreen extends Screen {
                 (this.achievementManager != null) ? this.achievementManager.getActiveToasts()
                     : Collections.emptyList());
         
-        // === TIME FREEZE overlay ===
+        // TIME FREEZE overlay
         if (this.state.areEnemiesFrozen()) {
             Graphics2D g2d = (Graphics2D) drawManager.getBackBufferGraphics().create();
             try {
@@ -556,7 +572,6 @@ public class GameScreen extends Screen {
                 
                 String text = "TIME FREEZE";
                 
-                // Use CommonRenderer's big font
                 g2d.setFont(drawManager.getCommonRenderer().getFontBig());
                 FontMetrics fm = g2d.getFontMetrics();
                 
@@ -569,12 +584,10 @@ public class GameScreen extends Screen {
                 int x = (this.getWidth() - boxWidth) / 2;
                 int y = (this.getHeight() - boxHeight) / 2;
                 
-                // Translucent black background
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f));
                 g2d.setColor(Color.BLACK);
                 g2d.fillRoundRect(x, y, boxWidth, boxHeight, 16, 16);
                 
-                // Border
                 g2d.setComposite(AlphaComposite.SrcOver);
                 g2d.setColor(new Color(0, 255, 255, 140));
                 g2d.setStroke(new BasicStroke(2f));
@@ -657,7 +670,7 @@ public class GameScreen extends Screen {
                     
                     int playerIndex = character.getPlayerId() - 1;
                     if (playerIndex < 0 || playerIndex >= GameState.NUM_PLAYERS) {
-                        playerIndex = 0; // fallback
+                        playerIndex = 0;
                     }
                     
                     ActivationType activationType = item.getActivationType();
@@ -691,13 +704,16 @@ public class GameScreen extends Screen {
     }
     
     /**
-     * Enemy bullets hit players → decrement TEAM lives; player bullets hit enemies → add score.
+     * Enemy bullets hit players/pets → decrement TEAM lives / damage pets; player bullets hit
+     * enemies → add score.
      */
     private void manageCollisions() {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
             if (weapon.getOwnerPlayerId() == 0) {
-                // Enemy bullet vs Players
+                // Enemy weapon vs players / pets
+                boolean handled = false;
+                
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     GameCharacter character = this.characters[p];
                     if (character != null && character.getCurrentHealthPoints() > 0
@@ -708,9 +724,11 @@ public class GameScreen extends Screen {
                         
                         recyclable.add(weapon);
                         
-                        this.drawManager.getGameScreenRenderer()
-                            .triggerExplosion(character.getPositionX(), character.getPositionY(),
-                                false, state.getLivesRemaining() == 1);
+                        boolean hasShieldEffect =
+                            state != null && state.hasEffect(
+                                p,
+                                engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
+                            );
                         
                         character.takeDamage(weapon.getDamage());
                         
@@ -720,27 +738,64 @@ public class GameScreen extends Screen {
                             this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
                                 + state.getLivesRemaining());
                         }
+                        if (hasShieldEffect) {
+                            LOGGER.info("[GameScreen] Shield blocked damage for player " + (p + 1));
+                            handled = true;
+                            break;
+                        }
                         
+                        this.drawManager.getGameScreenRenderer()
+                            .triggerExplosion(
+                                character.getPositionX(),
+                                character.getPositionY(),
+                                false,
+                                state.getLivesRemaining() == 1
+                            );
+                        
+                        character.destroy();
                         SoundManager.playOnce("explosion");
                         // this.state.decLife(p);
                         
                         // Record damage for Survivor achievement check
                         this.tookDamageThisLevel = true;
+                        
                         this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
                         
                         this.LOGGER.info("Hit on player " + (p + 1) + ", team lives now: "
                             + state.getLivesRemaining());
+                        
+                        handled = true;
                         break;
                     }
                 }
+                
+                if (handled) {
+                    continue;
+                }
+                
+                for (Pet pet : pets) {
+                    if (pet.isDead() || pet.isExpired()) {
+                        continue;
+                    }
+                    
+                    if (checkCollision(weapon, pet) && !this.levelFinished) {
+                        recyclable.add(weapon);
+                        
+                        pet.takeDamage(1);
+                        
+                        this.LOGGER.info("[GameScreen] Pet hit by enemy weapon. owner="
+                            + pet.getOwnerPlayerId());
+                        
+                        break;
+                    }
+                }
+                
             } else {
-                // Player bullet vs enemies
-                // map Bullet owner id (1 or 2) to per-player index (0 or 1)
+                // Player weapon vs enemies
                 final int ownerId = weapon.getOwnerPlayerId(); // 1 or 2 (0 if unset)
                 final int pIdx = (ownerId == 2) ? 1 : 0; // default to P1 when unset
                 boolean finalShip = this.enemyManager.lastShip();
                 
-                // Check collision with formation enemies
                 for (EnemyShip enemyShip : this.enemyManager.getEnemies()) {
                     if (!enemyShip.isDestroyed() && checkCollision(weapon, enemyShip)) {
                         recyclable.add(weapon);
@@ -788,24 +843,25 @@ public class GameScreen extends Screen {
                         
                         SoundManager.loopStop(); // Stop boss BGM
                         SoundManager.playOnce("explosion");
-                        // Boss explosion is always large and final (true)
                         drawManager.getGameScreenRenderer()
                             .triggerExplosion(this.bossShip.getPositionX(),
                                 this.bossShip.getPositionY(), true, true);
                         Random rand = new Random();
                         for (int i = 0; i < 10; i++) {
-                            int offsetX = rand.nextInt(this.bossShip.getWidth())
-                                - this.bossShip.getWidth() / 2;
-                            int offsetY = rand.nextInt(this.bossShip.getHeight())
-                                - this.bossShip.getHeight() / 2;
+                            int offsetX =
+                                rand.nextInt(this.bossShip.getWidth()) - this.bossShip.getWidth()
+                                    / 2;
+                            int offsetY =
+                                rand.nextInt(this.bossShip.getHeight()) - this.bossShip.getHeight()
+                                    / 2;
                             
                             Color explosionColor = new Color(255, rand.nextInt(150), 0);
                             
                             drawManager.getGameScreenRenderer().triggerCustomExplosion(
-                                this.bossShip.getPositionX() + this.bossShip.getWidth() / 2
-                                    + offsetX,
-                                this.bossShip.getPositionY() + this.bossShip.getHeight() / 2
-                                    + offsetY,
+                                this.bossShip.getPositionX()
+                                    + this.bossShip.getWidth() / 2 + offsetX,
+                                this.bossShip.getPositionY()
+                                    + this.bossShip.getHeight() / 2 + offsetY,
                                 explosionColor
                             );
                         }
@@ -817,7 +873,6 @@ public class GameScreen extends Screen {
                             weapon.getPositionY(),
                             new Color(255, 50, 50));
                     }
-                    // Since the Boss is a single target, break is omitted to continue with the next bullet/enemy check.
                 }
             }
         }
@@ -871,7 +926,6 @@ public class GameScreen extends Screen {
         Rectangle r2 = new Rectangle(b.getPositionX(), b.getPositionY(),
             b.getWidth(), b.getHeight());
         
-        // 2. Without rotation (optimization): Perform fast quadrilateral collision detection as before.
         if (a.getRotation() == 0 && b.getRotation() == 0) {
             return r1.intersects(r2);
         }
@@ -880,7 +934,6 @@ public class GameScreen extends Screen {
         Area areaA = new Area(r1);
         Area areaB = new Area(r2);
         
-        // Apply rotation to an entity (usually a laser)
         if (a.getRotation() != 0) {
             AffineTransform atA = new AffineTransform();
             
@@ -895,14 +948,12 @@ public class GameScreen extends Screen {
             areaA.transform(atA);
         }
         
-        // Apply rotation to b entity (mainly player) (possibly for scalability)
         if (b.getRotation() != 0) {
             AffineTransform atB = new AffineTransform();
             atB.rotate(Math.toRadians(b.getRotation()), r2.getCenterX(), r2.getCenterY());
             areaB.transform(atB);
         }
         
-        // Check if there is an intersection (overlapping area) between two shapes
         areaA.intersect(areaB);
         return !areaA.isEmpty();
     }
@@ -940,22 +991,17 @@ public class GameScreen extends Screen {
             if (!this.tookDamageThisLevel) {
                 achievementManager.unlock("Survivor");
             }
-            // Sharpshooter
             if (p1Acc >= 80) {
-                // 1p
                 achievementManager.unlock("Sharpshooter");
-                // coop
                 if (p2Acc >= 80) {
                     achievementManager.unlock("Sharpshooter");
                 }
             }
         }
         
-        //50 Bullets
         if (state.getBulletsShot() >= 50) {
             achievementManager.unlock("50 Bullets");
         }
-        //Get 3000 Score
         if (state.getScore() >= 3000) {
             achievementManager.unlock("Get 3000 Score");
         }
@@ -997,6 +1043,102 @@ public class GameScreen extends Screen {
             g2d.fillOval(positions[i][0] - radius / 2, positions[i][1] - radius / 2, radius,
                 radius);
             g.fillOval(positions[i][0], positions[i][1], size, size);
+        }
+    }
+    
+    /**
+     * Spawns or removes pets based on the PET_SUPPORT effect.
+     */
+    private void updatePetsFromEffects() {
+        for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
+            GameCharacter owner = this.characters[p];
+            if (owner == null || owner.isDestroyed()) {
+                continue;
+            }
+            
+            boolean hasPetEffect =
+                state != null && state.hasEffect(p,
+                    engine.gameplay.item.ItemEffect.ItemEffectType.PET_SUPPORT);
+            
+            boolean hasPetEntity = hasPetForPlayer(p + 1);
+            
+            if (hasPetEffect && !hasPetEntity) {
+                spawnPetForPlayer(p + 1, owner);
+            } else if (!hasPetEffect && hasPetEntity) {
+                removePetForPlayer(p + 1);
+            }
+        }
+    }
+    
+    private boolean hasPetForPlayer(int playerId) {
+        for (Pet pet : pets) {
+            if (pet.getOwnerPlayerId() == playerId) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private void removePetForPlayer(int playerId) {
+        Set<Pet> toRemove = new HashSet<>();
+        for (Pet pet : pets) {
+            if (pet.getOwnerPlayerId() == playerId) {
+                toRemove.add(pet);
+            }
+        }
+        pets.removeAll(toRemove);
+    }
+    
+    private void spawnPetForPlayer(int playerId, GameCharacter owner) {
+        int startX = owner.getPositionX() + owner.getWidth() + 10;
+        int startY = owner.getPositionY() - 10;
+        
+        int petWidth = 16;
+        int petHeight = 16;
+        Color petColor = Color.CYAN;
+        
+        long lifetimeMs = 6000L;
+        long shotIntervalMs = 1000L;
+        
+        Pet pet = new Pet(
+            startX,
+            startY,
+            petWidth,
+            petHeight,
+            petColor,
+            playerId,
+            Pet.PetKind.GUN,
+            this.state,
+            lifetimeMs,
+            shotIntervalMs
+        );
+        
+        pets.add(pet);
+        
+        Core.getLogger().info("[GameScreen] Spawned PET-GUN for player " + playerId
+            + " at (" + startX + "," + startY + ")");
+    }
+    
+    /**
+     * Updates all active pets: follow their owner and fire bullets if needed.
+     */
+    private void updatePetsLogic() {
+        for (Pet pet : pets) {
+            
+            if (pet.isDead() || pet.isExpired()) {
+                continue;
+            }
+            
+            int ownerId = pet.getOwnerPlayerId();
+            int idx = ownerId - 1;
+            GameCharacter owner =
+                (idx >= 0 && idx < GameState.NUM_PLAYERS) ? characters[idx] : null;
+            
+            if (owner == null || owner.isDestroyed()) {
+                continue;
+            }
+            
+            pet.update(this.weapons, owner);
         }
     }
     

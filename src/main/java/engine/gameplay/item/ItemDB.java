@@ -12,12 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-
 /**
  * Handles loading and managing item data from the CSV file. (item_db.csv)
  * <p>
- * Supports both legacy CSV format (5 columns) and new format with cost (6 columns):
- * type,spriteType,dropTier,effectValue,effectDuration[,cost]
+ * Expected base CSV columns (at least 5): type,spriteType,dropTier,effectValue,effectDuration
+ * <p>
+ * Extended format supports:
+ * id,displayName,description,activationType,maxCharges,cooldownSec,autoUseOnPickup,stackable
  */
 public class ItemDB {
 
@@ -25,6 +26,7 @@ public class ItemDB {
      * Path to the item database CSV file.
      */
     private static final String FILE_PATH = "game_data/item_db.csv";
+
     /**
      * Map of item type name to its corresponding ItemData.
      */
@@ -38,9 +40,7 @@ public class ItemDB {
     }
 
     /**
-     * Loads all item data from the CSV file into the itemMap. The CSV format is expected as: type,
-     * spriteType, dropTier, effectValue, effectDuration, cost
-     *
+     * Loads all item data from the CSV file into the itemMap.
      */
     private void loadItemDB() {
         Logger logger = Core.getLogger();
@@ -53,6 +53,7 @@ public class ItemDB {
 
         try (BufferedReader br = new BufferedReader(
             new InputStreamReader(is, StandardCharsets.UTF_8))) {
+
             String line;
             boolean header = true;
 
@@ -75,7 +76,6 @@ public class ItemDB {
 
                 int effectValue = 0;
                 int effectDuration = 0;
-                int cost = 0;
 
                 try {
                     effectValue = Integer.parseInt(tokens[3].trim());
@@ -92,42 +92,25 @@ public class ItemDB {
                             + "'. Using 0.");
                 }
 
-                // optional cost column (index 5)
-                if (tokens.length > 5 && tokens[5] != null && !tokens[5].trim().isEmpty()) {
-                    try {
-                        cost = Integer.parseInt(tokens[5].trim());
-                        if (cost < 0) {
-                            logger.warning(
-                                "[ItemDB] Negative cost for " + type + " -> '" + tokens[5]
-                                    + "'. Using 0.");
-                            cost = 0;
-                        }
-                    } catch (NumberFormatException e) {
-                        logger.warning("[ItemDB] Invalid cost for " + type + " -> '" + tokens[5]
-                            + "'. Using 0.");
-                        cost = 0;
-                    }
-                }
-
-                // Optional new-format columns: id, displayName, description
+                // Optional extended columns: id, displayName, description
                 String id = type;                 // fallback: use type as id
                 String displayName = type;        // fallback: show type as name
                 String description = "No description.";
 
+                if (tokens.length > 5 && !tokens[5].trim().isEmpty()) {
+                    id = tokens[5].trim();
+                }
                 if (tokens.length > 6 && !tokens[6].trim().isEmpty()) {
-                    id = tokens[6].trim();
+                    displayName = tokens[6].trim();
                 }
                 if (tokens.length > 7 && !tokens[7].trim().isEmpty()) {
-                    displayName = tokens[7].trim();
-                }
-                if (tokens.length > 8 && !tokens[8].trim().isEmpty()) {
-                    description = tokens[8].trim();
+                    description = tokens[7].trim();
                 }
 
-                // activationType (index 9)
+                // activationType (index 8)
                 ActivationType activationType = ActivationType.INSTANT_ON_PICKUP;
-                if (tokens.length > 9 && tokens[9] != null && !tokens[9].trim().isEmpty()) {
-                    String at = tokens[9].trim().toUpperCase();
+                if (tokens.length > 8 && tokens[8] != null && !tokens[8].trim().isEmpty()) {
+                    String at = tokens[8].trim().toUpperCase();
                     try {
                         activationType = ActivationType.valueOf(at);
                     } catch (IllegalArgumentException e) {
@@ -136,49 +119,49 @@ public class ItemDB {
                     }
                 }
 
-                // maxCharges (index 10)
+                // maxCharges (index 9)
                 int maxCharges = 0;
-                if (tokens.length > 10 && tokens[10] != null && !tokens[10].trim().isEmpty()) {
+                if (tokens.length > 9 && tokens[9] != null && !tokens[9].trim().isEmpty()) {
                     try {
-                        maxCharges = Integer.parseInt(tokens[10].trim());
+                        maxCharges = Integer.parseInt(tokens[9].trim());
                         if (maxCharges < 0) {
                             logger.warning("[ItemDB] Negative maxCharges for " + type + " -> '"
-                                + tokens[10] + "'. Using 0.");
+                                + tokens[9] + "'. Using 0.");
                             maxCharges = 0;
                         }
                     } catch (NumberFormatException e) {
                         logger.warning("[ItemDB] Invalid maxCharges for " + type + " -> '"
-                            + tokens[10] + "'. Using 0.");
+                            + tokens[9] + "'. Using 0.");
                     }
                 }
 
-                // cooldownSec (index 11)
+                // cooldownSec (index 10)
                 int cooldownSec = 0;
-                if (tokens.length > 11 && tokens[11] != null && !tokens[11].trim().isEmpty()) {
+                if (tokens.length > 10 && tokens[10] != null && !tokens[10].trim().isEmpty()) {
                     try {
-                        cooldownSec = Integer.parseInt(tokens[11].trim());
+                        cooldownSec = Integer.parseInt(tokens[10].trim());
                         if (cooldownSec < 0) {
                             logger.warning("[ItemDB] Negative cooldownSec for " + type + " -> '"
-                                + tokens[11] + "'. Using 0.");
+                                + tokens[10] + "'. Using 0.");
                             cooldownSec = 0;
                         }
                     } catch (NumberFormatException e) {
                         logger.warning("[ItemDB] Invalid cooldownSec for " + type + " -> '"
-                            + tokens[11] + "'. Using 0.");
+                            + tokens[10] + "'. Using 0.");
                     }
                 }
 
-                // autoUseOnPickup (index 12) - default true
+                // autoUseOnPickup (index 11) - default true
                 boolean autoUseOnPickup = true;
-                if (tokens.length > 12 && tokens[12] != null && !tokens[12].trim().isEmpty()) {
-                    String v = tokens[12].trim().toLowerCase();
+                if (tokens.length > 11 && tokens[11] != null && !tokens[11].trim().isEmpty()) {
+                    String v = tokens[11].trim().toLowerCase();
                     autoUseOnPickup = v.equals("true") || v.equals("1") || v.equals("yes");
                 }
 
-                // stackable (index 13) - default false
+                // stackable (index 12) - default false
                 boolean stackable = false;
-                if (tokens.length > 13 && tokens[13] != null && !tokens[13].trim().isEmpty()) {
-                    String v = tokens[13].trim().toLowerCase();
+                if (tokens.length > 12 && tokens[12] != null && !tokens[12].trim().isEmpty()) {
+                    String v = tokens[12].trim().toLowerCase();
                     stackable = v.equals("true") || v.equals("1") || v.equals("yes");
                 }
 
@@ -188,7 +171,6 @@ public class ItemDB {
                     dropTier,
                     effectValue,
                     effectDuration,
-                    cost,
                     id,
                     displayName,
                     description,

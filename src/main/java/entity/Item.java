@@ -15,27 +15,27 @@ import java.util.logging.Logger;
  * Implements Item that moves vertically down.
  */
 public class Item extends Entity {
-
+    
     /**
      * Logger instance for logging purposes.
      */
     private Logger logger;
-
+    
     /**
      * Type of Item.
      */
     private String type;
-
+    
     /**
      * Item Movement Speed.
      */
     private int itemSpeed;
-
+    
     /**
      * Hold the item data UI effects can access data without reloading DB
      */
     private ItemData data;
-
+    
     /**
      * Constructor, establishes the Item's properties.
      *
@@ -45,19 +45,19 @@ public class Item extends Entity {
      * @param speed     Speed of the Item, positive or negative depending on direction - positive is
      *                  down.
      */
-
+    
     public Item(String itemType, final int positionX, final int positionY, final int speed) {
-
+        
         super(positionX, positionY, 5 * 2, 5 * 2, Color.WHITE);
-
+        
         logger = Core.getLogger();
-
+        
         this.type = itemType;
         this.itemSpeed = speed;
-
+        
         setSprite();
     }
-
+    
     public Item(final ItemData data, final int positionX, final int positionY, final int speed) {
         super(positionX, positionY, 5 * 2, 5 * 2, Color.WHITE);
         logger = Core.getLogger();
@@ -75,13 +75,13 @@ public class Item extends Entity {
         }
         setSprite();
     }
-
+    
     /**
      * Setter for the sprite of the Item using data from ItemDB.
      */
     public final void setSprite() {
         String spriteName = null;
-
+        
         if (this.data != null) {
             spriteName = this.data.getSpriteType();
         } else {
@@ -95,9 +95,9 @@ public class Item extends Entity {
                 }
             }
         }
-
+        
         SpriteType resolved = null;
-
+        
         if (spriteName != null && !spriteName.isEmpty()) {
             try {
                 resolved = SpriteType.valueOf(spriteName);
@@ -106,15 +106,15 @@ public class Item extends Entity {
                     + spriteName + " for type=" + this.type);
             }
         }
-
+        
         if (resolved == null) {
             resolved = mapTypeToSprite(this.type);
         }
-
+        
         this.spriteType = resolved;
-
+        
     }
-
+    
     /**
      * Maps an item type string (e.g., "COIN", "HEAL") to its corresponding SpriteType.
      *
@@ -128,16 +128,18 @@ public class Item extends Entity {
             logger.warning("[Item]: null type, using default ItemScore sprite.");
             return SpriteType.ItemScore;
         }
-
+        
         return switch (type) {
             case "COIN" -> SpriteType.ItemCoin;
             case "HEAL" -> SpriteType.ItemHeal;
             case "SCORE" -> SpriteType.ItemScore;
-            case "TRIPLESHOT" -> SpriteType.ItemTripleShot;
             case "SCOREBOOST" -> SpriteType.ItemScoreBooster;
-            case "BULLETSPEEDUP" -> SpriteType.ItemBulletSpeedUp;
             case "MOVE_SPEED_UP" -> SpriteType.ItemMoveSpeedUp;
             case "TIME_FREEZE" -> SpriteType.ItemTimeFreeze;
+            case "TIME_SLOW" -> SpriteType.ItemTimeSlow;
+            case "DASH" -> SpriteType.ItemDash;
+            case "PET_GUN" -> SpriteType.ItemPetGun;
+            case "SHIELD" -> SpriteType.ItemShield;
             default -> {
                 logger.warning("[Item]: No sprite mapping for type "
                     + type + ", using default ItemScore sprite.");
@@ -145,14 +147,14 @@ public class Item extends Entity {
             }
         };
     }
-
+    
     /**
      * Updates the Item's position.
      */
     public final void update() {
         this.positionY += this.itemSpeed;
     }
-
+    
     /**
      * Applies the effect of the Item to the player.
      *
@@ -161,7 +163,7 @@ public class Item extends Entity {
      */
     public boolean applyEffect(final GameState gameState, final int playerId) {
         ItemData data = this.data;
-
+        
         if (data == null) {
             // fallback for legacy-constructed Items (string-only constructor)
             ItemDB itemDB = new ItemDB();
@@ -171,13 +173,12 @@ public class Item extends Entity {
             }
             this.data = data; // cache for next time
         }
-
+        
         int value = data.getEffectValue();
         int duration = data.getEffectDuration();
-        int cost = data.getCost();
-
+        
         boolean applied = false;
-
+        
         switch (data.getType()) { // use data.getType() to be consistent
             case "COIN":
                 ItemEffect.applyCoinItem(gameState, playerId, value);
@@ -191,35 +192,27 @@ public class Item extends Entity {
                 ItemEffect.applyScoreItem(gameState, playerId, value);
                 applied = true;
                 break;
-            case "TRIPLESHOT":
-                applied = ItemEffect.applyTripleShot(gameState, playerId, value, duration, cost);
-                break;
             case "SCOREBOOST":
-                applied = ItemEffect.applyScoreBoost(gameState, playerId, value, duration, cost);
-                break;
-            case "BULLETSPEEDUP":
-                applied = ItemEffect.applyBulletSpeedUp(gameState, playerId, value, duration, cost);
+                applied = ItemEffect.applyScoreBoost(gameState, playerId, value, duration);
                 break;
             case "TIME_FREEZE":
-                applied = ItemEffect.applyTimeFreeze(gameState, playerId, value, duration, cost);
+                applied = ItemEffect.applyTimeFreeze(gameState, playerId, value, duration);
                 break;
             default:
                 this.logger.warning("[Item]: No ItemEffect for type " + data.getType());
                 applied = false;
                 break;
         }
-
+        
         if (!applied) {
             logger.info(
-                "[Item]: Player " + playerId + " couldn't afford " + data.getType() + " (cost="
-                    + cost + ")");
+                "[Item]: Effect for player " + playerId + " could not be applied. type="
+                    + data.getType());
         }
-
+        
         return applied;
     }
-
-    ;
-
+    
     /**
      * Setter of the speed of the Item.
      *
@@ -228,7 +221,7 @@ public class Item extends Entity {
     public final void setItemSpeed(final int itemSpeed) {
         this.itemSpeed = itemSpeed;
     }
-
+    
     /**
      * Getter for Item Movement Speed.
      *
@@ -237,7 +230,7 @@ public class Item extends Entity {
     public final int getItemSpeed() {
         return this.itemSpeed;
     }
-
+    
     /**
      * Reset the Item. Set the item type and sprite to newType, and the speed to 0.
      *
@@ -248,24 +241,24 @@ public class Item extends Entity {
         this.itemSpeed = 0;
         setSprite();
     }
-
+    
     /**
-     * Getter for the speed of the Item.
+     * Getter for the type of the Item.
      *
      * @return type of the Item.
      */
     public final String getType() {
         return this.type;
     }
-
+    
     public ItemData getData() {
         return this.data;
     }
-
+    
     public String getDisplayName() {
         return (this.data != null) ? this.data.getDisplayName() : this.type;
     }
-
+    
     /**
      * Returns how this item is activated (instant on pickup, active on key, etc.). Falls back to
      * INSTANT_ON_PICKUP if data is missing.
@@ -277,7 +270,7 @@ public class Item extends Entity {
         }
         return ActivationType.INSTANT_ON_PICKUP;
     }
-
+    
     /**
      * Whether this item should automatically be used when picked up. Uses ItemData.autoUseOnPickup
      * when available; otherwise defaults to true to preserve legacy behavior.
@@ -289,11 +282,11 @@ public class Item extends Entity {
         }
         return true;
     }
-
+    
     public boolean isActiveType() {
         return this.data.getActivationType() == ActivationType.ACTIVE_ON_KEY;
     }
-
+    
     /**
      * Maximum number of uses for ACTIVE_ON_KEY items. Returns 0 if not defined.
      */
@@ -304,7 +297,7 @@ public class Item extends Entity {
         }
         return 0;
     }
-
+    
     /**
      * Cooldown time in seconds between uses for ACTIVE_ON_KEY items. Returns 0 if not defined.
      */
@@ -315,45 +308,21 @@ public class Item extends Entity {
         }
         return 0;
     }
-
+    
     /**
-     * Returns full description including additional info based on item cost or player
-     * affordability. - If cost == 0 → add "No cost required." - If cost > 0  → add "(Cost: X)" and
-     * possibly "Not enough coins." UI will always show this full message when the item is picked
-     * up.
+     * Returns a full description string for this item. Currently this is just the base description
+     * from ItemData.
      */
-
     public String getFullDescription(int playerCoins) {
         ensureDataLoaded();
         if (this.data == null) {
             return "";
         }
-
-        StringBuilder sb = new StringBuilder();
-
-        // Basic Item description
+        
         String base = this.data.getDescription();
-        sb.append(base != null ? base : "");
-
-        int cost = this.data.getCost();
-
-        // case: cost == 0
-        if (cost == 0) {
-            sb.append("\n No cost required.");
-        }
-
-        // case: cost > 0
-        else {
-            sb.append("\n (Cost: ").append(cost).append(")");
-
-            if (playerCoins < cost) {
-                sb.append("\nNot enough coins to activate this item.");
-            }
-        }
-
-        return sb.toString();
+        return (base != null) ? base : "";
     }
-
+    
     private void ensureDataLoaded() {
         if (this.data == null && this.type != null) {
             try {

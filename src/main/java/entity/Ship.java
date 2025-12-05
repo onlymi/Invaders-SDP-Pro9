@@ -29,6 +29,15 @@ public class Ship extends Entity {
     private static final int SHIP_HEIGHT = 16;
     private static final int DESTRUCTION_COOLDOWN = 1000;
     private boolean moveSpeedUpActivePrev = false;
+    // Stores last horizontal move direction (-1: left, 0: idle, 1: right)
+    private int lastMoveDirX = 0;
+    // Tracks previous DASH effect state to trigger dash only once.
+    private boolean dashActivePrev = false;
+    
+    // 나중에 생길 상하좌우 로직에 맞춰서 enum 수정할 예정.
+    public enum Facing {
+        UP, DOWN, LEFT, RIGHT
+    }
     
     /**
      * Types of ships.
@@ -60,6 +69,8 @@ public class Ship extends Entity {
     
     private int y;
     private int hits;
+    
+    private Facing facing = Facing.UP;
     
     /**
      * Constructor, establishes the ship's properties.
@@ -126,6 +137,7 @@ public class Ship extends Entity {
      * Moves the ship speed uni ts right, or until the right screen border is reached.
      */
     public final void moveRight() {
+        this.lastMoveDirX = 1;
         this.positionX += effectiveMoveSpeed();
     }
     
@@ -133,6 +145,7 @@ public class Ship extends Entity {
      * Moves the ship speed units left, or until the left screen border is reached.
      */
     public final void moveLeft() {
+        this.lastMoveDirX = -1;
         this.positionX -= effectiveMoveSpeed();
     }
     
@@ -154,11 +167,6 @@ public class Ship extends Entity {
         int bulletX = positionX + this.width / 2;
         int bulletY = this.positionY - this.bulletHeight;
         
-        if (hasTripleShotEffect()) {
-            shootTripleShot(weapons, bulletX, bulletY);
-            return true;
-        }
-        
         // Default shooting based on ship type
         shootBasedOnType(weapons, bulletX, bulletY);
         return true;
@@ -179,6 +187,30 @@ public class Ship extends Entity {
         }
         
         moveSpeedUpActivePrev = moveSpeedUpNow;
+        
+        boolean dashNow =
+            (gameState != null && gameState.hasEffect(playerIndex, ItemEffectType.DASH));
+        
+        if (dashNow && !dashActivePrev) {
+            // DASH just started this frame
+            int dir = (lastMoveDirX != 0) ? lastMoveDirX : 1;
+            
+            int dashMultiplier = 1;
+            Integer dashVal = gameState.getEffectValue(playerIndex, ItemEffectType.DASH);
+            if (dashVal != null && dashVal > 0) {
+                dashMultiplier = dashVal;
+            }
+            int baseStep = effectiveMoveSpeed();
+            int dashDistance = baseStep * dashMultiplier * 16;
+            this.positionX += dir * dashDistance;
+            
+            Core.getLogger().info("[Ship] DASH burst applied: dir=" + dir
+                + ", step=" + baseStep
+                + ", mul=" + dashMultiplier
+                + ", dist=" + dashDistance);
+        }
+        
+        dashActivePrev = dashNow;
         
         if (!this.destructionCooldown.checkFinished()) {
             switch (this.spriteType) {
@@ -254,8 +286,7 @@ public class Ship extends Entity {
      * Creates and adds a bullet to the game.
      */
     private void addBullet(final Set<Weapon> weapons, final int x, final int y) {
-        int speedMultiplier = getBulletSpeedMultiplier();
-        int currentBulletSpeed = this.bulletSpeed * speedMultiplier;
+        int currentBulletSpeed = this.bulletSpeed;
         
         Weapon weapon = WeaponPool.getWeapon(x, y, this.bulletWidth, this.bulletHeight,
             currentBulletSpeed, this.getTeam());
@@ -270,42 +301,9 @@ public class Ship extends Entity {
      *
      * @return list of active effects
      */
-    private boolean hasTripleShotEffect() {
-        return gameState != null && gameState.hasEffect(playerIndex, ItemEffectType.TRIPLESHOT);
-    }
-    
-    private int getBulletSpeedMultiplier() {
-        if (gameState == null) {
-            return 1;
-        }
-        
-        Integer effectValue = gameState.getEffectValue(playerIndex, ItemEffectType.BULLETSPEEDUP);
-        if (effectValue != null) {
-            Core.getLogger().info("[Ship] Item effect: Faster Bullets");
-            return effectValue;
-        }
-        return 1;
-    }
     
     public void addHit() {
         this.hits++;
-    }
-    
-    /**
-     * TRIPLE SHOT effect
-     *
-     * @param weapons Bullet sets
-     * @param centerX center x position
-     * @param bulletY Bullet y position
-     */
-    private void shootTripleShot(final Set<Weapon> weapons, final int centerX, final int bulletY) {
-        Core.getLogger().info("[Ship] Item effect: TRIPLESHOT");
-        Integer TRIPLE_SHOT_OFFSET = gameState.getEffectValue(playerIndex,
-            ItemEffectType.TRIPLESHOT);
-        
-        addBullet(weapons, centerX, bulletY);
-        addBullet(weapons, centerX - TRIPLE_SHOT_OFFSET, bulletY);
-        addBullet(weapons, centerX + TRIPLE_SHOT_OFFSET, bulletY);
     }
     
     /**
@@ -318,11 +316,34 @@ public class Ship extends Entity {
             return speed;
         }
         
+        // MOVE_SPEED_UP: percentage based speed bonus (e.g., +50%)
         Integer percent = gameState.getEffectValue(playerIndex, ItemEffectType.MOVE_SPEED_UP);
         if (percent != null) {
             speed = (int) Math.round(speed * (1.0 + percent / 100.0));
         }
         
         return speed;
+    }
+    
+    public Facing getFacing() {
+        return facing;
+    }
+    
+    public void setFacing(Facing facing) {
+        this.facing = (facing != null) ? facing : Facing.UP;
+    }
+    
+    public final void moveUp() {
+        this.facing = Facing.UP;
+        this.positionY -= effectiveMoveSpeed();
+    }
+    
+    public final void moveDown() {
+        this.facing = Facing.DOWN;
+        this.positionY += effectiveMoveSpeed();
+    }
+    
+    private int getBulletSpeedMultiplier() {
+        return 1;
     }
 }

@@ -31,11 +31,6 @@ public class ItemData {
     private int effectDuration;
 
     /**
-     * cost in coins required to activate this item on pickup (0 = free).
-     */
-    private int cost;
-
-    /**
      * Unique identifier for the item
      */
     private final String id;
@@ -96,7 +91,7 @@ public class ItemData {
      * @param stackable       whether multiple copies of this item stack.
      */
     public ItemData(String type, String spriteType, String dropTier,
-        int effectValue, int effectDuration, int cost, String id,
+        int effectValue, int effectDuration, String id,
         String displayName, String description,
         ActivationType activationType,
         int maxCharges,
@@ -114,7 +109,6 @@ public class ItemData {
         // The duration (in seconds or frames) that the effect remains active.
         this.effectDuration = effectDuration;
         // 0 = free
-        this.cost = Math.max(0, cost);
         this.id = id;
         // Display Item Name in the game UI
         this.displayName = displayName;
@@ -132,9 +126,9 @@ public class ItemData {
     }
 
     /**
-     * Legacy-style constructor (no cost, no advanced fields) — keeps old call sites working.
-     * Defaults: - cost = 0 - activationType = INSTANT_ON_PICKUP - maxCharges = 0 - cooldownSec = 0
-     * - autoUseOnPickup = true - stackable = false
+     * Legacy-style constructor (no advanced fields) — keeps old call sites working. Defaults: -
+     * activationType = INSTANT_ON_PICKUP - maxCharges = 0 - cooldownSec = 0 - autoUseOnPickup =
+     * true - stackable = false
      */
     public ItemData(String type,
         String spriteType,
@@ -149,7 +143,6 @@ public class ItemData {
             dropTier,
             effectValue,
             effectDuration,
-            0, // cost
             id,
             displayName,
             description,
@@ -206,11 +199,6 @@ public class ItemData {
         return effectDuration;
     }
 
-    // Getter for item cost
-    public int getCost() {
-        return cost;
-    }
-
     // Return the unique item ID
     public String getId() {
         return id;
@@ -245,7 +233,7 @@ public class ItemData {
     public boolean isAutoUseOnPickup() {
         return autoUseOnPickup;
     }
-    
+
     // Whether multiple copies of this item stack.
     public boolean isStackable() {
         return stackable;
