@@ -71,7 +71,7 @@ class EnemyTypeATest {
         Set<Weapon> weapons = new HashSet<>();
         when(mockPlayer.getPositionX()).thenReturn(100);
         when(mockPlayer.getPositionY()).thenReturn(100);
-        when(mockPlayer.isDestroyed()).thenReturn(false); // 플레이어 생존
+        when(mockPlayer.isDie()).thenReturn(false); // 플레이어 생존
         
         enemyA.tryAttack(mockPlayer, weapons);
         

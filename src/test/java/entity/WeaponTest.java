@@ -55,19 +55,18 @@ class WeaponTest {
     
     @Test
     void setSprite_NormalBullet() {
-        // Weapon.java 로직상 속도가 0이 아니면 PlayerBullet으로 설정됨
-        bullet.setSpeed(5);
+        bullet.setSpeed(-5);
         bullet.setSpriteMap();
         assertEquals(SpriteType.PlayerBullet, bullet.getSpriteType());
     }
     
     @Test
     void setBigLaser() {
+        bullet.setSpeed(-5);
         bullet.setBigLaser(true);
         assertEquals(SpriteType.BigLaserBeam, bullet.getSpriteType());
         
         bullet.setBigLaser(false);
-        // 속도가 5이므로 PlayerBullet으로 돌아감
         bullet.setSpriteMap();
         assertEquals(SpriteType.PlayerBullet, bullet.getSpriteType());
     }

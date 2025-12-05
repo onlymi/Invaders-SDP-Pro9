@@ -1,6 +1,7 @@
 package screen;
 
-import static org.mockito.Mockito.anyInt;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -15,6 +16,7 @@ import engine.InputManager;
 import engine.SoundManager;
 import engine.utils.Cooldown;
 import entity.EnemyShip;
+import entity.character.CharacterStats;
 import entity.character.CharacterType;
 import entity.character.GameCharacter;
 import java.util.ArrayList;
@@ -97,6 +99,12 @@ class GameScreenCollisionTest {
         
         soundMock = mockStatic(SoundManager.class);
         
+        // NPE 방지를 위한 mockPlayer 스탯 및 체력 설정
+        CharacterStats mockStats = new CharacterStats();
+        mockStats.maxHealthPoints = 100;
+        when(mockPlayer.getCurrentStats()).thenReturn(mockStats);
+        when(mockPlayer.getCurrentHealthPoints()).thenReturn(100);
+        
         // GameScreen 생성
         gameScreen = new GameScreen(mockGameState, mockGameSettings, false, 800, 600, 60,
             CharacterType.ARCHER, CharacterType.ARCHER, null);
@@ -133,7 +141,7 @@ class GameScreenCollisionTest {
         when(mockPlayer.getPositionY()).thenReturn(100);
         when(mockPlayer.getWidth()).thenReturn(30);
         when(mockPlayer.getHeight()).thenReturn(30);
-        when(mockPlayer.isDestroyed()).thenReturn(false);
+        when(mockPlayer.isDie()).thenReturn(false);
         
         when(mockEnemy.getPositionX()).thenReturn(100);
         when(mockEnemy.getPositionY()).thenReturn(100);
@@ -146,6 +154,15 @@ class GameScreenCollisionTest {
         enemies.add(mockEnemy);
         when(mockEnemyManager.getEnemies()).thenReturn(enemies);
         
+        // 피격 시 사망 확인을 위해 체력 상태 조작
+        when(mockPlayer.getCurrentHealthPoints()).thenReturn(10);
+        
+        // takeDamage 호출 시 체력을 0으로 변경하여 사망
+        doAnswer(invocation -> {
+            when(mockPlayer.getCurrentHealthPoints()).thenReturn(0);
+            return null;
+        }).when(mockPlayer).takeDamage(anyInt());
+        
         // 로직 실행을 위한 조건 만족
         when(mockCooldown.checkFinished()).thenReturn(true);
         when(mockGameState.getLivesRemaining()).thenReturn(3);
@@ -153,6 +170,5 @@ class GameScreenCollisionTest {
         
         //플레이어 생명 감소 호출 확인
         verify(mockGameState, times(1)).decLife(0);
-        
     }
 }

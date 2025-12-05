@@ -350,6 +350,12 @@ public class Weapon extends Entity {
         this.target = null;
         this.rotation = 0;
         this.speedX = 0;
-        this.hitPlayers.clear();
+        this.damage = 0;
+        this.ownerPlayerId = 0;
+        if (this.hitPlayers != null) {
+            this.hitPlayers.clear();
+        }
+        this.isBossBullet = false;
+        this.isBigLaser = false;
     }
 }

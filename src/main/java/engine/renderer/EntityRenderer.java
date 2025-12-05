@@ -10,7 +10,9 @@ import entity.Ship;
 import entity.Weapon;
 import entity.character.ArcherCharacter;
 import entity.character.GameCharacter;
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -140,6 +142,13 @@ public class EntityRenderer {
         int entityWidthByScale = image.getWidth() * scale;
         int entityHeightByScale = image.getHeight() * scale;
         
+        Graphics2D g2d = (Graphics2D) g;
+        Composite originalComposite = g2d.getComposite();
+        if (color.getAlpha() < 255) {
+            g2d.setComposite(
+                AlphaComposite.getInstance(AlphaComposite.SRC_OVER, color.getAlpha() / 255f));
+        }
+        
         if (entity instanceof EnemyShip enemy) {
             boolean flip = !enemy.isFacingRight();
             
@@ -152,11 +161,17 @@ public class EntityRenderer {
             } else {
                 g.drawImage(image, drawX, drawY, entityWidthByScale, entityHeightByScale, null);
             }
-            
+            if (color.getAlpha() < 255) {
+                g2d.setComposite(originalComposite);
+            }
             return;
         }
         
         g.drawImage(image, x, y, entityWidthByScale, entityHeightByScale, null);
+        
+        if (color.getAlpha() < 255) {
+            g2d.setComposite(originalComposite);
+        }
         
         if (color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
