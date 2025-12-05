@@ -62,7 +62,7 @@ class RapidFireSkillTest {
     @Test
     void testPerformSkill_ShouldAddRapidFireBuffToAttacker() {
         // When
-        rapidFireSkill.performSkill(attacker);
+        rapidFireSkill.performSkill(attacker, null);
         
         // Then
         // attacker.addBuff()가 호출되었는지, 그리고 전달된 버프가 RapidFireSkillBuff 타입인지 검증

@@ -11,7 +11,9 @@ import static org.mockito.Mockito.when;
 
 import engine.Core;
 import engine.utils.Cooldown;
+import entity.Weapon;
 import entity.character.GameCharacter;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +42,7 @@ class SkillTest {
         }
         
         @Override
-        public void performSkill(GameCharacter attacker) {
+        public void performSkill(GameCharacter attacker, Set<Weapon> weapons) {
             this.performed = true;
         }
     }
@@ -109,7 +111,8 @@ class SkillTest {
         when(attacker.getCurrentManaPoints()).thenReturn(50);
         
         // When
-        skill.activate(attacker);
+        Set<Weapon> weapons = null;
+        skill.activate(attacker, null);
         
         // Then
         assertTrue(skill.performed, "스킬 로직(performSkill)이 실행되어야 합니다.");
@@ -123,7 +126,8 @@ class SkillTest {
         when(cooldown.checkFinished()).thenReturn(false);
         
         // When
-        skill.activate(attacker);
+        Set<Weapon> weapons = null;
+        skill.activate(attacker, null);
         
         // Then
         assertFalse(skill.performed, "조건이 맞지 않으면 스킬이 실행되지 않아야 합니다.");
@@ -134,7 +138,8 @@ class SkillTest {
     @Test
     void testActivate_WhenAttackerIsNull_ShouldDoNothing() {
         // When
-        skill.activate(null);
+        Set<Weapon> weapons = null;
+        skill.activate(attacker, null);
         
         // Then
         assertFalse(skill.performed);

@@ -208,7 +208,7 @@ public class EntityRenderer {
         g.drawRect(x - BAR_BORDER,
             y - HEALTH_BAR_HEIGHT - MANA_BAR_HEIGHT - CHARACTER_GAP_BY_INFO - 4 * BAR_BORDER,
             entity.getWidth() + BAR_BORDER, HEALTH_BAR_HEIGHT + BAR_BORDER);
-        g.setColor(new Color(255, 0, 0, 110));
+        g.setColor(new Color(255, 0, 0, 150));
         g.fillRect(x,
             y - HEALTH_BAR_HEIGHT - MANA_BAR_HEIGHT - CHARACTER_GAP_BY_INFO - 3 * BAR_BORDER,
             (int) (entity.getWidth() * healthRatio), HEALTH_BAR_HEIGHT);
