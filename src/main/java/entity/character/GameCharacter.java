@@ -3,6 +3,7 @@ package entity.character;
 import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.InputManager;
+import engine.UserStats;
 import engine.utils.Cooldown;
 import entity.Entity;
 import entity.Weapon;
@@ -35,13 +36,14 @@ public abstract class GameCharacter extends Entity {
     protected int currentHealthPoints;
     protected int currentManaPoints;
     
+    private boolean isDie;
+    public boolean isInSelectScreen;
+    
     private int leftKey;
     private int rightKey;
     private int upKey;
     private int downKey;
     private int defaultAttackKey;
-    
-    public boolean isInSelectScreen;
     
     private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
     protected boolean isAttacking;
@@ -93,6 +95,9 @@ public abstract class GameCharacter extends Entity {
         this.currentManaPoints = baseStats.maxManaPoints;
         // Initial character unlocked stat
         this.unlocked = type.isUnlocked();
+        
+        this.isDie = false;
+        this.isInSelectScreen = false;
         // 업그레이드 스탯 적용
         applyUserUpgrades();
         recalculateStats();
@@ -115,8 +120,6 @@ public abstract class GameCharacter extends Entity {
         this.projectileWidth = 3;
         this.projectileHeight = 5;
         this.projectileSpeed = 1;
-        
-        this.isInSelectScreen = false;
     }
     
     /**
@@ -136,6 +139,8 @@ public abstract class GameCharacter extends Entity {
                 recalculateStats();
             }
         }
+        
+        this.isDie = this.currentHealthPoints <= 0;
     }
     
     /**
@@ -143,7 +148,7 @@ public abstract class GameCharacter extends Entity {
      * additive bonuses to the base stats.
      */
     protected void applyUserUpgrades() { // Test에서 오버라이딩 및 호출이 가능하도록 protected로 변경.
-        engine.UserStats stats = engine.Core.getUserStats();
+        UserStats stats = Core.getUserStats();
         if (stats == null) {
             return;
         }
@@ -197,7 +202,7 @@ public abstract class GameCharacter extends Entity {
         if (stats.getStatLevel(7) > 0) {
             this.baseStats.physicalDefense += 2 * stats.getStatLevel(7);
         }
-
+        
         this.currentStats = new CharacterStats(this.baseStats);
     }
     
@@ -243,7 +248,7 @@ public abstract class GameCharacter extends Entity {
         this.defaultAttackKey = keys[4];
     }
     
-    public boolean handleMovement(InputManager inputManager, Screen screen, Set<Weapon> weapons,
+    public boolean handleKeyboard(InputManager inputManager, Screen screen, Set<Weapon> weapons,
         float deltaTime) {
         initializeKeyboardPressing();
         
@@ -355,16 +360,17 @@ public abstract class GameCharacter extends Entity {
     /**
      * Switches the ship to its destroyed state.
      */
-    public final void destroy() {
+    public final void takeDamage(int damage) {
+        currentHealthPoints -= damage;
         this.destructionCooldown.reset();
     }
     
     /**
      * Checks if the ship is destroyed.
      *
-     * @return True if the ship is currently destroyed.
+     * @return True if the character is currently attacked.
      */
-    public final boolean isDestroyed() {
+    public final boolean isInvincible() {
         return !this.destructionCooldown.checkFinished();
     }
     
@@ -381,6 +387,10 @@ public abstract class GameCharacter extends Entity {
         this.projectileWidth = projectileWidth;
         this.projectileHeight = projectileHeight;
         this.projectileSpeed = projectileSpeed;
+    }
+    
+    public void setCurrentHealthPoints(int playerHealth) {
+        this.currentHealthPoints = playerHealth;
     }
     
     public CharacterStats getBaseStats() {
@@ -409,6 +419,10 @@ public abstract class GameCharacter extends Entity {
     
     public boolean isInSelectScreen() {
         return this.isInSelectScreen;
+    }
+    
+    public boolean isDie() {
+        return isDie;
     }
     
     public boolean isAttacking() {

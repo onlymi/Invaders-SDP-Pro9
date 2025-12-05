@@ -22,7 +22,7 @@ import org.mockito.MockitoAnnotations;
 import screen.Screen;
 
 /**
- * GameCharacter의 이동 로직(handleMovement) 전용 테스트 클래스
+ * GameCharacter의 이동 로직(handleKeyboard) 전용 테스트 클래스
  */
 class GameCharacterMovementTest {
     
@@ -84,7 +84,7 @@ class GameCharacterMovementTest {
     
     @Test
     void testNoMovement_WhenNoKeysPressed() {
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(START_X, character.getPositionX());
         assertEquals(START_Y, character.getPositionY());
@@ -96,7 +96,7 @@ class GameCharacterMovementTest {
         when(inputManager.isKeyDown(KeyEvent.VK_LEFT)).thenReturn(true);
         
         // 200 - 150 = 50 (화면 안쪽이므로 이동 성공)
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(START_X - 150, character.getPositionX());
         assertEquals(START_Y, character.getPositionY());
@@ -108,7 +108,7 @@ class GameCharacterMovementTest {
     void testMoveRight() {
         when(inputManager.isKeyDown(KeyEvent.VK_RIGHT)).thenReturn(true);
         
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(START_X + 150, character.getPositionX());
         assertEquals(START_Y, character.getPositionY());
@@ -121,7 +121,7 @@ class GameCharacterMovementTest {
         
         // 수정: 300 - 150 = 150
         // GameScreen.SEPARATION_LINE_HEIGHT(68)보다 크므로 이동 성공
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(START_X, character.getPositionX());
         assertEquals(START_Y - 150, character.getPositionY());
@@ -133,7 +133,7 @@ class GameCharacterMovementTest {
         when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(true);
         
         // 300 + 150 = 450 (600보다 작으므로 이동 성공)
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(START_X, character.getPositionX());
         assertEquals(START_Y + 150, character.getPositionY());
@@ -145,7 +145,7 @@ class GameCharacterMovementTest {
         when(inputManager.isKeyDown(KeyEvent.VK_RIGHT)).thenReturn(true);
         when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(true);
         
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         int movedX = character.getPositionX() - START_X;
         int movedY = character.getPositionY() - START_Y;
@@ -162,7 +162,7 @@ class GameCharacterMovementTest {
         when(inputManager.isKeyDown(KeyEvent.VK_LEFT)).thenReturn(true);
         when(inputManager.isKeyDown(KeyEvent.VK_RIGHT)).thenReturn(true);
         
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(START_X, character.getPositionX());
     }
@@ -173,7 +173,7 @@ class GameCharacterMovementTest {
         character.setPositionX(1);
         when(inputManager.isKeyDown(KeyEvent.VK_LEFT)).thenReturn(true);
         
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(1, character.getPositionX());
     }
@@ -185,7 +185,7 @@ class GameCharacterMovementTest {
         
         when(inputManager.isKeyDown(KeyEvent.VK_RIGHT)).thenReturn(true);
         
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(edgeX, character.getPositionX());
     }
@@ -196,7 +196,7 @@ class GameCharacterMovementTest {
         character.setPositionY(1);
         when(inputManager.isKeyDown(KeyEvent.VK_UP)).thenReturn(true);
         
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         // 1은 SEPARATION_LINE_HEIGHT(68)보다 작으므로 이동 불가, 그대로 1이어야 함
         assertEquals(1, character.getPositionY());
@@ -209,7 +209,7 @@ class GameCharacterMovementTest {
         
         when(inputManager.isKeyDown(KeyEvent.VK_DOWN)).thenReturn(true);
         
-        character.handleMovement(inputManager, screen, new HashSet<>(), 1.0f);
+        character.handleKeyboard(inputManager, screen, new HashSet<>(), 1.0f);
         
         assertEquals(edgeY, character.getPositionY());
     }

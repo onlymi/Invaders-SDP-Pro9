@@ -7,7 +7,6 @@ import engine.utils.Cooldown;
 import entity.character.GameCharacter;
 import java.awt.Color;
 
-
 /**
  * Implements an enemy ship, to be destroyed by the player.
  *
@@ -32,7 +31,9 @@ public class EnemyShip extends Entity {
     private double floatingPhase;
     private static final double FLOATING_AMPLITUDE = 5.0;
     private static final double FLOATING_SPEED = 0.005;
-    private boolean isFacingRight;
+    boolean isFacingRight;
+    
+    private long lastHitTime = 0;
     
     /**
      * Checks if the ship has been hit by a bullet.
@@ -56,6 +57,13 @@ public class EnemyShip extends Entity {
     
     protected double preciseX;
     protected double preciseY;
+    
+    /**
+     * variable for enemy knockback.
+     */
+    protected double knockbackX = 0;
+    protected double knockbackY = 0;
+    protected double knockbackDecay = 0.95; // 넉벡 감쇠값
     
     protected GameState gameState;
     
@@ -128,10 +136,6 @@ public class EnemyShip extends Entity {
         return this.pointValue;
     }
     
-    public void move() {
-        this.positionX += 2;
-    }
-    
     /**
      * Moves the ship the specified distance.
      *
@@ -152,9 +156,8 @@ public class EnemyShip extends Entity {
         }
         if (this.animationCooldown.checkFinished()) {
             this.animationCooldown.reset();
-            changeAnimationSprite();
+            // changeAnimationSprite();
         }
-        move();
     }
     
     /**
@@ -173,7 +176,7 @@ public class EnemyShip extends Entity {
     public void update(GameCharacter player) {
         update();
         
-        if (player != null && !player.isDestroyed()) {
+        if (player != null && !player.isInvincible()) {
             moveTowards(player);
         }
         
@@ -181,6 +184,19 @@ public class EnemyShip extends Entity {
         double floatingOffset =
             Math.sin(currentTime * FLOATING_SPEED + this.floatingPhase) * FLOATING_AMPLITUDE;
         
+        // 넉벡 적용
+        this.preciseX += knockbackX;
+        this.preciseY += knockbackY;
+        
+        // 넉벡 감쇠
+        this.knockbackX *= knockbackDecay;
+        this.knockbackY *= knockbackDecay;
+        if (Math.abs(this.knockbackX) < 0.1) {
+            this.knockbackX = 0;
+        }
+        if (Math.abs(this.knockbackY) < 0.1) {
+            this.knockbackY = 0;
+        }
         this.positionX = (int) preciseX;
         this.positionY = (int) (preciseY + floatingOffset);
     }
@@ -233,25 +249,10 @@ public class EnemyShip extends Entity {
         if (this.isDestroyed) {
             return;
         }
+        this.lastHitTime = System.currentTimeMillis();
         this.health -= damage;
         if (this.health <= 0) {
             destroy();
-        }
-    }
-    
-    private void changeAnimationSprite() {
-        if (spriteType == SpriteType.EnemyShipA1) {
-            spriteType = SpriteType.EnemyShipA2;
-        } else if (spriteType == SpriteType.EnemyShipA2) {
-            spriteType = SpriteType.EnemyShipA1;
-        } else if (spriteType == SpriteType.EnemyShipB1) {
-            spriteType = SpriteType.EnemyShipB2;
-        } else if (spriteType == SpriteType.EnemyShipB2) {
-            spriteType = SpriteType.EnemyShipB1;
-        } else if (spriteType == SpriteType.EnemyShipC1) {
-            spriteType = SpriteType.EnemyShipC2;
-        } else if (spriteType == SpriteType.EnemyShipC2) {
-            spriteType = SpriteType.EnemyShipC1;
         }
     }
     
@@ -266,6 +267,17 @@ public class EnemyShip extends Entity {
     public final void destroy() {
         this.isDestroyed = true;
         this.spriteType = SpriteType.Explosion;
+    }
+    
+    /**
+     * applying a knockback force.
+     *
+     * @param dx
+     * @param dy
+     */
+    public void pushBack(double dx, double dy) {
+        this.knockbackX = dx;
+        this.knockbackY = dy;
     }
     
     /**

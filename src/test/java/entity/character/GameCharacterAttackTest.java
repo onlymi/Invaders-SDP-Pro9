@@ -166,7 +166,7 @@ class GameCharacterAttackTest {
         when(shootingCooldown.checkFinished()).thenReturn(true);
         
         // When
-        character.handleMovement(inputManager, screen, weapons, 1.0f);
+        character.handleKeyboard(inputManager, screen, weapons, 1.0f);
         
         // Then
         assertFalse(weapons.isEmpty(), "공격 키(Space)를 누르면 총알이 발사되어야 합니다.");
@@ -180,7 +180,7 @@ class GameCharacterAttackTest {
         when(shootingCooldown.checkFinished()).thenReturn(true);
         
         // When
-        character.handleMovement(inputManager, screen, weapons, 1.0f);
+        character.handleKeyboard(inputManager, screen, weapons, 1.0f);
         
         // Then
         assertTrue(weapons.isEmpty(), "공격 키를 누르지 않으면 총알이 발사되지 않아야 합니다.");

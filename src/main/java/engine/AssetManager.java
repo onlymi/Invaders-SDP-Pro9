@@ -79,6 +79,8 @@ public final class AssetManager {
             characterWidth, characterHeight, 4),
         CharacterArcherBackWalk(SourceCategory.CHARACTER, "archer/walk/archer_back_walk",
             characterWidth, characterHeight, 4),
+        CharacterArcherGravestone(SourceCategory.CHARACTER, "archer/archer_gravestone.png",
+            characterWidth, characterHeight),
         CharacterArcherDefaultProjectile(SourceCategory.WEAPON,
             "archer/default_attack_archer.png",
             14, 32),
@@ -347,7 +349,7 @@ public final class AssetManager {
             soundMap.put("lose", loadSound("sound/lose.wav"));
             soundMap.put("laser_big", loadSound("sound/shoot_enemies.wav"));
             soundMap.put("boss_hit", loadSound("sound/invader_killed.wav"));
-
+            
             LOGGER.info("Finished loading the sounds.");
         } catch (Exception e) {
             LOGGER.warning("Sound loading failed.");
