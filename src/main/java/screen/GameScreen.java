@@ -335,15 +335,6 @@ public class GameScreen extends Screen {
                 } else {
                     this.enemyManager.update();
                 }
-                // Block enemy shooting while global freeze is active.
-                if (this.state == null || !this.state.areEnemiesFrozen()) {
-                    int bulletsBefore = this.weapons.size();
-                    // this.enemyManager.shoot(this.weapons);
-                    if (this.weapons.size() > bulletsBefore) {
-                        // At least one enemy bullet added
-                        SoundManager.playOnce("shoot_enemies");
-                    }
-                }
                 manageCollisions();
                 cleanBullets();
                 cleanItems();
@@ -618,10 +609,17 @@ public class GameScreen extends Screen {
                     GameCharacter character = this.characters[p];
                     if (character != null && !character.isDestroyed()
                         && checkCollision(weapon, character) && !this.levelFinished) {
-                        recyclable.add(weapon);
-                        
+                        if (weapon.getDuration() != -1 && weapon.isHitPlayer(p)) {
+                            continue;
+                        }
+                        if (weapon.getDuration() == -1) {
+                            recyclable.add(weapon);
+                        } else {
+                            weapon.addHitPlayer(p);
+                        }
                         this.drawManager.getGameScreenRenderer()
-                            .triggerExplosion(character.getPositionX(), character.getPositionY(),
+                            .triggerExplosion(character.getPositionX(),
+                                character.getPositionY(),
                                 false, state.getLivesRemaining() == 1);
                         
                         character.destroy(); // Or implement HP reduction logic in GameCharacter

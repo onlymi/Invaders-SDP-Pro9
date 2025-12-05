@@ -5,6 +5,8 @@ import engine.Core;
 import engine.utils.Cooldown;
 import entity.character.GameCharacter;
 import java.awt.Color;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Implements a bullet that moves vertically up or down.
@@ -26,6 +28,7 @@ public class Weapon extends Entity {
     private boolean isHoming = false;
     private static final double HOMING_AGILITY = 4.0;
     private Cooldown homingTimer;
+    private Set<Integer> hitPlayers = new HashSet<>();
     
     /**
      * Variable for melee weapons that disappear after a certain period of time.
@@ -226,11 +229,23 @@ public class Weapon extends Entity {
         this.duration = duration;
     }
     
+    public int getDuration() {
+        return this.duration;
+    }
+    
     public boolean isExpired() {
         if (duration == -1) {
             return false;
         }
         return System.currentTimeMillis() - createTime > duration;
+    }
+    
+    public boolean isHitPlayer(int playerId) {
+        return hitPlayers.contains(playerId);
+    }
+    
+    public void addHitPlayer(int playerId) {
+        hitPlayers.add(playerId);
     }
     
     public void reset() {
@@ -240,5 +255,6 @@ public class Weapon extends Entity {
         this.target = null;
         this.rotation = 0;
         this.speedX = 0;
+        this.hitPlayers.clear();
     }
 }

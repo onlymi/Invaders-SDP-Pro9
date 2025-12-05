@@ -70,13 +70,34 @@ public class EnemyManager {
      * Spawns a random enemy at a random X position.
      */
     private void spawnEnemy() {
-        // 화면 너비 내에서 랜덤 X 좌표
-        int x = 50 + random.nextInt(gameScreen.getWidth() - 100);
-        int uiLine = gameScreen.getSeparationLineHeight();
-        int minY = uiLine + 50; // UI 제외
-        int maxY = gameScreen.getHeight() - 200; // 플레이어 근처 제외
-        // 화면 너비 내에서 랜덤 Y 좌표
-        int y = minY + random.nextInt(maxY - minY);
+        boolean isSafePosition;
+        int x, y;
+        int attempts = 0;
+        do {
+            isSafePosition = true;
+            // 화면 너비 내에서 랜덤 X 좌표
+            x = 50 + random.nextInt(gameScreen.getWidth() - 100);
+            int uiLine = gameScreen.getSeparationLineHeight();
+            int minY = uiLine + 50; // UI 제외
+            int maxY = gameScreen.getHeight() - 200; // 플레이어 근처 제외
+            // 화면 너비 내에서 랜덤 Y 좌표
+            y = minY + random.nextInt(maxY - minY);
+            
+            for (GameCharacter player : gameScreen.getCharacters()) {
+                if (player != null && !player.isDestroyed()) {
+                    double distance = Math.sqrt(
+                        Math.pow(player.getPositionX() - x, 2) + Math.pow(player.getPositionY() - y,
+                            2));
+                    
+                    // 플레이어 반경 100px 이내에는 스폰 금지
+                    if (distance < 100) {
+                        isSafePosition = false;
+                        break;
+                    }
+                }
+            }
+            attempts++;
+        } while (!isSafePosition && attempts < 10);
         
         EnemyShip enemy;
         int type = random.nextInt(3);

@@ -47,7 +47,7 @@ public class EnemyTypeA extends EnemyShip {
      */
     public EnemyTypeA(int positionX, int positionY, SpriteType spriteType) {
         super(positionX, positionY, SpriteType.EnemyA_Move);
-        this.health = 1;
+        this.health = 19;
         this.initialHealth = this.health;
         this.pointValue = 30;
         this.coinValue = 10;
@@ -61,7 +61,7 @@ public class EnemyTypeA extends EnemyShip {
     }
     
     /**
-     * Type A AI logic
+     * Type A AI logic.
      */
     public void update(GameCharacter player, List<EnemyShip> allEnemies) {
         if (this.isDestroyed) {
@@ -72,6 +72,8 @@ public class EnemyTypeA extends EnemyShip {
             if (this.attackAnimationTimer.checkFinished()) {
                 this.state = State.MOVING;
                 this.spriteType = SPRITE_MOVE;
+            } else {
+                return;
             }
         }
         // 벡터 로직
@@ -123,12 +125,12 @@ public class EnemyTypeA extends EnemyShip {
         if (this.isDestroyed || player == null || player.isDestroyed()) {
             return;
         }
-        double dist = Math.sqrt(Math.pow(player.getPositionX() - this.positionX, 2) +
-            Math.pow(player.getPositionY() - this.positionY, 2));
+        double dist = Math.sqrt(Math.pow(player.getPositionX() - this.positionX, 2) + Math.pow(
+            player.getPositionY() - this.positionY, 2));
         
         if (dist <= ATTACK_RANGE && this.attackCooldown.checkFinished()) {
             this.attackCooldown.reset();
-            performMeleeAttack(weapons);
+            performMeleeAttack(weapons, player);
             
             this.state = State.ATTACKING;
             this.spriteType = SPRITE_ATTACK; // 공격 이미지로 교체
@@ -136,23 +138,40 @@ public class EnemyTypeA extends EnemyShip {
         }
     }
     
-    private void performMeleeAttack(Set<Weapon> weapons) {
+    private void performMeleeAttack(Set<Weapon> weapons, GameCharacter player) {
         SpriteType weaponSprite = SpriteType.EnemyA_Weapon;
         int damage = ATTACK_DAMAGE;
-        int attackWidth = weaponSprite.getWidth();
-        int attackHeight = weaponSprite.getHeight();
+        int attackImageWidth = weaponSprite.getWidth();
+        int attackImageHeight = weaponSprite.getHeight();
+        int hitboxWidth = 16;
+        int hitboxHeight = 32;
+        int centerX = this.positionX + this.width / 2;
+        int centerY = this.positionY + this.height / 2;
+        int weaponX = centerX - hitboxWidth / 2;
+        int weaponY = centerY - hitboxHeight / 2;
+        double rotation = 0;
+        int offsetX = 20;
         
-        Weapon enemyWeaponA = new Weapon(
-            this.positionX + this.width / 2 - attackWidth / 2,
-            this.positionY + this.height / 2,
-            attackWidth, attackHeight, 0, damage
-        );
+        if (player != null && !player.isDestroyed()) {
+            if (player.getPositionX() < centerX) {
+                rotation = 180;
+                weaponX -= offsetX;
+            } else {
+                rotation = 0;
+                weaponX += offsetX;
+            }
+        }
+        Weapon enemyWeaponA = new Weapon(weaponX, weaponY, hitboxWidth, hitboxHeight, 0,
+            damage);
         
-        enemyWeaponA.setSpriteImage(SpriteType.EnemyA_Weapon);
+        enemyWeaponA.setSpriteImage(weaponSprite);
+        enemyWeaponA.setSize(hitboxWidth, hitboxHeight);
         enemyWeaponA.setTeam(Team.ENEMY);
         enemyWeaponA.setDuration(ATTACK_ANIMATION_DURATION);
+        enemyWeaponA.setRotation(rotation);
         
+        enemyWeaponA.setRotation(rotation);
         weapons.add(enemyWeaponA);
-        engine.SoundManager.playOnce("shoot");
+        engine.SoundManager.playOnce("enemy_A_attack_sound");
     }
 }

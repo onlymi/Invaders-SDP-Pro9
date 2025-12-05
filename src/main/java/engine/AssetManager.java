@@ -182,7 +182,7 @@ public final class AssetManager {
          */
         EnemyA_Move(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
         EnemyA_Attack(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA_attack.png", 48, 48),
-        EnemyA_Weapon(SourceCategory.WEAPON, "enemy_type_a/typeA_weapon_big.png", 32, 32),
+        EnemyA_Weapon(SourceCategory.WEAPON, "enemy/typeA_weapon.png", 36, 36),
         /**
          * Enemy B.
          */
@@ -326,6 +326,7 @@ public final class AssetManager {
             soundMap.put("special_ship_sound", loadSound("sound/special_ship_sound.wav"));
             soundMap.put("win", loadSound("sound/win.wav"));
             soundMap.put("lose", loadSound("sound/lose.wav"));
+            soundMap.put("enemy_A_attack_sound", loadSound("sound/swing_weapon.wav"));
             
             LOGGER.info("Finished loading the sounds.");
         } catch (Exception e) {
@@ -372,8 +373,10 @@ public final class AssetManager {
                     int targetWidth = type.getWidth();
                     int targetHeight = type.getHeight();
                     
+                    BufferedImage img;
+                    
                     if (type.getFrameCount() == 1) {
-                        BufferedImage img = engine.utils.ImageLoader.loadImage(
+                        img = engine.utils.ImageLoader.loadImage(
                             basePath, targetWidth, targetHeight
                         );
                         spriteImageMap.put(type, img);

@@ -47,10 +47,10 @@ public class EntityRenderer {
         final int positionY, final Color color) {
         
         // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
-        Color debugColor = g.getColor();
-        g.setColor(new Color(255, 0, 0, 128));
-        g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
-        g.setColor(debugColor); // 원래 색상 복구
+//        Color debugColor = g.getColor();
+//        g.setColor(new Color(255, 0, 0, 128));
+//        g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+//        g.setColor(debugColor);
         // [DEBUG END]
         
         if (entity instanceof ArcherCharacter) {
@@ -76,11 +76,10 @@ public class EntityRenderer {
         final int positionY, final Color color, final int scale) {
         
         // [DEBUG] 히트박스 시각화 (작업 후 주석 처리)
-        Color debugColor = g.getColor();
-        g.setColor(new Color(255, 0, 0, 128));
-        // 히트박스는 렌더링 스케일(scale)과 무관하게 엔티티의 실제 크기(width, height)를 따릅니다.
-        g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
-        g.setColor(debugColor);
+//        Color debugColor = g.getColor();
+//        g.setColor(new Color(255, 0, 0, 128));
+//        g.fillRect(positionX, positionY, entity.getWidth(), entity.getHeight());
+//        g.setColor(debugColor);
         // [DEBUG END]
         
         SpriteType type = entity.getSpriteType();
@@ -101,22 +100,30 @@ public class EntityRenderer {
             return;
         }
         
-        int entityWidth = image.getWidth() * scale;
-        int entityHeight = image.getHeight() * scale;
+        int entityWidthByScale = image.getWidth() * scale;
+        int entityHeightByScale = image.getHeight() * scale;
         
-        int drawX = positionX + (entity.getWidth() - entityWidth) / 2;
-        int drawY = positionY + (entity.getHeight() - entityHeight) / 2;
+        int drawX = positionX + (entity.getWidth() - entityWidthByScale) / 2;
+        int drawY = positionY + (entity.getHeight() - entityHeightByScale) / 2;
+        
+        Graphics2D g2d = (Graphics2D) g;
+        java.awt.Composite originalComposite = g2d.getComposite();
+        java.awt.geom.AffineTransform originalTransform = g2d.getTransform();
+        
+        if (entity.getRotation() != 0) {
+            // 히트박스 중앙을 회전점으로 설정
+            double centerX = positionX + (entity.getWidth() * scale) / 2.0;
+            double centerY = positionY + (entity.getHeight() * scale) / 2.0;
+            
+            g2d.rotate(Math.toRadians(entity.getRotation()), centerX, centerY);
+        }
         
         boolean flip = false;
         if (entity instanceof EnemyShip) {
-            // 왼쪽을 보고 있다면 반전
             if (!((EnemyShip) entity).isFacingRight()) {
                 flip = true;
             }
         }
-        
-        Graphics2D g2d = (Graphics2D) g;
-        java.awt.Composite originalComposite = g2d.getComposite();
         
         if (color.getAlpha() < 255) {
             float alpha = color.getAlpha() / 255f;
@@ -125,16 +132,18 @@ public class EntityRenderer {
         }
         
         if (flip) {
-            g.drawImage(image, drawX + entityWidth, drawY, -entityWidth, entityHeight, null);
+            g.drawImage(image, drawX + entityWidthByScale, drawY, -entityWidthByScale,
+                entityHeightByScale, null);
         } else {
-            g.drawImage(image, drawX, drawY, entityWidth, entityHeight, null);
+            g.drawImage(image, drawX, drawY, entityWidthByScale, entityHeightByScale, null);
         }
         
+        g2d.setTransform(originalTransform);
         g2d.setComposite(originalComposite);
         
         if (color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
-            g.fillRect(drawX, drawY, entityWidth, entityHeight);
+            g.fillRect(drawX, drawY, entityWidthByScale, entityHeightByScale);
         }
     }
     
