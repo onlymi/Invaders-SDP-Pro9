@@ -29,7 +29,7 @@ public class EnemyTypeA extends EnemyShip {
      * variable for attack.
      */
     private static final double ATTACK_RANGE = 80.0; // 공격 사거리
-    private static final int ATTACK_DAMAGE = 10;
+    private static final int DEFAULT_ATTACK_DAMAGE = 10;
     private static final int ATTACK_COOLDOWN = 1500; // 공격 쿨다운
     private static final int ATTACK_ANIMATION_DURATION = 500; // 공격 모션 유지 시간
     
@@ -37,6 +37,8 @@ public class EnemyTypeA extends EnemyShip {
     private double floatingPhase;
     private Cooldown attackAnimationTimer;
     private State state;
+    
+    protected int attackDamage;
     
     /**
      * Constructor, establishes the ship's properties. Used by EnemyShipFormation and BossShip.
@@ -51,6 +53,7 @@ public class EnemyTypeA extends EnemyShip {
         this.initialHealth = this.health;
         this.pointValue = 30;
         this.coinValue = 10;
+        this.attackDamage = DEFAULT_ATTACK_DAMAGE;
         this.attackCooldown = Core.getCooldown(ATTACK_COOLDOWN);
         this.attackAnimationTimer = Core.getCooldown(ATTACK_ANIMATION_DURATION);
         this.state = State.MOVING; // 초기 상태 = 이동
@@ -140,7 +143,6 @@ public class EnemyTypeA extends EnemyShip {
     
     private void performMeleeAttack(Set<Weapon> weapons, GameCharacter player) {
         SpriteType weaponSprite = SpriteType.EnemyA_Weapon;
-        int damage = ATTACK_DAMAGE;
         int attackImageWidth = weaponSprite.getWidth();
         int attackImageHeight = weaponSprite.getHeight();
         int hitboxWidth = 16;
@@ -162,7 +164,7 @@ public class EnemyTypeA extends EnemyShip {
             }
         }
         Weapon enemyWeaponA = new Weapon(weaponX, weaponY, hitboxWidth, hitboxHeight, 0,
-            damage);
+            this.attackDamage);
         
         enemyWeaponA.setSpriteImage(weaponSprite);
         enemyWeaponA.setSize(hitboxWidth, hitboxHeight);
@@ -173,5 +175,9 @@ public class EnemyTypeA extends EnemyShip {
         enemyWeaponA.setRotation(rotation);
         weapons.add(enemyWeaponA);
         engine.SoundManager.playOnce("enemy_A_attack_sound");
+    }
+    
+    public void setAttackDamage(int damage) {
+        this.attackDamage = damage;
     }
 }

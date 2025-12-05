@@ -1,10 +1,10 @@
 package entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -206,5 +206,63 @@ class WeaponTest {
         bullet.update();
         assertEquals(100, bullet.getPositionX()); // SpeedX is 0
         assertEquals(105, bullet.getPositionY()); // SpeedY is 5
+    }
+    
+    @Test
+    void testDurationAndExpiry() throws InterruptedException {
+        assertFalse(bullet.isExpired());
+        
+        // 수명 설정
+        bullet.setDuration(10);
+        assertFalse(bullet.isExpired());
+        
+        // 시간 경과 후 만료 확인
+        Thread.sleep(15);
+        assertTrue(bullet.isExpired());
+    }
+    
+    @Test
+    void testHitPlayerTracking() {
+        // 초기 상태
+        assertFalse(bullet.isHitPlayer(1));
+        assertFalse(bullet.isHitPlayer(2));
+        
+        // player 1 피격
+        bullet.addHitPlayer(1);
+        assertTrue(bullet.isHitPlayer(1));
+        assertFalse(bullet.isHitPlayer(2));
+        
+        // player 2 피격
+        bullet.addHitPlayer(2);
+        assertTrue(bullet.isHitPlayer(1));
+        assertTrue(bullet.isHitPlayer(2));
+    }
+    
+    @Test
+    void testResetFullState() {
+        bullet.setDuration(100);
+        bullet.setSpeedX(10);
+        bullet.setRotation(90);
+        bullet.addHitPlayer(1);
+        bullet.setHoming(mockTarget);
+        
+        bullet.reset();
+        
+        // 수명이 -1로 초기화되어 만료되지 않아야 함
+        assertFalse(bullet.isExpired());
+        
+        // 속도 및 회전 초기화 확인
+        assertEquals(0, bullet.getSpeedX());
+        assertEquals(0, bullet.getRotation());
+        
+        // 피격 기록 초기화 확인
+        assertFalse(bullet.isHitPlayer(1));
+        
+        // 유도 기능 해제 확인
+        bullet.setPositionX(100);
+        bullet.setPositionY(100);
+        bullet.setSpeed(5);
+        bullet.update();
+        assertEquals(0, bullet.getRotation());
     }
 }
