@@ -19,7 +19,7 @@ public class RapidFireSkill extends Skill {
     
     @Override
     public void performSkill(GameCharacter attacker) {
-        RapidFireSkillBuff buff = new RapidFireSkillBuff((int) (DURATION_SECOND * 1000));
+        RapidFireSkillBuff buff = new RapidFireSkillBuff((int) (DURATION_SECOND));
         attacker.addBuff(buff);
     }
 }

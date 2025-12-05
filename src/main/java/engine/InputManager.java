@@ -290,10 +290,12 @@ public final class InputManager implements KeyListener, MouseListener,
             
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                 writer.write(player1Keys[0] + "," + player1Keys[1] + "," + player1Keys[2] + ","
-                    + player1Keys[3]);
+                    + player1Keys[3] + "," + player1Keys[4] + "," + player1Keys[5] + ","
+                    + player1Keys[6] + "," + player1Keys[7]);
                 writer.newLine();
                 writer.write(player2Keys[0] + "," + player2Keys[1] + "," + player2Keys[2] + ","
-                    + player2Keys[3]);
+                    + player2Keys[3] + "," + player2Keys[4] + "," + player2Keys[5] + ","
+                    + player2Keys[6] + "," + player2Keys[7]);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -337,11 +339,12 @@ public final class InputManager implements KeyListener, MouseListener,
         // 6: first skill, 7: second skill, 8: ultimate skill
         player1Keys = new int[]{
             KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_W, KeyEvent.VK_S,
-            KeyEvent.VK_SPACE, KeyEvent.VK_Q
+            KeyEvent.VK_SPACE, KeyEvent.VK_Q, KeyEvent.VK_1, KeyEvent.VK_2, KeyEvent.VK_3,
         };
         player2Keys = new int[]{
             KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_UP, KeyEvent.VK_DOWN,
-            KeyEvent.VK_ENTER, KeyEvent.VK_SLASH
+            KeyEvent.VK_ENTER, KeyEvent.VK_SLASH, KeyEvent.VK_P, KeyEvent.VK_OPEN_BRACKET,
+            KeyEvent.VK_CLOSE_BRACKET
         };
         
         instance.loadKeyConfig();

@@ -43,8 +43,17 @@ class GameCharacterMovementTest {
             this.baseStats.movementSpeed = 1.0f;
             this.currentStats = new CharacterStats(this.baseStats);
             
-            int[] keys = {KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_UP, KeyEvent.VK_DOWN,
-                KeyEvent.VK_SPACE};
+            int[] keys = {
+                KeyEvent.VK_LEFT,   // 0
+                KeyEvent.VK_RIGHT,  // 1
+                KeyEvent.VK_UP,     // 2
+                KeyEvent.VK_DOWN,   // 3
+                KeyEvent.VK_SPACE,  // 4
+                0,                  // 5 (사용 안 함)
+                KeyEvent.VK_1,      // 6
+                KeyEvent.VK_2,      // 7
+                KeyEvent.VK_3       // 8
+            };
             this.setControlKeys(keys);
         }
         
