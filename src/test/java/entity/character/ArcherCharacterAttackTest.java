@@ -66,8 +66,7 @@ class ArcherCharacterAttackTest {
         when(mockCooldown.checkFinished()).thenReturn(true);
         
         // When: 공격 실행
-        archer.launchBasicAttack(weapons);
-        boolean isFired = archer.isAttacking;
+        boolean isFired = archer.launchBasicAttack(weapons);
         
         // Then: 발사된 투사체의 속성이 아처 전용 설정과 일치하는지 검증
         assertTrue(isFired, "공격이 발사되어야 합니다.");

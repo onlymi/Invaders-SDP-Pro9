@@ -346,7 +346,7 @@ public class GameScreen extends Screen {
                     
                     character.handleKeyboard(inputManager, this, this.weapons, deltaTime);
                     // Handle Input (Movement & Shooting)
-                    boolean shotFired = character.isAttacking();
+                    boolean shotFired = character.isFiring();
                     
                     if (shotFired) {
                         SoundManager.playOnce("shoot");
@@ -414,7 +414,7 @@ public class GameScreen extends Screen {
             }
             
             // End condition: achieved kill count or TEAM lives exhausted.
-            if ((this.enemyKillCount >= this.killsToWin || !state.teamAlive())
+            if ((this.enemyKillCount >= this.killsToWin || (!state.teamAlive() && !teamAlive))
                 && !this.levelFinished) {
                 // The object managed by the object pool pattern must be recycled at the end of the level.
                 WeaponPool.recycle(this.weapons);

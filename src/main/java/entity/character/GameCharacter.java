@@ -35,9 +35,11 @@ public abstract class GameCharacter extends Entity {
     
     protected int currentHealthPoints;
     protected int currentManaPoints;
+    private float manaRegenAccumulator = 0f;
     
     private boolean isDie;
     public boolean isInSelectScreen;
+    public boolean isFiring;
     
     private int leftKey;
     private int rightKey;
@@ -101,6 +103,7 @@ public abstract class GameCharacter extends Entity {
         
         this.isDie = false;
         this.isInSelectScreen = false;
+        this.isFiring = false;
         // 업그레이드 스탯 적용
         applyUserUpgrades();
         recalculateStats();
@@ -134,6 +137,24 @@ public abstract class GameCharacter extends Entity {
      * @param deltaTime The time it took from the last frame to the present
      */
     public void update(float deltaTime) {
+        float manaRegenRate = 2f;
+        this.manaRegenAccumulator += manaRegenRate * deltaTime;
+        
+        if (this.manaRegenAccumulator >= 1.0f) {
+            int manaToAdd = (int) this.manaRegenAccumulator;
+            
+            // 현재 마나가 최대 마나보다 적을 때만 회복
+            if (this.currentManaPoints < this.baseStats.maxManaPoints) {
+                this.currentManaPoints = Math.min(
+                    this.currentManaPoints + manaToAdd,
+                    this.baseStats.maxManaPoints
+                );
+            }
+            
+            // 반영한 정수만큼 누적값에서 뺌 (남은 소수점은 다음 프레임으로 이월)
+            this.manaRegenAccumulator -= manaToAdd;
+        }
+        
         Iterator<Buff> iterator = activeBuffs.iterator();
         
         while (iterator.hasNext()) {
@@ -327,26 +348,29 @@ public abstract class GameCharacter extends Entity {
     }
     
     public void handleAttack(InputManager inputManager, Set<Weapon> weapons) {
+        this.isFiring = false;
+        this.isAttacking = false;
         if (inputManager.isKeyDown(this.defaultAttackKey)) {
-            launchBasicAttack(weapons);
+            this.isFiring = launchBasicAttack(weapons);
             this.isAttacking = true;
-        } else if (inputManager.isKeyDown(this.firstSkillKey)) {
+        }
+        if (inputManager.isKeyDown(this.firstSkillKey)) {
             if (!skills.isEmpty()) {
                 skills.get(0).activate(this);
             }
             this.isAttacking = true;
-        } else if (inputManager.isKeyDown(this.secondSkillKey)) {
+        }
+        if (inputManager.isKeyDown(this.secondSkillKey)) {
             if (skills.size() > 1) {
                 skills.get(1).activate(this);
             }
             this.isAttacking = true;
-        } else if (inputManager.isKeyDown(this.ultimateSkillKey)) {
+        }
+        if (inputManager.isKeyDown(this.ultimateSkillKey)) {
             if (skills.size() > 2) {
                 skills.get(2).activate(this);
             }
             this.isAttacking = true;
-        } else {
-            this.isAttacking = false;
         }
     }
     
@@ -354,8 +378,9 @@ public abstract class GameCharacter extends Entity {
      * Launch a basic attack.
      *
      * @param weapons The set of weapons to add the new weapon to.
+     * @return true if the attack was actually launched (cooldown finished), false otherwise.
      */
-    public void launchBasicAttack(Set<Weapon> weapons) {
+    public boolean launchBasicAttack(Set<Weapon> weapons) {
         if (this.shootingCooldown.checkFinished()) {
             this.shootingCooldown.reset();
             
@@ -387,7 +412,9 @@ public abstract class GameCharacter extends Entity {
             weapon.setPlayerId(this.playerId);
             weapon.setRange(this.currentStats.attackRange);
             weapons.add(weapon);
+            return true;
         }
+        return false;
     }
     
     /**
@@ -456,6 +483,10 @@ public abstract class GameCharacter extends Entity {
     
     public boolean isDie() {
         return isDie;
+    }
+    
+    public boolean isFiring() {
+        return this.isFiring;
     }
     
     public boolean isAttacking() {
