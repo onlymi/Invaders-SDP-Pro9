@@ -289,11 +289,24 @@ public final class InputManager implements KeyListener, MouseListener,
             }
             
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                writer.write(player1Keys[0] + "," + player1Keys[1] + "," + player1Keys[2] + ","
-                    + player1Keys[3]);
+                StringBuilder sb1 = new StringBuilder();
+                for (int i = 0; i < player1Keys.length; i++) {
+                    sb1.append(player1Keys[i]);
+                    if (i < player1Keys.length - 1) {
+                        sb1.append(",");
+                    }
+                }
+                writer.write(sb1.toString());
                 writer.newLine();
-                writer.write(player2Keys[0] + "," + player2Keys[1] + "," + player2Keys[2] + ","
-                    + player2Keys[3]);
+                
+                StringBuilder sb2 = new StringBuilder();
+                for (int i = 0; i < player2Keys.length; i++) {
+                    sb2.append(player2Keys[i]);
+                    if (i < player2Keys.length - 1) {
+                        sb2.append(",");
+                    }
+                }
+                writer.write(sb2.toString());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -313,38 +326,30 @@ public final class InputManager implements KeyListener, MouseListener,
             String line2 = reader.readLine();
             if (line1 != null) {
                 String[] parts = line1.split(",");
-                for (int i = 0; i < 6; i++) {
-                    player1Keys[i] = Integer.parseInt(parts[i]);
+                int length = Math.min(parts.length, player1Keys.length);
+                for (int i = 0; i < length; i++) {
+                    try {
+                        player1Keys[i] = Integer.parseInt(parts[i].trim());
+                    } catch (NumberFormatException e) {
+                        System.err.println("Invalid key code in line 1: " + parts[i]);
+                    }
                 }
             }
             if (line2 != null) {
                 String[] parts = line2.split(",");
-                for (int i = 0; i < 6; i++) {
-                    player2Keys[i] = Integer.parseInt(parts[i]);
+                int length = Math.min(parts.length, player2Keys.length);
+                for (int i = 0; i < length; i++) {
+                    try {
+                        player2Keys[i] = Integer.parseInt(parts[i].trim());
+                    } catch (NumberFormatException e) {
+                        System.err.println("Invalid key code in line 2: " + parts[i]);
+                    }
                 }
             }
             
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-    
-    // After setting the default,
-    // import the saved key settings from the file and cover the default values.
-    static {
-        instance = new InputManager();
-        // 0: left, 1: right, 2: up, 3: down, 4: basic attack, 5: item,
-        // 6: first skill, 7: second skill, 8: ultimate skill
-        player1Keys = new int[]{
-            KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_W, KeyEvent.VK_S,
-            KeyEvent.VK_SPACE, KeyEvent.VK_Q
-        };
-        player2Keys = new int[]{
-            KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_UP, KeyEvent.VK_DOWN,
-            KeyEvent.VK_ENTER, KeyEvent.VK_SLASH
-        };
-        
-        instance.loadKeyConfig();
     }
     
     /**
