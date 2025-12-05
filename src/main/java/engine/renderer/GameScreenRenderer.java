@@ -332,31 +332,12 @@ public class GameScreenRenderer {
         
         itemManager.getItemToDescribe().ifPresent(item -> {
             String name = item.getDisplayName();
-            String baseDesc = item.getData().getDescription();
             
-            ItemData data = item.getData();
-            int cost = 0;
+            String baseDesc = null;
             if (item.getData() != null) {
-                cost = item.getData().getCost();
+                baseDesc = item.getData().getDescription();
             }
-            
-            StringBuilder descBuilder = new StringBuilder();
-            if (baseDesc != null && !baseDesc.isEmpty()) {
-                descBuilder.append(baseDesc);
-            }
-            
-            if (cost == 0) {
-                if (descBuilder.length() > 0) {
-                    descBuilder.append("\n");
-                }
-                descBuilder.append("No cost required.");
-            } else {
-                if (descBuilder.length() > 0) {
-                    descBuilder.append("\n");
-                }
-                descBuilder.append("Cost: ").append(cost);
-            }
-            String desc = descBuilder.toString();
+            String desc = (baseDesc != null) ? baseDesc : "";
             
             Graphics2D g2d = (Graphics2D) g.create();
             try {
@@ -383,8 +364,10 @@ public class GameScreenRenderer {
                 int textH = nameLines.size() * titleFm.getHeight()
                     + 6
                     + descLines.size() * bodyFm.getHeight();
-                int textW = Math.max(measureMaxWidth(nameLines, titleFm),
-                    measureMaxWidth(descLines, bodyFm));
+                int textW = Math.max(
+                    measureMaxWidth(nameLines, titleFm),
+                    measureMaxWidth(descLines, bodyFm)
+                );
                 int boxW = Math.max(220, textW + padding * 2);
                 int boxH = textH + padding * 2;
                 
@@ -535,7 +518,7 @@ public class GameScreenRenderer {
         g2d.setStroke(new BasicStroke(1.5f));
         g2d.drawRoundRect(x, y, size, size, 8, 8);
         
-        // guide label for press key
+        // label for press key
         g2d.setFont(commonRenderer.getFontRegular());
         g2d.setColor(Color.WHITE);
         String keyLabel = (playerIndex == 0) ? "Q" : "/";
@@ -651,6 +634,7 @@ public class GameScreenRenderer {
             default -> Color.WHITE;
         };
     }
+    
     public void triggerCustomExplosion(int x, int y, Color color) {
         explosions.add(new Explosion(x, y, color));
     }

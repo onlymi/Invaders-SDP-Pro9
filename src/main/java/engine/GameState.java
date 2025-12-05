@@ -139,6 +139,16 @@ public class GameState {
         initializePlayerItemStates();
     }
     
+    // 2P mode: per-player tallies (used for stats/scoring; lives[] unused in shared
+    // mode).
+    private final int[] score = new int[NUM_PLAYERS];
+    private final int[] lives = new int[NUM_PLAYERS];
+    private final int[] bulletsShot = new int[NUM_PLAYERS];
+    private final int[] shipsDestroyed = new int[NUM_PLAYERS];
+    
+    /* ---------- Constructors ---------- */
+    
+    /** Legacy 6-arg - kept for old call sites */
     /**
      * Constructor.
      *
@@ -168,15 +178,6 @@ public class GameState {
         initializeEffectStates();
         initializePlayerItemStates();
     }
-    
-    // 2P mode:
-    // per-player tallies (used for stats/scoring; lives[] unused in shared mode).
-    private final int[] score = new int[NUM_PLAYERS];
-    private final int[] lives = new int[NUM_PLAYERS];
-    private final int[] bulletsShot = new int[NUM_PLAYERS];
-    private final int[] shipsDestroyed = new int[NUM_PLAYERS];
-    
-    // Legacy 6-arg - kept for old call sites
     
     /* ------- 2P mode: aggregate totals used by Core/ScoreScreen/UI------- */
     public int getScore() {
@@ -577,10 +578,12 @@ public class GameState {
         
         switch (type) {
             case "MOVE_SPEED_UP" -> {
-                addEffect(playerIndex,
+                addEffect(
+                    playerIndex,
                     ItemEffectType.MOVE_SPEED_UP,
                     data.getEffectValue(),
-                    data.getEffectDuration());
+                    data.getEffectDuration()
+                );
                 logger.info("[GameState] MOVE_SPEED_UP activated!");
                 applied = true;
             }
@@ -591,8 +594,7 @@ public class GameState {
                     this,
                     playerId,
                     data.getEffectValue(),
-                    data.getEffectDuration(),
-                    data.getCost()
+                    data.getEffectDuration()
                 );
                 if (ok) {
                     logger.info("[GameState] TIME_FREEZE activated by P" + playerId
@@ -603,8 +605,66 @@ public class GameState {
                         "[GameState] TIME_FREEZE failed to activate (maybe null GameState).");
                 }
             }
-            // TODO 다른 active도 계속 추가
-            default -> logger.info("[GameState] Active item type not handled: " + type);
+            
+            case "TIME_SLOW" -> {
+                int playerId = playerIndex + 1;
+                boolean ok = ItemEffect.applyTimeSlow(
+                    this,
+                    playerId,
+                    data.getEffectValue(),      // slow % (e.g., 50)
+                    data.getEffectDuration()    // seconds
+                );
+                if (ok) {
+                    logger.info("[GameState] TIME_SLOW activated by P" + playerId
+                        + " (value=" + data.getEffectValue()
+                        + ", duration=" + data.getEffectDuration() + "s)");
+                    applied = true;
+                }
+            }
+            
+            case "DASH" -> {
+                int playerId = playerIndex + 1;
+                boolean ok = ItemEffect.applyDash(
+                    this,
+                    playerId,
+                    data.getEffectValue(),
+                    data.getEffectDuration()
+                );
+                if (ok) {
+                    logger.info("[GameState] DASH activated by P" + playerId
+                        + " x" + data.getEffectValue()
+                        + " for " + data.getEffectDuration() + "s.");
+                    applied = true;
+                }
+            }
+            
+            case "SHIELD" -> {
+                addEffect(playerIndex,
+                    ItemEffectType.SHIELD,
+                    data.getEffectValue(),
+                    data.getEffectDuration()
+                );
+                logger.info("[GameState] SHIELD activated!");
+                applied = true;
+            }
+            
+            default -> {
+                // Handle PET_* family
+                if (type.startsWith("PET_")) {
+                    addEffect(
+                        playerIndex,
+                        ItemEffectType.PET_SUPPORT,
+                        data.getEffectValue(),
+                        data.getEffectDuration()
+                    );
+                    logger.info("[GameState] PET item activated: " + type
+                        + " (value=" + data.getEffectValue()
+                        + ", duration=" + data.getEffectDuration() + "s)");
+                    applied = true;
+                } else {
+                    logger.info("[GameState] Active item type not handled: " + type);
+                }
+            }
         }
         
         // 슬롯 비우기
@@ -719,5 +779,29 @@ public class GameState {
             return false;
         }
         return true;
+    }
+    
+    /**
+     * Returns a global enemy speed multiplier based on TIME_SLOW effects.
+     */
+    public double getEnemySpeedMultiplier() {
+        int maxSlowPercent = 0;
+        
+        for (int p = 0; p < NUM_PLAYERS; p++) {
+            Integer slow = getEffectValue(p, ItemEffect.ItemEffectType.TIME_SLOW);
+            if (slow != null) {
+                maxSlowPercent = Math.max(maxSlowPercent, slow);
+            }
+        }
+        
+        if (maxSlowPercent <= 0) {
+            return 1.0;
+        }
+        
+        double factor = (100 - maxSlowPercent) / 100.0;
+        if (factor < 0.0) {
+            factor = 0.0;
+        }
+        return factor;
     }
 }

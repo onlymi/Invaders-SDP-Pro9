@@ -230,12 +230,14 @@ public final class AssetManager {
         ItemScore(SourceCategory.ITEM, 5, 5),
         ItemCoin(SourceCategory.ITEM, 5, 5),
         ItemHeal(SourceCategory.ITEM, 5, 5),
-        ItemTripleShot(SourceCategory.ITEM, 5, 5),
         ItemScoreBooster(SourceCategory.ITEM, 5, 5),
-        ItemBulletSpeedUp(SourceCategory.ITEM, 5, 5),
         ItemMoveSpeedUp(SourceCategory.ITEM, 5, 5),
-        ItemTimeFreeze(SourceCategory.ITEM, 5, 5);
-
+        ItemTimeFreeze(SourceCategory.ITEM, 5, 5),
+        ItemTimeSlow(SourceCategory.ITEM, 5, 5),
+        ItemDash(SourceCategory.ITEM, 5, 5),
+        ItemPetGun(SourceCategory.ITEM, 5, 5),
+        ItemShield(SourceCategory.ITEM, 5, 5);
+        
         // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;
         private final String filename;
@@ -279,7 +281,7 @@ public final class AssetManager {
         public int getWidth() {
             return this.width;
         }
-
+        
         public int getHeight() {
             return this.height;
         }
@@ -292,11 +294,11 @@ public final class AssetManager {
             return this.frameCount;
         }
     }
-
+    
     private static AssetManager instance;
     private static final Logger LOGGER = Core.getLogger();
     private static final FileManager fileManager = Core.getFileManager();
-
+    
     Map<SpriteType, boolean[][]> spriteMap;
     Map<SpriteType, BufferedImage> spriteImageMap;
     Map<SpriteType, BufferedImage[]> animationMap;
@@ -304,28 +306,28 @@ public final class AssetManager {
     HashMap<String, File> csvDataMap;
     private Font fontRegular;
     private Font fontBig;
-
+    
     private AssetManager() {
         LOGGER.info("Started loading resources.");
-
+        
         try {
             spriteMap = new LinkedHashMap<>();
             spriteImageMap = new LinkedHashMap<>();
             animationMap = new LinkedHashMap<>();
             this.loadResources();
             LOGGER.info("Finished loading the sprites.");
-
+            
             // Font loading
             fontRegular = this.loadFont(14f);
             fontBig = this.loadFont(24f);
             LOGGER.info("Finished loading the fonts.");
-
+            
         } catch (IOException e) {
             LOGGER.warning("Loading failed.");
         } catch (FontFormatException e) {
             LOGGER.warning("Font formating failed.");
         }
-
+        
         try {
             soundMap = new HashMap<String, Clip>();
             // 모든 사운드 파일을 미리 로드
@@ -446,7 +448,7 @@ public final class AssetManager {
         }
         return instance;
     }
-
+    
     /**
      * Loads a font of a given size.
      *
@@ -459,7 +461,7 @@ public final class AssetManager {
         FontFormatException {
         InputStream inputStream = null;
         Font font;
-
+        
         try {
             // Font loading.
             inputStream = FileManager.class.getClassLoader().getResourceAsStream("font/font.ttf");
@@ -469,10 +471,10 @@ public final class AssetManager {
                 inputStream.close();
             }
         }
-
+        
         return font;
     }
-
+    
     /**
      * 지정된 리소스 경로에서 오디오 파일을 읽어와 재생 준비가 완료된 Clip 객체로 반환합니다.
      *
@@ -488,16 +490,16 @@ public final class AssetManager {
         if (audioStream == null) {
             throw new FileNotFoundException("Audio resource not found: " + resourcePath);
         }
-
+        
         audioStream = toPcmSigned(audioStream);
-
+        
         DataLine.Info info = new DataLine.Info(Clip.class, audioStream.getFormat());
         Clip clip = (Clip) AudioSystem.getLine(info);
         clip.open(audioStream);
-
+        
         return clip;
     }
-
+    
     /**
      * Opens an audio stream from classpath resources or absolute/relative file path.
      */
@@ -515,7 +517,7 @@ public final class AssetManager {
             return null;
         }
     }
-
+    
     /**
      * Ensures the audio stream is PCM_SIGNED for Clip compatibility on all JVMs.
      */
@@ -524,7 +526,7 @@ public final class AssetManager {
         if (format.getEncoding() == AudioFormat.Encoding.PCM_SIGNED) {
             return source;
         }
-
+        
         AudioFormat targetFormat = new AudioFormat(
             AudioFormat.Encoding.PCM_SIGNED,
             format.getSampleRate(),
