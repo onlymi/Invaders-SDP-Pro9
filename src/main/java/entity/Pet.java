@@ -2,11 +2,12 @@ package entity;
 
 import engine.AssetManager;
 import engine.GameState;
+import entity.character.GameCharacter;
 import java.awt.Color;
 import java.util.Set;
 
 /**
- * Implements a support pet that fires projectiles in the owner's facing direction.
+ * Implements a support pet that can follow the owner and (later) fire projectiles.
  */
 public class Pet extends Entity {
     
@@ -28,7 +29,8 @@ public class Pet extends Entity {
     private long spawnedAtMs;
     
     /**
-     * Interval between shots (milliseconds).
+     * Interval between shots (milliseconds). (Currently unused until firing logic is re-added with
+     * Weapon.)
      */
     private final long shotIntervalMs;
     private long lastShotAtMs = 0L;
@@ -75,58 +77,30 @@ public class Pet extends Entity {
     }
     
     /**
-     * Updates the pet: keeps its position and fires bullets periodically.
+     * Updates the pet: keeps its position near the owner. (Weapon firing logic will be added later
+     * using Weapon/WeaponPool.)
      */
-    public void update(Set<Bullet> bullets, Ship ownerShip) {
-        if (ownerShip == null) {
+    public void update(Set<Weapon> weapons, GameCharacter owner) {
+        if (owner == null || dead || isExpired()) {
             return;
         }
         
-        long now = System.currentTimeMillis();
-        if (now - lastShotAtMs < shotIntervalMs) {
-            return;
-        }
-        lastShotAtMs = now;
+        // Follow owner: slightly to the right and above (adjust as needed)
+        int offsetX = 10;
+        int offsetY = -10;
         
-        switch (kind) {
-            case GUN -> fireGun(bullets, ownerShip);
-            default -> {
-            }
-        }
-    }
-    
-    private void fireGun(Set<Bullet> bullets, Ship ownerShip) {
-        Ship.Facing facing = ownerShip.getFacing();
+        this.positionX = owner.getPositionX() + owner.getWidth() + offsetX;
+        this.positionY = owner.getPositionY() + offsetY;
         
-        int centerX = this.positionX + this.width / 2;
-        int centerY = this.positionY + this.height / 2;
-        
-        int vx = 0;
-        int vy = 0;
-        int speed = 6; // adjust for balance
-        
-        switch (facing) {
-            case UP -> vy = -speed;
-            case DOWN -> vy = speed;
-            case LEFT -> vx = -speed;
-            case RIGHT -> vx = speed;
-        }
-        
-        // NOTE: if current Bullet only supports vertical speed,
-        // you might need to extend it later to (vx, vy).
-        Bullet b = BulletPool.getBullet(
-            centerX,
-            centerY,
-            vy,          // original code uses "speed" as vertical
-            6,
-            10,
-            ownerShip.getTeam()
-        );
-        // if Bullet has velocity setters, use them here:
-        // b.setVelocity(vx, vy);
-        
-        b.setOwnerPlayerId(ownerShip.getPlayerId());
-        bullets.add(b);
+        // TODO: In future, implement firing logic using Weapon & owner facing.
+        // long now = System.currentTimeMillis();
+        // if (now - lastShotAtMs >= shotIntervalMs) {
+        //     lastShotAtMs = now;
+        //     switch (kind) {
+        //         case GUN -> fireGun(weapons, owner);
+        //         default -> { }
+        //     }
+        // }
     }
     
     public int getOwnerPlayerId() {

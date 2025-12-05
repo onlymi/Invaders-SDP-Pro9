@@ -286,8 +286,7 @@ public class Ship extends Entity {
      * Creates and adds a bullet to the game.
      */
     private void addBullet(final Set<Weapon> weapons, final int x, final int y) {
-        int speedMultiplier = getBulletSpeedMultiplier();
-        int currentBulletSpeed = this.bulletSpeed * speedMultiplier;
+        int currentBulletSpeed = this.bulletSpeed;
         
         Weapon weapon = WeaponPool.getWeapon(x, y, this.bulletWidth, this.bulletHeight,
             currentBulletSpeed, this.getTeam());
@@ -342,5 +341,9 @@ public class Ship extends Entity {
     public final void moveDown() {
         this.facing = Facing.DOWN;
         this.positionY += effectiveMoveSpeed();
+    }
+    
+    private int getBulletSpeedMultiplier() {
+        return 1;
     }
 }
