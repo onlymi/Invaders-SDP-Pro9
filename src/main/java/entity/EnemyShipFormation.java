@@ -373,6 +373,14 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
                 movementY = Y_SPEED;
             }
             
+            double speedFactor = 1.0;
+            if (gameState != null) {
+                speedFactor = gameState.getEnemySpeedMultiplier();
+            }
+            
+            int actualMovementX = (int) Math.round(movementX * speedFactor);
+            int actualMovementY = (int) Math.round(movementY * speedFactor);
+            
             positionX += movementX;
             positionY += movementY;
             
@@ -393,8 +401,8 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
             
             for (List<EnemyShip> column : this.enemyShips) {
                 for (EnemyShip enemyShip : column) {
-                    enemyShip.move(movementX, movementY);
-                    enemyShip.update();
+                    enemyShip.move(actualMovementX, actualMovementY);
+                    enemyShip.update(gameState);
                 }
             }
         }

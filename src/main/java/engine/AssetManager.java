@@ -53,7 +53,7 @@ public final class AssetManager {
         CharacterWarriorWalk2(SourceCategory.CHARACTER, "warrior/warrior_basic.png",
             characterWidth, characterHeight),
         CharacterWarriorDefaultProjectile(SourceCategory.WEAPON,
-            "warrior/default_attack_warrior.png", 32, 32),
+            "warrior/default_attack_warrior.png", 32, characterHeight),
         /**
          * Archer Character.
          */
@@ -61,8 +61,14 @@ public final class AssetManager {
             characterWidth, characterHeight),
         CharacterArcherShadow(SourceCategory.CHARACTER, "archer/archer_shadow.png",
             characterWidth, characterHeight),
-        CharacterArcherAttack1(SourceCategory.CHARACTER, "archer/archer_basic.png",
-            characterWidth, characterHeight),
+        CharacterArcherLeftAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_left_attack.png", characterWidth, characterHeight),
+        CharacterArcherRightAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_right_attack.png", characterWidth, characterHeight),
+        CharacterArcherFrontAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_front_attack.png", characterWidth, characterHeight),
+        CharacterArcherBackAttack(SourceCategory.CHARACTER,
+            "archer/attack/archer_back_attack.png", characterWidth, characterHeight),
         CharacterArcherStand(SourceCategory.CHARACTER, "archer/archer_stand.png",
             characterWidth, characterHeight),
         CharacterArcherLeftWalk(SourceCategory.CHARACTER, "archer/walk/archer_left_walk",
@@ -73,9 +79,11 @@ public final class AssetManager {
             characterWidth, characterHeight, 4),
         CharacterArcherBackWalk(SourceCategory.CHARACTER, "archer/walk/archer_back_walk",
             characterWidth, characterHeight, 4),
+        CharacterArcherGravestone(SourceCategory.CHARACTER, "archer/archer_gravestone.png",
+            characterWidth, characterHeight),
         CharacterArcherDefaultProjectile(SourceCategory.WEAPON,
             "archer/default_attack_archer.png",
-            20, 15),
+            14, 32),
         /**
          * Wizard Character.
          */
@@ -143,6 +151,9 @@ public final class AssetManager {
             characterWidth, characterHeight),
         CharacterHealerWalk2(SourceCategory.CHARACTER, "healer/healer_basic.png",
             characterWidth, characterHeight),
+        
+        BossMainBody(SourceCategory.ENEMY, "boss_main.png", 240, 160),
+        
         /**
          * Player ship.
          */
@@ -213,11 +224,13 @@ public final class AssetManager {
         ItemScore(SourceCategory.ITEM, 5, 5),
         ItemCoin(SourceCategory.ITEM, 5, 5),
         ItemHeal(SourceCategory.ITEM, 5, 5),
-        ItemTripleShot(SourceCategory.ITEM, 5, 5),
         ItemScoreBooster(SourceCategory.ITEM, 5, 5),
-        ItemBulletSpeedUp(SourceCategory.ITEM, 5, 5),
         ItemMoveSpeedUp(SourceCategory.ITEM, 5, 5),
-        ItemTimeFreeze(SourceCategory.ITEM, 5, 5);
+        ItemTimeFreeze(SourceCategory.ITEM, 5, 5),
+        ItemTimeSlow(SourceCategory.ITEM, 5, 5),
+        ItemDash(SourceCategory.ITEM, 5, 5),
+        ItemPetGun(SourceCategory.ITEM, 5, 5),
+        ItemShield(SourceCategory.ITEM, 5, 5);
         
         // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;
@@ -327,6 +340,8 @@ public final class AssetManager {
             soundMap.put("win", loadSound("sound/win.wav"));
             soundMap.put("lose", loadSound("sound/lose.wav"));
             soundMap.put("enemy_A_attack_sound", loadSound("sound/swing_weapon.wav"));
+            soundMap.put("laser_big", loadSound("sound/shoot_enemies.wav"));
+            soundMap.put("boss_hit", loadSound("sound/invader_killed.wav"));
             
             LOGGER.info("Finished loading the sounds.");
         } catch (Exception e) {
@@ -385,7 +400,6 @@ public final class AssetManager {
                         
                         for (int i = 0; i < type.getFrameCount(); i++) {
                             String fullPath = basePath + (i + 1) + ".png";
-                            System.out.println(type.getFrameCount() + " - " + fullPath);
                             
                             frames[i] = engine.utils.ImageLoader.loadImage(fullPath, targetWidth,
                                 targetHeight);

@@ -19,22 +19,24 @@ public class PlayerSelectionScreenRenderer {
     public void drawPlayerSelectionMenu(Graphics g, final Screen screen,
         final GameCharacter[] characterSamples, final int selectedShipIndex,
         final int playerIndex) {
-        // 1. 화면 제목 출력
+        // 화면 제목 출력
         String screenTitle = "PLAYER " + playerIndex + " : CHOOSE YOUR PLAYER";
         g.setColor(Color.GREEN);
         commonRenderer.drawCenteredBigString(g, screen, screenTitle, screen.getHeight() / 8);
         
-        // 2. 모든 캐릭터 그리기
+        // 모든 캐릭터 그리기
         int characterTypeCount = characterSamples.length;
         
         for (int i = 0; i < characterTypeCount; i++) {
             GameCharacter currentCharacter = characterSamples[i];
+            currentCharacter.isInSelectScreen = true;
             
             int imageScale = 2;
             
             int drawX =
-                currentCharacter.getPositionX() - currentCharacter.getWidth();
-            int drawY = currentCharacter.getPositionY();
+                currentCharacter.getPositionX() - (currentCharacter.getWidth() / 2) * imageScale;
+            int drawY =
+                currentCharacter.getPositionY() - (currentCharacter.getHeight() / 2) * imageScale;
             
             if (i == selectedShipIndex) {
                 entityRenderer.drawEntityByScale(g, currentCharacter, drawX, drawY, Color.WHITE,
@@ -45,7 +47,7 @@ public class PlayerSelectionScreenRenderer {
             }
         }
         
-        // 3. 선택된 캐릭터 정보 텍스트 출력
+        // 선택된 캐릭터 정보 텍스트 출력
         String selectedCharacterName = CharacterType.values()[selectedShipIndex].toString();
         
         g.setColor(Color.WHITE);

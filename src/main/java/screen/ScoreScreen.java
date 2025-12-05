@@ -209,11 +209,9 @@ public class ScoreScreen extends Screen {
                         // System.out.println("too short!!");
                         this.showNameError = true;
                     }
-                }
-                
-                // Check if it's a valid character (alphanumeric only)
-                else if ((Character.isLetterOrDigit(typedChar))
-                    && this.name.length() < MAX_NAME_LENGTH) {
+                } else if ((Character.isLetterOrDigit(typedChar))
+                    && this.name.length()
+                    < MAX_NAME_LENGTH) { // Check if it's a valid character (alphanumeric only)
                     this.name.append(Character.toUpperCase(typedChar));
                     
                 }

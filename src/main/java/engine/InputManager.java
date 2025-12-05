@@ -61,14 +61,27 @@ public final class InputManager implements KeyListener, MouseListener,
     private int lastPressedKey = -1;
     private static final String KEY_CONFIG_FILE = "key_config";
     
-    private static int[] player1Keys;
-    private static int[] player2Keys;
+    private static int[] player1Keys = new int[]{
+        KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_W, KeyEvent.VK_S,
+        KeyEvent.VK_SPACE, KeyEvent.VK_Q
+    };
+    
+    private static int[] player2Keys = new int[]{
+        KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_UP, KeyEvent.VK_DOWN,
+        KeyEvent.VK_ENTER, KeyEvent.VK_SLASH
+    };
     
     public void setPlayer1Keys(int[] newKeys) {
         player1Keys = newKeys.clone();
     }
     
     public int[] getPlayer1Keys() {
+        if (player1Keys == null) {
+            player1Keys = new int[]{
+                KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_W, KeyEvent.VK_S,
+                KeyEvent.VK_SPACE, KeyEvent.VK_Q
+            };
+        }
         return player1Keys.clone();
     }
     
@@ -77,6 +90,12 @@ public final class InputManager implements KeyListener, MouseListener,
     }
     
     public int[] getPlayer2Keys() {
+        if (player2Keys == null) {
+            player2Keys = new int[]{
+                KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_UP, KeyEvent.VK_DOWN,
+                KeyEvent.VK_ENTER, KeyEvent.VK_SLASH
+            };
+        }
         return player2Keys.clone();
     }
     

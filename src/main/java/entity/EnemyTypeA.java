@@ -82,7 +82,7 @@ public class EnemyTypeA extends EnemyShip {
         // 벡터 로직
         double dx = 0, dy = 0;
         // 플레이어 찾기
-        if (player != null && !player.isDestroyed()) {
+        if (player != null && !player.isDie()) {
             double tx = player.getPositionX();
             double ty = player.getPositionY();
             double dirX = tx - this.preciseX;
@@ -125,7 +125,7 @@ public class EnemyTypeA extends EnemyShip {
     }
     
     public void tryAttack(GameCharacter player, Set<Weapon> weapons) {
-        if (this.isDestroyed || player == null || player.isDestroyed()) {
+        if (this.isDestroyed || player == null || player.isDie()) {
             return;
         }
         double dist = Math.sqrt(Math.pow(player.getPositionX() - this.positionX, 2) + Math.pow(
@@ -154,7 +154,7 @@ public class EnemyTypeA extends EnemyShip {
         double rotation = 0;
         int offsetX = 20;
         
-        if (player != null && !player.isDestroyed()) {
+        if (player != null && !player.isDie()) {
             if (player.getPositionX() < centerX) {
                 rotation = 180;
                 weaponX -= offsetX;

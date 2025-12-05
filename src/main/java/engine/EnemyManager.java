@@ -84,7 +84,7 @@ public class EnemyManager {
             y = minY + random.nextInt(maxY - minY);
             
             for (GameCharacter player : gameScreen.getCharacters()) {
-                if (player != null && !player.isDestroyed()) {
+                if (player != null && !player.isDie()) {
                     double distance = Math.sqrt(
                         Math.pow(player.getPositionX() - x, 2) + Math.pow(player.getPositionY() - y,
                             2));
@@ -141,7 +141,7 @@ public class EnemyManager {
         double minClosestSq = Double.MAX_VALUE;
         
         for (GameCharacter player : gameScreen.getCharacters()) {
-            if (player == null) {
+            if (player == null || player.isDie()) {
                 continue;
             }
             double dx = player.getPositionX() - enemy.getPositionX();

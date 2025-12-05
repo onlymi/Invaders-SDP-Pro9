@@ -8,10 +8,12 @@ import engine.gameplay.item.ItemEffect;
 import engine.gameplay.item.ItemEffect.ItemEffectType;
 import engine.utils.Cooldown;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Implements an object that stores the state of the game between levels - supports 2-player co-op
@@ -23,7 +25,7 @@ import java.util.Map;
  */
 public class GameState {
     
-    private static final java.util.logging.Logger logger = Core.getLogger();
+    private static final Logger logger = Core.getLogger();
     
     // 2P mode: number of players used for shared lives in co-op
     public static final int NUM_PLAYERS = 2; // adjust later if needed
@@ -45,6 +47,14 @@ public class GameState {
     
     private boolean enemiesFrozen = false;
     private long enemiesFrozenUntilMillis = 0;
+    
+    // 2P mode:
+    // per-player tallies (used for stats/scoring; lives[] unused in shared mode).
+    private final int[] score = new int[NUM_PLAYERS];
+    private final int[] lives = new int[NUM_PLAYERS];
+    private final int[] bulletsShot = new int[NUM_PLAYERS];
+    private final int[] shipsDestroyed = new int[NUM_PLAYERS];
+    private int[] savedHealth = new int[NUM_PLAYERS];
     
     /**
      * Current coin count.
@@ -88,7 +98,7 @@ public class GameState {
         
         void startCooldown() {
             int cd = Math.max(0, data.getCooldownSec());
-            if (cd <= 0) {
+            if (cd == 0) {
                 this.cooldown = null;
             } else {
                 this.cooldown = Core.getCooldown(cd * 1000);
@@ -135,9 +145,13 @@ public class GameState {
             lives[0] = Math.max(0, livesEach);
         }
         
+        Arrays.fill(savedHealth, 0);
+        
         initializeEffectStates();
         initializePlayerItemStates();
     }
+    
+    // Legacy 6-arg - kept for old call sites.
     
     /**
      * Constructor.
@@ -169,15 +183,6 @@ public class GameState {
         initializePlayerItemStates();
     }
     
-    // 2P mode:
-    // per-player tallies (used for stats/scoring; lives[] unused in shared mode).
-    private final int[] score = new int[NUM_PLAYERS];
-    private final int[] lives = new int[NUM_PLAYERS];
-    private final int[] bulletsShot = new int[NUM_PLAYERS];
-    private final int[] shipsDestroyed = new int[NUM_PLAYERS];
-    
-    // Legacy 6-arg - kept for old call sites
-    
     /* ------- 2P mode: aggregate totals used by Core/ScoreScreen/UI------- */
     public int getScore() {
         int t = 0;
@@ -185,6 +190,10 @@ public class GameState {
             t += score[p];
         }
         return t;
+    }
+    
+    public int getScore(final int p) {
+        return (p >= 0 && p < NUM_PLAYERS) ? score[p] : 0;
     }
     
     public int getLivesRemaining() {
@@ -199,23 +208,16 @@ public class GameState {
         return t;
     }
     
+    public int getBulletsShot(final int p) {
+        return (p >= 0 && p < NUM_PLAYERS) ? bulletsShot[p] : 0;
+    }
+    
     public int getShipsDestroyed() {
         int t = 0;
         for (int p = 0; p < NUM_PLAYERS; p++) {
             t += shipsDestroyed[p];
         }
         return t;
-        
-    }
-    
-    
-    /* ----- Per-player getters (needed by Score.java) ----- */
-    public int getScore(final int p) {
-        return (p >= 0 && p < NUM_PLAYERS) ? score[p] : 0;
-    }
-    
-    public int getBulletsShot(final int p) {
-        return (p >= 0 && p < NUM_PLAYERS) ? bulletsShot[p] : 0;
     }
     
     public int getShipsDestroyed(final int p) {
@@ -447,7 +449,7 @@ public class GameState {
     }
     
     /**
-     * Call this each frame to clean up expired effects
+     * Call this each frame to clean up expired effects.
      */
     public void updateEffects() {
         for (int p = 0; p < NUM_PLAYERS; p++) {
@@ -577,10 +579,12 @@ public class GameState {
         
         switch (type) {
             case "MOVE_SPEED_UP" -> {
-                addEffect(playerIndex,
+                addEffect(
+                    playerIndex,
                     ItemEffectType.MOVE_SPEED_UP,
                     data.getEffectValue(),
-                    data.getEffectDuration());
+                    data.getEffectDuration()
+                );
                 logger.info("[GameState] MOVE_SPEED_UP activated!");
                 applied = true;
             }
@@ -591,8 +595,7 @@ public class GameState {
                     this,
                     playerId,
                     data.getEffectValue(),
-                    data.getEffectDuration(),
-                    data.getCost()
+                    data.getEffectDuration()
                 );
                 if (ok) {
                     logger.info("[GameState] TIME_FREEZE activated by P" + playerId
@@ -603,8 +606,66 @@ public class GameState {
                         "[GameState] TIME_FREEZE failed to activate (maybe null GameState).");
                 }
             }
-            // TODO 다른 active도 계속 추가
-            default -> logger.info("[GameState] Active item type not handled: " + type);
+            
+            case "TIME_SLOW" -> {
+                int playerId = playerIndex + 1;
+                boolean ok = ItemEffect.applyTimeSlow(
+                    this,
+                    playerId,
+                    data.getEffectValue(),      // slow % (e.g., 50)
+                    data.getEffectDuration()    // seconds
+                );
+                if (ok) {
+                    logger.info("[GameState] TIME_SLOW activated by P" + playerId
+                        + " (value=" + data.getEffectValue()
+                        + ", duration=" + data.getEffectDuration() + "s)");
+                    applied = true;
+                }
+            }
+            
+            case "DASH" -> {
+                int playerId = playerIndex + 1;
+                boolean ok = ItemEffect.applyDash(
+                    this,
+                    playerId,
+                    data.getEffectValue(),
+                    data.getEffectDuration()
+                );
+                if (ok) {
+                    logger.info("[GameState] DASH activated by P" + playerId
+                        + " x" + data.getEffectValue()
+                        + " for " + data.getEffectDuration() + "s.");
+                    applied = true;
+                }
+            }
+            
+            case "SHIELD" -> {
+                addEffect(playerIndex,
+                    ItemEffectType.SHIELD,
+                    data.getEffectValue(),
+                    data.getEffectDuration()
+                );
+                logger.info("[GameState] SHIELD activated!");
+                applied = true;
+            }
+            
+            default -> {
+                // Handle PET_* family
+                if (type.startsWith("PET_")) {
+                    addEffect(
+                        playerIndex,
+                        ItemEffectType.PET_SUPPORT,
+                        data.getEffectValue(),
+                        data.getEffectDuration()
+                    );
+                    logger.info("[GameState] PET item activated: " + type
+                        + " (value=" + data.getEffectValue()
+                        + ", duration=" + data.getEffectDuration() + "s)");
+                    applied = true;
+                } else {
+                    logger.info("[GameState] Active item type not handled: " + type);
+                }
+            }
         }
         
         // 슬롯 비우기
@@ -613,6 +674,19 @@ public class GameState {
             logger.info("[GameState] Player " + (playerIndex + 1)
                 + " used active item and cleared slot: " + data.getId());
         }
+    }
+    
+    public void setPlayerHealth(int playerIndex, int health) {
+        if (playerIndex >= 0 && playerIndex < NUM_PLAYERS) {
+            this.savedHealth[playerIndex] = health;
+        }
+    }
+    
+    public int getPlayerHealth(int playerIndex) {
+        if (playerIndex >= 0 && playerIndex < NUM_PLAYERS) {
+            return this.savedHealth[playerIndex];
+        }
+        return 0; // 저장된 체력이 없으면 0 반환
     }
     
     /**
@@ -719,5 +793,29 @@ public class GameState {
             return false;
         }
         return true;
+    }
+    
+    /**
+     * Returns a global enemy speed multiplier based on TIME_SLOW effects.
+     */
+    public double getEnemySpeedMultiplier() {
+        int maxSlowPercent = 0;
+        
+        for (int p = 0; p < NUM_PLAYERS; p++) {
+            Integer slow = getEffectValue(p, ItemEffect.ItemEffectType.TIME_SLOW);
+            if (slow != null) {
+                maxSlowPercent = Math.max(maxSlowPercent, slow);
+            }
+        }
+        
+        if (maxSlowPercent <= 0) {
+            return 1.0;
+        }
+        
+        double factor = (100 - maxSlowPercent) / 100.0;
+        if (factor < 0.0) {
+            factor = 0.0;
+        }
+        return factor;
     }
 }

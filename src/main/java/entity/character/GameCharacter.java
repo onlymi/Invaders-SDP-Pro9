@@ -3,6 +3,7 @@ package entity.character;
 import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.InputManager;
+import engine.UserStats;
 import engine.utils.Cooldown;
 import entity.Entity;
 import entity.Weapon;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import screen.GameScreen;
 import screen.Screen;
 
 public abstract class GameCharacter extends Entity {
@@ -34,6 +36,9 @@ public abstract class GameCharacter extends Entity {
     protected int currentHealthPoints;
     protected int currentManaPoints;
     
+    private boolean isDie;
+    public boolean isInSelectScreen;
+    
     private int leftKey;
     private int rightKey;
     private int upKey;
@@ -41,6 +46,7 @@ public abstract class GameCharacter extends Entity {
     private int defaultAttackKey;
     
     private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
+    protected boolean isAttacking;
     protected boolean isMoving;
     protected boolean isFacingLeft;
     protected boolean isFacingRight;
@@ -48,6 +54,7 @@ public abstract class GameCharacter extends Entity {
     protected boolean isFacingBack;
     
     private static final int DESTRUCTION_COOLDOWN = 1000;
+    private static final int BASE_SHOOTING_COOLDOWN = 1500;
     private Cooldown shootingCooldown;
     private final Cooldown destructionCooldown;
     
@@ -55,6 +62,10 @@ public abstract class GameCharacter extends Entity {
     protected int projectileWidth;
     protected int projectileHeight;
     protected int projectileSpeed;
+    
+    protected static final int MOVEMENT_SPEED_FACTOR = 150;
+    protected static final int ATTACK_SPEED_FACTOR = 10;
+    protected static final int SHOOTING_COOLDOWN_FACTOR = 500;
     
     /**
      * Constructor, establishes the entity's generic properties.
@@ -84,6 +95,9 @@ public abstract class GameCharacter extends Entity {
         this.currentManaPoints = baseStats.maxManaPoints;
         // Initial character unlocked stat
         this.unlocked = type.isUnlocked();
+        
+        this.isDie = false;
+        this.isInSelectScreen = false;
         // 업그레이드 스탯 적용
         applyUserUpgrades();
         recalculateStats();
@@ -94,21 +108,18 @@ public abstract class GameCharacter extends Entity {
         this.downKey = KeyEvent.VK_S;
         this.defaultAttackKey = KeyEvent.VK_SPACE;
         
-        this.isMoving = false;
-        this.isFacingLeft = false;
-        this.isFacingRight = true;
-        this.isFacingFront = false;
-        this.isFacingBack = false;
+        initializeKeyboardPressing();
         
         // Reset cool time
-        this.shootingCooldown = Core.getCooldown((int) this.currentStats.attackSpeed * 500);
+        this.shootingCooldown = Core.getCooldown((int) (BASE_SHOOTING_COOLDOWN
+            - this.currentStats.attackSpeed * SHOOTING_COOLDOWN_FACTOR));
         this.shootingCooldown.reset();
         this.destructionCooldown = Core.getCooldown(DESTRUCTION_COOLDOWN);
         
         this.projectileSpriteType = SpriteType.PlayerBullet;
         this.projectileWidth = 3;
         this.projectileHeight = 5;
-        this.projectileSpeed = -6;
+        this.projectileSpeed = 1;
     }
     
     /**
@@ -128,6 +139,8 @@ public abstract class GameCharacter extends Entity {
                 recalculateStats();
             }
         }
+        
+        this.isDie = this.currentHealthPoints <= 0;
     }
     
     /**
@@ -135,27 +148,30 @@ public abstract class GameCharacter extends Entity {
      * additive bonuses to the base stats.
      */
     protected void applyUserUpgrades() { // Test에서 오버라이딩 및 호출이 가능하도록 protected로 변경.
-        engine.UserStats stats = engine.Core.getUserStats();
+        UserStats stats = Core.getUserStats();
         if (stats == null) {
             return;
         }
         // 0: Health (20% per level)
         if (stats.getStatLevel(0) > 0) {
-            this.baseStats.maxHealthPoints = (int) (this.baseStats.maxHealthPoints * (1
-                + 0.2 * stats.getStatLevel(0)));
+            this.baseStats.maxHealthPoints = (int) (
+                this.baseStats.maxHealthPoints * (1 + 0.2 * stats.getStatLevel(0)));
             this.currentHealthPoints = this.baseStats.maxHealthPoints; // Reset current HP to new max
         }
+        
         // 1: Mana (20% per level)
         if (stats.getStatLevel(1) > 0) {
-            this.baseStats.maxManaPoints = (int) (this.baseStats.maxManaPoints * (1
-                + 0.2 * stats.getStatLevel(1)));
+            this.baseStats.maxManaPoints = (int) (
+                this.baseStats.maxManaPoints * (1 + 0.2 * stats.getStatLevel(1)));
             this.currentManaPoints = this.baseStats.maxManaPoints; // Reset current MP to new max
         }
+        
         // 2: Speed (10% per level)
         if (stats.getStatLevel(2) > 0) {
             this.baseStats.movementSpeed =
                 this.baseStats.movementSpeed * (1 + 0.1f * stats.getStatLevel(2));
         }
+        
         // 3: Damage (20% per level) - Applies to both Physical and Magical
         if (stats.getStatLevel(3) > 0) {
             double multiplier = 1 + 0.2 * stats.getStatLevel(3);
@@ -164,20 +180,24 @@ public abstract class GameCharacter extends Entity {
             this.baseStats.magicalDamage = (int) (Math.ceil(
                 this.baseStats.magicalDamage * multiplier));
         }
+        
         // 4: Attack Speed (10% per level)
         if (stats.getStatLevel(4) > 0) {
             this.baseStats.attackSpeed =
                 this.baseStats.attackSpeed * (1 + 0.1f * stats.getStatLevel(4));
         }
+        
         // 5: Attack Range (10% per level)
         if (stats.getStatLevel(5) > 0) {
             this.baseStats.attackRange =
                 this.baseStats.attackRange * (1 + 0.1f * stats.getStatLevel(5));
         }
+        
         // 6: Critical Chance (Add 5% per level)
         if (stats.getStatLevel(6) > 0) {
             this.baseStats.critChance += 0.05f * stats.getStatLevel(6);
         }
+        
         // 7: Defence (Add 2 per level)
         if (stats.getStatLevel(7) > 0) {
             this.baseStats.physicalDefense += 2 * stats.getStatLevel(7);
@@ -228,14 +248,9 @@ public abstract class GameCharacter extends Entity {
         this.defaultAttackKey = keys[4];
     }
     
-    public boolean handleMovement(InputManager inputManager, Screen screen, Set<Weapon> weapons,
+    public boolean handleKeyboard(InputManager inputManager, Screen screen, Set<Weapon> weapons,
         float deltaTime) {
-        this.isMoving = false;
-        
-        this.isFacingLeft = false;
-        this.isFacingRight = false;
-        this.isFacingBack = false;
-        this.isFacingFront = false;
+        initializeKeyboardPressing();
         
         float dx = 0;
         float dy = 0;
@@ -260,18 +275,16 @@ public abstract class GameCharacter extends Entity {
         if (dx != 0 || dy != 0) {
             this.isMoving = true;
             
-            // 대각선 이동 시 벡터 정규화 (속도 보정)
+            // 대각선 이동 시 속도 보정
             if (dx != 0 && dy != 0) {
                 dx *= DIAGONAL_CORRECTION_FACTOR;
                 dy *= DIAGONAL_CORRECTION_FACTOR;
             }
             
-            // 프레임 단위 이동 거리 계산
-            float speed = this.currentStats.movementSpeed * 150 * deltaTime;
+            float speed = this.currentStats.movementSpeed * MOVEMENT_SPEED_FACTOR * deltaTime;
             int movementX = Math.round(dx * speed);
             int movementY = Math.round(dy * speed);
             
-            // 속도가 낮아도 입력이 있으면 최소 1픽셀 이동 보장
             if (movementX == 0 && dx != 0) {
                 movementX = (dx > 0) ? 1 : -1;
             }
@@ -279,46 +292,65 @@ public abstract class GameCharacter extends Entity {
                 movementY = (dy > 0) ? 1 : -1;
             }
             
-            // X축 이동 및 경계 체크
             int nextX = this.positionX + movementX;
-            boolean isValidX = (nextX >= 1) && ((nextX + this.width) <= screen.getWidth() - 1);
+            boolean isValidX = (nextX >= 1)
+                && ((nextX + this.width) <= screen.getWidth() - 1);
             if (isValidX) {
                 this.positionX += movementX;
             }
             
-            // Y축 이동 및 경계 체크
             int nextY = this.positionY + movementY;
-            boolean isValidY = (nextY >= 1) && ((nextY + this.height) <= screen.getHeight() - 1);
+            boolean isValidY = (nextY >= GameScreen.SEPARATION_LINE_HEIGHT + 1)
+                && ((nextY + this.height) <= screen.getHeight() - 1);
             if (isValidY) {
                 this.positionY += movementY;
             }
         }
         
         if (inputManager.isKeyDown(this.defaultAttackKey)) {
-            return shoot(weapons);
+            this.isAttacking = true;
+            return launchBasicAttack(weapons);
         }
         return false;
     }
     
     /**
-     * Shoots a weapon.
+     * Launch a basic attack.
      *
      * @param weapons The set of weapons to add the new weapon to.
      * @return True if a weapon was fired, false if on cooldown.
      */
-    public boolean shoot(Set<Weapon> weapons) {
+    public boolean launchBasicAttack(Set<Weapon> weapons) {
         if (this.shootingCooldown.checkFinished()) {
             this.shootingCooldown.reset();
             
-            int launchX = this.positionX + this.width / 2 - (this.projectileWidth / 2);
-            int launchY = this.positionY;
+            int launchX;
+            int launchY;
             
-            Weapon weapon = WeaponPool.getWeapon(launchX, launchY,
-                this.projectileWidth, this.projectileHeight, this.projectileSpeed, this.team);
-            weapon.reset();
+            if (isFacingLeft) {
+                launchX = this.positionX - (this.projectileWidth / 2);
+                launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
+            } else if (isFacingRight) {
+                launchX = this.positionX + this.width + (this.projectileWidth / 2);
+                launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
+            } else if (isFacingFront) {
+                launchX = this.positionX + (this.width / 2);
+                launchY = this.positionY + this.height;
+            } else if (isFacingBack) {
+                launchX = this.positionX + (this.width / 2);
+                launchY = this.positionY - this.projectileHeight;
+            } else {
+                launchX = this.positionX + (this.width / 2);
+                launchY = this.positionY - this.projectileHeight;
+            }
             
+            Weapon weapon = WeaponPool.getWeapon(launchX, launchY, this.projectileSpeed,
+                this.projectileWidth, this.projectileHeight, this.team);
+            
+            weapon.setCharacter(this);
             weapon.setSpriteImage(this.projectileSpriteType);
-            weapon.setOwnerPlayerId(this.playerId);
+            weapon.setPlayerId(this.playerId);
+            weapon.setRange(this.currentStats.attackRange);
             weapons.add(weapon);
             return true;
         }
@@ -328,21 +360,45 @@ public abstract class GameCharacter extends Entity {
     /**
      * Switches the ship to its destroyed state.
      */
-    public final void destroy() {
+    public final void takeDamage(int damage) {
+        currentHealthPoints -= damage;
         this.destructionCooldown.reset();
     }
     
     /**
      * Checks if the ship is destroyed.
      *
-     * @return True if the ship is currently destroyed.
+     * @return True if the character is currently attacked.
      */
-    public final boolean isDestroyed() {
+    public final boolean isInvincible() {
         return !this.destructionCooldown.checkFinished();
+    }
+    
+    public void initializeKeyboardPressing() {
+        this.isAttacking = false;
+        this.isMoving = false;
+        this.isFacingLeft = false;
+        this.isFacingRight = false;
+        this.isFacingFront = false;
+        this.isFacingBack = false;
+    }
+    
+    public void setProjectile(int projectileWidth, int projectileHeight, int projectileSpeed) {
+        this.projectileWidth = projectileWidth;
+        this.projectileHeight = projectileHeight;
+        this.projectileSpeed = projectileSpeed;
+    }
+    
+    public void setCurrentHealthPoints(int playerHealth) {
+        this.currentHealthPoints = playerHealth;
     }
     
     public CharacterStats getBaseStats() {
         return this.baseStats;
+    }
+    
+    public CharacterStats getCurrentStats() {
+        return this.currentStats;
     }
     
     public ArrayList<Skill> getSkills() {
@@ -359,6 +415,18 @@ public abstract class GameCharacter extends Entity {
     
     public int getPlayerId() {
         return this.playerId;
+    }
+    
+    public boolean isInSelectScreen() {
+        return this.isInSelectScreen;
+    }
+    
+    public boolean isDie() {
+        return isDie;
+    }
+    
+    public boolean isAttacking() {
+        return this.isAttacking;
     }
     
     public boolean isMoving() {

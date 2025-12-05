@@ -7,7 +7,6 @@ import engine.utils.Cooldown;
 import entity.character.GameCharacter;
 import java.awt.Color;
 
-
 /**
  * Implements an enemy ship, to be destroyed by the player.
  *
@@ -177,7 +176,7 @@ public class EnemyShip extends Entity {
     public void update(GameCharacter player) {
         update();
         
-        if (player != null && !player.isDestroyed()) {
+        if (player != null && !player.isInvincible()) {
             moveTowards(player);
         }
         

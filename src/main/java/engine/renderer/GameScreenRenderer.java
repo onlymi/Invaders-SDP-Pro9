@@ -18,9 +18,12 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Logger;
 import screen.Screen;
 
@@ -32,13 +35,13 @@ public class GameScreenRenderer {
     
     // to query last picked item for toast
     private final ItemManager itemManager;
-    private final java.util.Set<String> warnedSpriteTypes = new java.util.HashSet<>();
+    private final Set<String> warnedSpriteTypes = new HashSet<>();
     
     /**
      * Font properties.
      */
     private static FontMetrics fontMetrics;
-    private final List<Explosion> explosions = new java.util.ArrayList<>();
+    private final List<Explosion> explosions = new ArrayList<>();
     
     public GameScreenRenderer(CommonRenderer commonRenderer, ItemManager itemManager) {
         LOGGER = Core.getLogger();
@@ -175,13 +178,11 @@ public class GameScreenRenderer {
      * @param screen Screen to draw on.
      * @param lives  Whether the game is in co-op mode.
      */
-    
-    
     public void drawLives(Graphics g, final Screen screen, final int lives, final boolean isCoop) {
         g.setFont(commonRenderer.getFontRegular());
         g.setColor(Color.WHITE);
         
-        Entity heart = new Entity(0, 0, 11 * 2, 10 * 2, Color.RED) {
+        Entity heart = new Entity(0, 0, 11, 10, Color.RED) {
             {
                 this.spriteType = AssetManager.SpriteType.Heart;
             }
@@ -191,15 +192,15 @@ public class GameScreenRenderer {
             g.drawString(Integer.toString(lives), 20, 25);
             for (int i = 0; i < lives; i++) {
                 if (i < 3) {
-                    entityRenderer.drawEntity(g, heart, 40 + 35 * i, 9);
+                    entityRenderer.drawEntityByScale(g, heart, 40 + 35 * i, 9, 2);
                 } else {
-                    entityRenderer.drawEntity(g, heart, 40 + 35 * (i - 3), 9 + 25);
+                    entityRenderer.drawEntityByScale(g, heart, 40 + 35 * (i - 3), 9 + 25, 2);
                 }
             }
         } else {
             g.drawString(Integer.toString(lives), 20, 40);
             for (int i = 0; i < lives; i++) {
-                entityRenderer.drawEntity(g, heart, 40 + 35 * i, 23);
+                entityRenderer.drawEntityByScale(g, heart, 40 + 35 * i, 23, 2);
             }
         }
     }
@@ -331,31 +332,12 @@ public class GameScreenRenderer {
         
         itemManager.getItemToDescribe().ifPresent(item -> {
             String name = item.getDisplayName();
-            String baseDesc = item.getData().getDescription();
             
-            ItemData data = item.getData();
-            int cost = 0;
+            String baseDesc = null;
             if (item.getData() != null) {
-                cost = item.getData().getCost();
+                baseDesc = item.getData().getDescription();
             }
-            
-            StringBuilder descBuilder = new StringBuilder();
-            if (baseDesc != null && !baseDesc.isEmpty()) {
-                descBuilder.append(baseDesc);
-            }
-            
-            if (cost == 0) {
-                if (descBuilder.length() > 0) {
-                    descBuilder.append("\n");
-                }
-                descBuilder.append("No cost required.");
-            } else {
-                if (descBuilder.length() > 0) {
-                    descBuilder.append("\n");
-                }
-                descBuilder.append("Cost: ").append(cost);
-            }
-            String desc = descBuilder.toString();
+            String desc = (baseDesc != null) ? baseDesc : "";
             
             Graphics2D g2d = (Graphics2D) g.create();
             try {
@@ -382,8 +364,10 @@ public class GameScreenRenderer {
                 int textH = nameLines.size() * titleFm.getHeight()
                     + 6
                     + descLines.size() * bodyFm.getHeight();
-                int textW = Math.max(measureMaxWidth(nameLines, titleFm),
-                    measureMaxWidth(descLines, bodyFm));
+                int textW = Math.max(
+                    measureMaxWidth(nameLines, titleFm),
+                    measureMaxWidth(descLines, bodyFm)
+                );
                 int boxW = Math.max(220, textW + padding * 2);
                 int boxH = textH + padding * 2;
                 
@@ -485,10 +469,11 @@ public class GameScreenRenderer {
         }
         return w;
     }
+    
     public void triggerEffect(int x, int y, engine.AssetManager.SpriteType sprite, int duration) {
         explosions.add(new Explosion(x, y, sprite, duration));
     }
-
+    
     public void drawActiveItemSlots(Graphics g, final Screen screen, final GameState gameState) {
         if (gameState == null) {
             return;
@@ -533,7 +518,7 @@ public class GameScreenRenderer {
         g2d.setStroke(new BasicStroke(1.5f));
         g2d.drawRoundRect(x, y, size, size, 8, 8);
         
-        // guide label for press key
+        // label for press key
         g2d.setFont(commonRenderer.getFontRegular());
         g2d.setColor(Color.WHITE);
         String keyLabel = (playerIndex == 0) ? "Q" : "/";
@@ -648,5 +633,9 @@ public class GameScreenRenderer {
             case 4 -> Color.ORANGE;
             default -> Color.WHITE;
         };
+    }
+    
+    public void triggerCustomExplosion(int x, int y, Color color) {
+        explosions.add(new Explosion(x, y, color));
     }
 }
