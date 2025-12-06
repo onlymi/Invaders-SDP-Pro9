@@ -377,7 +377,7 @@ public class BossShip extends EnemyShip {
             laser.setRotation(Math.toDegrees(angle) + 90 + 180 + angleOffsetDegrees);
             
             // 공격력 설정
-            laser.setDamage(1);
+            laser.setDamage(50);
             
             this.bossProjectiles.add(laser);
             trackList.add(laser);
