@@ -4,6 +4,7 @@ import engine.AssetManager.SpriteType;
 import engine.utils.Cooldown;
 import entity.EnemyShip;
 import entity.EnemyTypeA;
+import entity.EnemyTypeB;
 import entity.character.GameCharacter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -40,6 +41,13 @@ public class EnemyManager {
         if (gameScreen.getGameState().areEnemiesFrozen()) {
             return;
         }
+        
+        double enemySpeedMultiplier = 1.0;
+        GameState state = gameScreen.getGameState();
+        if (state != null) {
+            enemySpeedMultiplier = state.getEnemySpeedMultiplier();
+        }
+        
         // 스폰 로직
         if (this.spawnCooldown.checkFinished()) {
             spawnEnemy();
@@ -51,11 +59,17 @@ public class EnemyManager {
             EnemyShip enemy = iterator.next();
             // 가장 가까운 플레이어 찾기
             GameCharacter target = findTargetPlayer(enemy);
+            
+            // 타겟 정보를 넘겨주며 적 업데이트
+            enemy.update(target, enemySpeedMultiplier);
             if (enemy instanceof EnemyTypeA) {
                 ((EnemyTypeA) enemy).update(target, this.enemies);
                 ((EnemyTypeA) enemy).tryAttack(target, gameScreen.getWeapons());
+            } else if (enemy instanceof EnemyTypeB) {
+                ((EnemyTypeB) enemy).update(target, this.enemies);
+                ((EnemyTypeB) enemy).tryAttack(target, gameScreen.getWeapons());
             } else {
-                enemy.update(target);
+                enemy.update(state);
             }
             
             // 화면 아래로 나가면 삭제
@@ -102,12 +116,12 @@ public class EnemyManager {
         EnemyShip enemy;
         int type = random.nextInt(3);
         GameState gameState = gameScreen.getGameState();
-        switch (type) { // TODO: enemy 타입 만든 후 수정 예정
+        switch (type) {
             case 0:
                 enemy = new EnemyTypeA(x, y, SpriteType.EnemyA_Move);
                 break;
             case 1:
-                enemy = new EnemyShip(x, y, SpriteType.EnemyB_Move);
+                enemy = new EnemyTypeB(x, y, SpriteType.EnemyB_Move);
                 break;
             case 2:
             default:

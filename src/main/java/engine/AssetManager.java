@@ -163,7 +163,10 @@ public final class AssetManager {
         CharacterHealerWalk2(SourceCategory.CHARACTER, "healer/healer_basic.png",
             characterWidth, characterHeight),
         
-        BossMainBody(SourceCategory.ENEMY, "boss_main.png", 240, 160),
+        BossMainBody(SourceCategory.ENEMY, "boss_main.png", 360, 240),
+        
+        // pet_gun bullet
+        PetGunProjectile(SourceCategory.WEAPON, "pet/pet_gun_bullet.png", 16, 16),
         
         /**
          * Player ship.
@@ -209,7 +212,7 @@ public final class AssetManager {
          * Enemy B.
          */
         EnemyB_Move(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
-        EnemyB_Attack(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
+        EnemyB_Weapon(SourceCategory.WEAPON, "enemy/typeB_weapon.png", 24, 10),
         /**
          * Enemy C.
          */
@@ -232,16 +235,16 @@ public final class AssetManager {
         /**
          * Item Graphics Temp.
          */
-        ItemScore(SourceCategory.ITEM, 5, 5),
-        ItemCoin(SourceCategory.ITEM, 5, 5),
-        ItemHeal(SourceCategory.ITEM, 5, 5),
-        ItemScoreBooster(SourceCategory.ITEM, 5, 5),
-        ItemMoveSpeedUp(SourceCategory.ITEM, 5, 5),
-        ItemTimeFreeze(SourceCategory.ITEM, 5, 5),
-        ItemTimeSlow(SourceCategory.ITEM, 5, 5),
-        ItemDash(SourceCategory.ITEM, 5, 5),
-        ItemPetGun(SourceCategory.ITEM, 5, 5),
-        ItemShield(SourceCategory.ITEM, 5, 5);
+        ItemScore(SourceCategory.ITEM_IMAGE, "SCORE.png", 32, 32),
+        ItemCoin(SourceCategory.ITEM_IMAGE, "COIN.png", 32, 32),
+        ItemHeal(SourceCategory.ITEM_IMAGE, "HEAL.png", 32, 32),
+        ItemScoreBooster(SourceCategory.ITEM_IMAGE, "SCOREBOOST.png", 32, 32),
+        ItemMoveSpeedUp(SourceCategory.ITEM_IMAGE, "MOVE_SPEED_UP.png", 32, 32),
+        ItemTimeFreeze(SourceCategory.ITEM_IMAGE, "TIME_FREEZE.png", 32, 32),
+        ItemTimeSlow(SourceCategory.ITEM_IMAGE, "TIME_SLOW.png", 32, 32),
+        ItemDash(SourceCategory.ITEM_IMAGE, "DASH.png", 32, 32),
+        ItemShield(SourceCategory.ITEM_IMAGE, "SHIELD.png", 32, 32),
+        ItemPetGun(SourceCategory.ITEM_IMAGE, "PET_GUN.png", 32, 32);
         
         // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;
@@ -351,7 +354,7 @@ public final class AssetManager {
             soundMap.put("win", loadSound("sound/win.wav"));
             soundMap.put("lose", loadSound("sound/lose.wav"));
             soundMap.put("enemy_A_attack_sound", loadSound("sound/swing_weapon.wav"));
-            soundMap.put("laser_big", loadSound("sound/shoot_enemies.wav"));
+            soundMap.put("laser_big", loadSound("sound/laser.wav"));
             soundMap.put("boss_hit", loadSound("sound/invader_killed.wav"));
             
             LOGGER.info("Finished loading the sounds.");

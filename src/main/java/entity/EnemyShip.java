@@ -94,7 +94,6 @@ public class EnemyShip extends Entity {
                 this.coinValue = A_TYPE_COINS;
                 break;
             case EnemyB_Move:
-            case EnemyB_Attack:
                 this.pointValue = B_TYPE_POINTS;
                 this.coinValue = B_TYPE_COINS;
                 break;
@@ -173,22 +172,24 @@ public class EnemyShip extends Entity {
         update();
     }
     
-    public void update(GameCharacter player) {
+    public void update(GameCharacter player, double speedMultiplier) {
+        if (speedMultiplier < 0.0) {
+            speedMultiplier = 0.0;
+        }
+        
         update();
         
         if (player != null && !player.isInvincible()) {
-            moveTowards(player);
+            moveTowards(player, speedMultiplier);
         }
         
         long currentTime = System.currentTimeMillis();
         double floatingOffset =
             Math.sin(currentTime * FLOATING_SPEED + this.floatingPhase) * FLOATING_AMPLITUDE;
         
-        // 넉벡 적용
         this.preciseX += knockbackX;
         this.preciseY += knockbackY;
         
-        // 넉벡 감쇠
         this.knockbackX *= knockbackDecay;
         this.knockbackY *= knockbackDecay;
         if (Math.abs(this.knockbackX) < 0.1) {
@@ -199,6 +200,32 @@ public class EnemyShip extends Entity {
         }
         this.positionX = (int) preciseX;
         this.positionY = (int) (preciseY + floatingOffset);
+    }
+    
+    private void moveTowards(GameCharacter player, double speedMultiplier) {
+        double targetX = player.positionX;
+        double targetY = player.positionY;
+        
+        double dirX = targetX - this.positionX;
+        double dirY = targetY - this.positionY;
+        
+        if (dirX < 0) {
+            this.isFacingRight = false;
+        } else {
+            this.isFacingRight = true;
+        }
+        
+        double distance = Math.sqrt(dirX * dirX + dirY * dirY);
+        
+        if (distance > 0) {
+            dirX /= distance;
+            dirY /= distance;
+            
+            double speed = 1.0 * speedMultiplier;
+            
+            this.preciseX += dirX * speed;
+            this.preciseY += dirY * speed;
+        }
     }
     
     private void moveTowards(GameCharacter player) {
@@ -259,22 +286,6 @@ public class EnemyShip extends Entity {
     public boolean isHitRecently() {
         // 0.1초 내 피격되었는지 확인
         return (System.currentTimeMillis() - this.lastHitTime) < 500;
-    }
-    
-    private void changeAnimationSprite() {
-        if (spriteType == SpriteType.EnemyA_Move) {
-            spriteType = SpriteType.EnemyA_Attack;
-        } else if (spriteType == SpriteType.EnemyA_Attack) {
-            spriteType = SpriteType.EnemyA_Move;
-        } else if (spriteType == SpriteType.EnemyB_Move) {
-            spriteType = SpriteType.EnemyB_Attack;
-        } else if (spriteType == SpriteType.EnemyB_Attack) {
-            spriteType = SpriteType.EnemyB_Move;
-        } else if (spriteType == SpriteType.EnemyC_move) {
-            spriteType = SpriteType.EnemyC_attack;
-        } else if (spriteType == SpriteType.EnemyC_attack) {
-            spriteType = SpriteType.EnemyC_move;
-        }
     }
     
     public final int getDamage(int dmg) {

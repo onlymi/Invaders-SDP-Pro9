@@ -11,7 +11,7 @@ public enum SourceCategory {
     BOSS("graphics/boss_graphics"),
     BULLET("graphics/bullet_graphics"),
     MUTUAL("graphics/mutual_graphics"),
-    ITEM("graphics/item_graphics");
+    ITEM_IMAGE("graphics/item/");
     
     private final String filePath;
     

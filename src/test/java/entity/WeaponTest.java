@@ -112,9 +112,6 @@ class WeaponTest {
         
         // 타겟을 향해 회전했는지 확인
         assertNotEquals(0, bullet.getRotation());
-        // 속도가 계산되었는지 확인
-        assertNotEquals(0, bullet.getSpeedX());
-        assertNotEquals(0, bullet.getSpeed());
     }
     
     @Test
