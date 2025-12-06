@@ -226,13 +226,17 @@ public class GameScreen extends Screen {
         if (state.isCoop()) {
             this.characters[0] = CharacterSpawner.createCharacter(this.characterTypeP1,
                 startX - gapBetweenCharacters, startY, Entity.Team.PLAYER1, 1);
+            this.characters[0].setGameState(this.state);
+            
             this.characters[1] = CharacterSpawner.createCharacter(this.characterTypeP2,
                 startX + gapBetweenCharacters, startY, Entity.Team.PLAYER2, 2);
-            // P2 Controls
+            this.characters[1].setGameState(this.state);
+            
             this.characters[1].setControlKeys(Core.getInputManager().getPlayer2Keys());
         } else {
             this.characters[0] = CharacterSpawner.createCharacter(this.characterTypeP1,
                 startX, startY, Entity.Team.PLAYER1, 1);
+            this.characters[0].setGameState(this.state);
             this.characters[0].setControlKeys(Core.getInputManager().getPlayer1Keys());
             this.characters[1] = null;
         }
@@ -821,6 +825,10 @@ public class GameScreen extends Screen {
                             recyclable.add(weapon);
                         }
                         pet.takeDamage(1);
+                        
+                        this.LOGGER.info("[GameScreen] Pet hit by enemy weapon. owner="
+                            + pet.getOwnerPlayerId());
+                        
                         break;
                     }
                 }
@@ -920,36 +928,56 @@ public class GameScreen extends Screen {
                 boolean isLaser = (bossWeapon.getSpriteType() == SpriteType.BigLaserBeam);
                 
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
-                    GameCharacter character = this.characters[p];
-                    if (character != null && character.getCurrentHealthPoints() > 0
-                        && checkCollision(bossWeapon, character)) {
-                        
-                        if (character.isInvincible()) continue;
-                        if (bossWeapon.getDuration() != -1 && bossWeapon.isHitPlayer(p)) continue;
-                        
-                        // 데미지 처리
-                        character.takeDamage(bossWeapon.getDamage());
-                        if (character.getCurrentHealthPoints() <= 0) {
-                            this.state.decLife(p);
-                        }
-                        
-                        // 이펙트 및 사운드
-                        this.drawManager.getGameScreenRenderer().triggerExplosion(
-                            character.getPositionX(), character.getPositionY(), false, false);
-                        SoundManager.playOnce("explosion");
-                        
-                        // 레이저가 아니면 피격 후 제거 대상에 추가 (보스 리스트에서 제거)
-                        // 단, 보스 무기 리스트는 BossShip 내부에서 관리되므로 여기서는 상태만 변경하거나
-                        // BossShip에 제거 요청을 해야 하지만, 편의상 '지속형이 아닌 경우' 제거하도록 구현 필요.
-                        // 레이저(지속형)는 hitPlayer 기록만 남김.
-                        if (!isLaser && bossWeapon.getDuration() == -1) {
-                            // 일반 탄막: 화면 밖으로 나가거나 충돌 시 BossShip.cleanUp() 등에서 처리되도록 유도
-                            // 여기서는 BossShip의 리스트를 직접 건드리기 어려우므로
-                            // Weapon.isExpired()를 true로 만들거나 duration을 0으로 설정하여
-                            // BossShip.updateProjectiles() 내부에서 삭제되게 할 수 있음.
-                            bossWeapon.setDuration(0); // 즉시 만료 처리
-                        } else {
-                            bossWeapon.addHitPlayer(p);
+                    GameCharacter player = this.characters[p];
+                    if (player == null || player.getCurrentHealthPoints() <= 0 || player.isInvincible()) {
+                        continue;
+                    }
+                    
+                    for (EnemyShip enemy : this.enemyManager.getEnemies()) {
+                        if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
+                            boolean hasShieldEffect =
+                                state != null && state.hasEffect(
+                                    p,
+                                    engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
+                                );
+                            
+                            if (hasShieldEffect) {
+                                state.clearEffect(
+                                    p,
+                                    engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
+                                );
+                                
+                                double dx = enemy.getPositionX() - player.getPositionX();
+                                double dy = enemy.getPositionY() - player.getPositionY();
+                                double dist = Math.sqrt(dx * dx + dy * dy);
+                                
+                                if (dist > 0) {
+                                    enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                                }
+                                
+                                this.LOGGER.info(
+                                    "[GameScreen] Shield consumed and knocked back enemy for player "
+                                        + (p + 1));
+                                continue;
+                            }
+                            
+                            player.takeDamage(5);
+                            
+                            // [FIXED] Decrement life on collision death
+                            if (player.getCurrentHealthPoints() <= 0) {
+                                this.state.decLife(p);
+                            }
+                            
+                            double dx = enemy.getPositionX() - player.getPositionX();
+                            double dy = enemy.getPositionY() - player.getPositionY();
+                            double dist = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (dist > 0) {
+                                enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                            }
+                            
+                            this.LOGGER.info(
+                                "Collision! Player " + (p + 1) + " hit by enemy body.");
                         }
                     }
                 }
@@ -1173,8 +1201,8 @@ public class GameScreen extends Screen {
     }
     
     private void spawnPetForPlayer(int playerId, GameCharacter owner) {
-        int startX = owner.getPositionX() + owner.getWidth() + 10;
-        int startY = owner.getPositionY() - 10;
+        int startX = owner.getPositionX() + owner.getWidth() / 2;
+        int startY = owner.getPositionY() + owner.getHeight() / 2;
         
         int petWidth = 16;
         int petHeight = 16;
@@ -1182,6 +1210,23 @@ public class GameScreen extends Screen {
         
         long lifetimeMs = 6000L;
         long shotIntervalMs = 1000L;
+        
+        int dirX = 0;
+        int dirY = -1;
+        
+        if (owner.isFacingLeft()) {
+            dirX = -1;
+            dirY = 0;
+        } else if (owner.isFacingRight()) {
+            dirX = 1;
+            dirY = 0;
+        } else if (owner.isFacingFront()) {
+            dirX = 0;
+            dirY = 1;
+        } else if (owner.isFacingBack()) {
+            dirX = 0;
+            dirY = -1;
+        }
         
         Pet pet = new Pet(
             startX,
@@ -1193,7 +1238,9 @@ public class GameScreen extends Screen {
             Pet.PetKind.GUN,
             this.state,
             lifetimeMs,
-            shotIntervalMs
+            shotIntervalMs,
+            dirX,
+            dirY
         );
         
         pets.add(pet);

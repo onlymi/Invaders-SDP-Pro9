@@ -9,9 +9,7 @@ public class ItemEffect {
     private static final Logger logger = Core.getLogger();
     
     public enum ItemEffectType {
-        TRIPLESHOT,
         SCOREBOOST,
-        BULLETSPEEDUP,
         MOVE_SPEED_UP,
         ENEMY_HP_DOWN,
         TIME_SLOW,
@@ -56,23 +54,24 @@ public class ItemEffect {
             return;
         }
         final int beforeLife = gameState.getLivesRemaining();
+        final int playerIndex = getPlayerIndex(playerId);
         
         // if 2p mode
         if (gameState.isCoop()) {
             if (gameState.getTeamLives() + lifeAmount > gameState.getTeamLivesCap()) {
                 // if adding life exceeds max, add score and coin instead
-                gameState.addCoins(getPlayerIndex(playerId), lifeAmount * 20);
-                gameState.addScore(getPlayerIndex(playerId), lifeAmount * 20);
+                gameState.addCoins(playerIndex, lifeAmount * 20);
+                gameState.addScore(playerIndex, lifeAmount * 20);
             } else {
-                gameState.addLife(getPlayerIndex(playerId), lifeAmount);
+                gameState.addLife(playerIndex, lifeAmount);
             }
         } else { // 1p mode
             if (gameState.get1PlayerLives() + lifeAmount > 3) {
                 // if adding life exceeds max, add score and coin instead
-                gameState.addScore(getPlayerIndex(playerId), lifeAmount * 20);
-                gameState.addCoins(getPlayerIndex(playerId), lifeAmount * 20);
+                gameState.addScore(playerIndex, lifeAmount * 20);
+                gameState.addCoins(playerIndex, lifeAmount * 20);
             } else {
-                gameState.addLife(getPlayerIndex(playerId), lifeAmount);
+                gameState.addLife(playerIndex, lifeAmount);
             }
         }
         
@@ -105,16 +104,20 @@ public class ItemEffect {
     /**========================= DURATION ITEM =================================**/
     /**
      * Applies the ScoreBoost timed effect to the specified player.
+     *
+     * @param gameState   current game state instance.
+     * @param playerIndex index of the player to apply the effect to (0-based).
+     * @param effectValue effect value (e.g., multiply score by this).
+     * @param duration    duration in seconds.
      */
-    public static boolean applyScoreBoost(final GameState gameState, final int playerId,
+    public static boolean applyScoreBoost(final GameState gameState, final int playerIndex,
         int effectValue, int duration) {
         if (gameState == null) {
             return false;
         }
         
-        final int playerIndex = getPlayerIndex(playerId);
-        
         gameState.addEffect(playerIndex, ItemEffectType.SCOREBOOST, effectValue, duration);
+        int playerId = playerIndex + 1;
         logger.info("[ItemEffect - SCOREBOOST] Player " + playerId + " applied for " + duration
             + "s. Score gain will be multiplied by " + effectValue + ".");
         
@@ -123,16 +126,20 @@ public class ItemEffect {
     
     /**
      * Applies the MoveSpeedUp timed effect to the specified player.
+     *
+     * @param gameState   current game state instance.
+     * @param playerIndex index of the player to apply the effect to (0-based).
+     * @param effectValue effect value (e.g., speed multiplier or delta).
+     * @param duration    duration in seconds.
      */
-    public static boolean applyMoveSpeedUp(final GameState gameState, final int playerId,
+    public static boolean applyMoveSpeedUp(final GameState gameState, final int playerIndex,
         int effectValue, int duration) {
         if (gameState == null) {
             return false;
         }
         
-        int playerIndex = getPlayerIndex(playerId);
-        
         gameState.addEffect(playerIndex, ItemEffectType.MOVE_SPEED_UP, effectValue, duration);
+        int playerId = playerIndex + 1;
         logger.info(
             "[ItemEffect - MOVE_SPEED_UP] Player " + playerId + " applied for " + duration + "s.");
         
@@ -144,7 +151,7 @@ public class ItemEffect {
      */
     public static boolean applyTimeFreeze(
         GameState gameState,
-        int playerId,
+        int playerIndex,
         int value,
         int duration
     ) {
@@ -152,13 +159,12 @@ public class ItemEffect {
             return false;
         }
         
-        // Duration is given in seconds
         int safeDuration = Math.max(1, duration);
         long durationMillis = safeDuration * 1000L;
         
-        // Apply freeze to the whole enemy system
         gameState.applyGlobalFreeze(durationMillis);
         
+        int playerId = playerIndex + 1;
         logger.info("[ItemEffect - TIME_FREEZE] Player " + playerId + " froze enemies for "
             + safeDuration + "s.");
         
@@ -171,7 +177,7 @@ public class ItemEffect {
      */
     public static boolean applyTimeSlow(
         GameState gameState,
-        int playerId,
+        int playerIndex,
         int value,
         int duration
     ) {
@@ -182,8 +188,6 @@ public class ItemEffect {
         int safeDuration = Math.max(1, duration);
         int slowPercent = Math.max(0, Math.min(100, value));
         
-        int playerIndex = (playerId == 2) ? 1 : 0;
-        
         gameState.addEffect(
             playerIndex,
             ItemEffectType.TIME_SLOW,
@@ -191,6 +195,7 @@ public class ItemEffect {
             safeDuration
         );
         
+        int playerId = playerIndex + 1;
         logger.info("[ItemEffect - TIME_SLOW] Player " + playerId
             + " slowed enemies by " + slowPercent + "% for " + safeDuration + "s.");
         
@@ -199,7 +204,7 @@ public class ItemEffect {
     
     public static boolean applyDash(
         final GameState gameState,
-        final int playerId,
+        final int playerIndex,
         final int speedMultiplier,
         final int durationSeconds
     ) {
@@ -209,9 +214,6 @@ public class ItemEffect {
         
         int safeDuration = Math.max(1, durationSeconds);
         
-        int playerIndex = getPlayerIndex(playerId);
-        
-        // Effect Value (2배, 3배)
         gameState.addEffect(
             playerIndex,
             ItemEffectType.DASH,
@@ -219,9 +221,35 @@ public class ItemEffect {
             safeDuration
         );
         
+        int playerId = playerIndex + 1;
         logger.info("[ItemEffect - DASH] Player " + playerId
             + " dash x" + speedMultiplier
             + " for " + safeDuration + "s.");
+        
+        return true;
+    }
+    
+    public static boolean applyPetSupport(
+        final GameState gameState,
+        final int playerId,
+        final int duration
+    ) {
+        if (gameState == null) {
+            return false;
+        }
+        
+        int safeDuration = Math.max(1, duration);
+        int playerIndex = getPlayerIndex(playerId);
+        
+        gameState.addEffect(
+            playerIndex,
+            ItemEffectType.PET_SUPPORT,
+            null,
+            safeDuration
+        );
+        
+        logger.info("[ItemEffect - PET_SUPPORT] Player " + playerId
+            + " spawned pet support for " + safeDuration + "s.");
         
         return true;
     }
