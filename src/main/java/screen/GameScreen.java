@@ -209,7 +209,7 @@ public class GameScreen extends Screen {
         
         // --- Character Initialization & Control Setup ---
         this.enemyManager = new EnemyManager(this);
-        if (this.level == 1) {
+        if (this.level == 6) {
             int bossWidth = 480;
             this.bossShip = new BossShip(this.width / 2 - bossWidth / 2, 40);
             this.LOGGER.info("Boss Stage Initialized!");
@@ -971,6 +971,41 @@ public class GameScreen extends Screen {
         // 1. Create a basic rectangle (based on current position and size)
         Rectangle r1 = new Rectangle(a.getPositionX(), a.getPositionY(),
             a.getWidth(), a.getHeight());
+        if (b instanceof BossShip boss) {
+            for (java.awt.Rectangle r2 : boss.getHitboxRectangles()) {
+                
+                // BossShip의 개별 히트박스와 무기(a)의 충돌 검사
+                if (a.getRotation() != 0) {
+                    // 무기(a)가 회전된 경우: Area 사용
+                    Area areaA = new Area(r1);
+                    AffineTransform atA = new AffineTransform();
+                    
+                    double anchorX = r1.getCenterX();
+                    double anchorY = r1.getCenterY();
+                    
+                    if (a.getSpriteType() == SpriteType.BigLaserBeam) {
+                        anchorY = r1.getY();
+                    }
+                    
+                    atA.rotate(Math.toRadians(a.getRotation()), anchorX, anchorY);
+                    areaA.transform(atA);
+                    
+                    Area areaB = new Area(r2); // BossShip의 히트박스는 회전하지 않음
+                    areaA.intersect(areaB);
+                    if (!areaA.isEmpty()) {
+                        return true; // 충돌 발견 시 즉시 반환
+                    }
+                } else {
+                    // 무기(a)가 회전되지 않은 경우: 단순 intersects 사용
+                    if (r1.intersects(r2)) {
+                        return true; // 충돌 발견 시 즉시 반환
+                    }
+                }
+            }
+            // 모든 히트박스와 충돌하지 않은 경우
+            return false;
+        }
+        
         Rectangle r2 = new Rectangle(b.getPositionX(), b.getPositionY(),
             b.getWidth(), b.getHeight());
         

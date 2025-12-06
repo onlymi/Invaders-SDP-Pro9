@@ -48,6 +48,10 @@ public class BossShip extends EnemyShip {
     private static final int BOSS_BASE_SPEED_X = 2;
     private static final int TOP_BOUNDARY = 68;
     private static final int BOSS_MAX_Y = 340;
+    private static final int VISUAL_WIDTH = 360;
+    private static final int VISUAL_HEIGHT = 240;
+    private static final int EFFECTIVE_HITBOX_WIDTH = 240;
+    private static final int X_OFFSET_COMPENSATION = (VISUAL_WIDTH - EFFECTIVE_HITBOX_WIDTH) / 2;
     
     private int currentSpeedX;
     boolean movingRight;
@@ -88,8 +92,8 @@ public class BossShip extends EnemyShip {
         // 480x320 사이즈의 보스 스프라이트 사용
         super(positionX, positionY, SpriteType.BossMainBody);
         
-        this.width = 480;
-        this.height = 320;
+        this.width = VISUAL_WIDTH;
+        this.height = VISUAL_HEIGHT;
         
         this.health = BOSS_INITIAL_HEALTH;
         this.initialHealth = BOSS_INITIAL_HEALTH;
@@ -120,7 +124,40 @@ public class BossShip extends EnemyShip {
         // Initialize Boss-Exclusive Projectile List
         this.bossProjectiles = new ArrayList<>();
     }
-    
+    public List<java.awt.Rectangle> getHitboxRectangles() {
+        List<java.awt.Rectangle> hitboxes = new ArrayList<>();
+        
+        // 보스 너비 360, 높이 240 기준 (보스의 positionX, positionY는 좌상단)
+        
+        // 히트박스 1: 메인 스컬 몸통 (뿔 제외, 주로 공격이 집중되는 중앙 하단 영역)
+        int body_offset_x = 120;
+        int body_offset_y = 50;
+        int body_width = 120;
+        int body_height = 190;
+        
+        hitboxes.add(new java.awt.Rectangle(
+            this.positionX + body_offset_x,
+            this.positionY + body_offset_y,
+            body_width,
+            body_height
+        ));
+        
+        // 히트박스 2: 뿔 부분 (상단 얇은 영역)
+        // 뿔의 끝까지 포함하여 상단 영역을 정의합니다.
+        int horn_offset_x = 20;
+        int horn_offset_y = 0;
+        int horn_width = 320;
+        int horn_height = 120;
+        
+        hitboxes.add(new java.awt.Rectangle(
+            this.positionX + horn_offset_x,
+            this.positionY + horn_offset_y,
+            horn_width,
+            horn_height
+        ));
+        
+        return hitboxes;
+    }
     /**
      * Updates attributes for boss movement and phases.
      */
