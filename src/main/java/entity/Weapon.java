@@ -5,6 +5,8 @@ import engine.Core;
 import engine.utils.Cooldown;
 import entity.character.GameCharacter;
 import java.awt.Color;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Implements a bullet that moves vertically up or down.
@@ -34,6 +36,13 @@ public class Weapon extends Entity {
     private boolean isHoming = false;
     private static final double HOMING_AGILITY = 4.0;
     private Cooldown homingTimer;
+    private Set<Integer> hitPlayers = new HashSet<>();
+    
+    /**
+     * Variable for melee weapons that disappear after a certain period of time.
+     */
+    private long createTime;
+    private int duration = -1; // -1이면 무기가 사라지지 않음
     
     /**
      * 2P mode: id number to specifying who fired the bullet - 0 = enemy, 1 = P1, 2 = P2.
@@ -65,6 +74,7 @@ public class Weapon extends Entity {
         this.speed = speed;
         this.velocityX = 0;
         this.velocityY = speed;
+        this.createTime = System.currentTimeMillis();
     }
     
     /**
@@ -82,6 +92,7 @@ public class Weapon extends Entity {
         this.damage = damage;
         this.velocityX = 0;
         this.velocityY = speed;
+        this.createTime = System.currentTimeMillis();
         setSpriteMap();
     }
     
@@ -147,7 +158,9 @@ public class Weapon extends Entity {
         
         if (this.isBigLaser) {
             this.spriteType = SpriteType.BigLaserBeam;
-        } else if (this.speed == 0) {
+        } else if (this.speed < 0) {
+            this.spriteType = SpriteType.PlayerBullet; // player bullet fired, team remains NEUTRAL
+        } else {
             this.spriteType = SpriteType.EnemyBullet; // enemy fired bullet
         }
     }
@@ -310,6 +323,7 @@ public class Weapon extends Entity {
         this.velocityX = 0;
     }
     
+    
     public void setHoming(GameCharacter target) {
         this.target = target;
         this.isHoming = true;
@@ -322,5 +336,44 @@ public class Weapon extends Entity {
         this.isHoming = false;
         this.rotation = 0;
         this.homingTimer = null;
+    }
+    
+    public void setDuration(final int duration) {
+        this.duration = duration;
+    }
+    
+    public int getDuration() {
+        return this.duration;
+    }
+    
+    public boolean isExpired() {
+        if (duration == -1) {
+            return false;
+        }
+        return System.currentTimeMillis() - createTime > duration;
+    }
+    
+    public boolean isHitPlayer(int playerId) {
+        return hitPlayers.contains(playerId);
+    }
+    
+    public void addHitPlayer(int playerId) {
+        hitPlayers.add(playerId);
+    }
+    
+    public void reset() {
+        this.createTime = System.currentTimeMillis(); // 생성 시간 초기화
+        this.duration = -1;
+        this.isHoming = false;
+        this.target = null;
+        this.rotation = 0;
+        this.speedX = 0;
+        this.damage = 0;
+        this.ownerPlayerId = 0;
+        if (this.hitPlayers != null) {
+            this.hitPlayers.clear();
+        }
+        this.isBossBullet = false;
+        this.isBigLaser = false;
     }
 }

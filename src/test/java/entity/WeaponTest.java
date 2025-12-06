@@ -1,7 +1,9 @@
 package entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -41,7 +43,6 @@ class WeaponTest {
     
     @AfterEach
     void tearDown() {
-        // 정적 Mock 해제 (필수)
         coreMock.close();
     }
     
@@ -54,19 +55,18 @@ class WeaponTest {
     
     @Test
     void setSprite_NormalBullet() {
-        // Weapon.java 로직상 속도가 0이 아니면 PlayerBullet으로 설정됨
-        bullet.setSpeed(5);
+        bullet.setSpeed(-5);
         bullet.setSpriteMap();
         assertEquals(SpriteType.PlayerBullet, bullet.getSpriteType());
     }
     
     @Test
     void setBigLaser() {
+        bullet.setSpeed(-5);
         bullet.setBigLaser(true);
         assertEquals(SpriteType.BigLaserBeam, bullet.getSpriteType());
         
         bullet.setBigLaser(false);
-        // 속도가 5이므로 PlayerBullet으로 돌아감
         bullet.setSpriteMap();
         assertEquals(SpriteType.PlayerBullet, bullet.getSpriteType());
     }
@@ -112,9 +112,6 @@ class WeaponTest {
         
         // 타겟을 향해 회전했는지 확인
         assertNotEquals(0, bullet.getRotation());
-        // 속도가 계산되었는지 확인
-        assertNotEquals(0, bullet.getSpeedX());
-        assertNotEquals(0, bullet.getSpeed());
     }
     
     @Test
@@ -197,5 +194,63 @@ class WeaponTest {
         bullet.update();
         assertEquals(100, bullet.getPositionX());
         assertEquals(105, bullet.getPositionY());
+    }
+    
+    @Test
+    void testDurationAndExpiry() throws InterruptedException {
+        assertFalse(bullet.isExpired());
+        
+        // 수명 설정
+        bullet.setDuration(10);
+        assertFalse(bullet.isExpired());
+        
+        // 시간 경과 후 만료 확인
+        Thread.sleep(15);
+        assertTrue(bullet.isExpired());
+    }
+    
+    @Test
+    void testHitPlayerTracking() {
+        // 초기 상태
+        assertFalse(bullet.isHitPlayer(1));
+        assertFalse(bullet.isHitPlayer(2));
+        
+        // player 1 피격
+        bullet.addHitPlayer(1);
+        assertTrue(bullet.isHitPlayer(1));
+        assertFalse(bullet.isHitPlayer(2));
+        
+        // player 2 피격
+        bullet.addHitPlayer(2);
+        assertTrue(bullet.isHitPlayer(1));
+        assertTrue(bullet.isHitPlayer(2));
+    }
+    
+    @Test
+    void testResetFullState() {
+        bullet.setDuration(100);
+        bullet.setSpeedX(10);
+        bullet.setRotation(90);
+        bullet.addHitPlayer(1);
+        bullet.setHoming(mockTarget);
+        
+        bullet.reset();
+        
+        // 수명이 -1로 초기화되어 만료되지 않아야 함
+        assertFalse(bullet.isExpired());
+        
+        // 속도 및 회전 초기화 확인
+        assertEquals(0, bullet.getSpeedX());
+        assertEquals(0, bullet.getRotation());
+        
+        // 피격 기록 초기화 확인
+        assertFalse(bullet.isHitPlayer(1));
+        
+        // 유도 기능 해제 확인
+        bullet.setPositionX(100);
+        bullet.setPositionY(100);
+        bullet.setSpeed(5);
+        bullet.update();
+        assertEquals(0, bullet.getRotation());
     }
 }

@@ -189,29 +189,21 @@ public final class AssetManager {
          */
         BigLaserBeam(SourceCategory.BULLET, 11, 20),
         /**
-         * First enemy ship - first form.
+         * Enemy A.
          */
-        EnemyShipA1(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
+        EnemyA_Move(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
+        EnemyA_Attack(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA_attack.png", 48, 48),
+        EnemyA_Weapon(SourceCategory.WEAPON, "enemy/typeA_weapon.png", 36, 36),
         /**
-         * First enemy ship - second form.
+         * Enemy B.
          */
-        EnemyShipA2(SourceCategory.ENEMY, "enemy_type_a/Enemy_typeA.png", 48, 48),
+        EnemyB_Move(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
+        EnemyB_Attack(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
         /**
-         * Second enemy ship - first form.
+         * Enemy C.
          */
-        EnemyShipB1(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
-        /**
-         * Second enemy ship - second form.
-         */
-        EnemyShipB2(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
-        /**
-         * Third enemy ship - first form.
-         */
-        EnemyShipC1(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
-        /**
-         * Third enemy ship - second form.
-         */
-        EnemyShipC2(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
+        EnemyC_move(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC.png", 48, 48),
+        EnemyC_attack(SourceCategory.ENEMY, "enemy_type_c/Enemy_typeC_attack.png", 48, 48),
         /**
          * Boss ship.
          */
@@ -347,6 +339,7 @@ public final class AssetManager {
             soundMap.put("special_ship_sound", loadSound("sound/special_ship_sound.wav"));
             soundMap.put("win", loadSound("sound/win.wav"));
             soundMap.put("lose", loadSound("sound/lose.wav"));
+            soundMap.put("enemy_A_attack_sound", loadSound("sound/swing_weapon.wav"));
             soundMap.put("laser_big", loadSound("sound/laser.wav"));
             soundMap.put("boss_hit", loadSound("sound/invader_killed.wav"));
             
@@ -395,8 +388,10 @@ public final class AssetManager {
                     int targetWidth = type.getWidth();
                     int targetHeight = type.getHeight();
                     
+                    BufferedImage img;
+                    
                     if (type.getFrameCount() == 1) {
-                        BufferedImage img = engine.utils.ImageLoader.loadImage(
+                        img = engine.utils.ImageLoader.loadImage(
                             basePath, targetWidth, targetHeight
                         );
                         spriteImageMap.put(type, img);
