@@ -371,6 +371,25 @@ public final class InputManager implements KeyListener, MouseListener,
         }
     }
     
+    // After setting the default,
+    // import the saved key settings from the file and cover the default values.
+    static {
+        instance = new InputManager();
+        // 0: left, 1: right, 2: up, 3: down, 4: basic attack, 5: item,
+        // 6: first skill, 7: second skill, 8: ultimate skill
+        player1Keys = new int[]{
+            KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_W, KeyEvent.VK_S,
+            KeyEvent.VK_SPACE, KeyEvent.VK_Q, KeyEvent.VK_1, KeyEvent.VK_2, KeyEvent.VK_3,
+        };
+        player2Keys = new int[]{
+            KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_UP, KeyEvent.VK_DOWN,
+            KeyEvent.VK_ENTER, KeyEvent.VK_SLASH, KeyEvent.VK_P, KeyEvent.VK_OPEN_BRACKET,
+            KeyEvent.VK_CLOSE_BRACKET
+        };
+        
+        instance.loadKeyConfig();
+    }
+    
     /**
      * Resets all key states to not pressed.
      */

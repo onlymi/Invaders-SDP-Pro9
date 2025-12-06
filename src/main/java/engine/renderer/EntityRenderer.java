@@ -27,6 +27,11 @@ public class EntityRenderer {
     // 디버깅용 히트박스 표시 여부
     private static final boolean SHOW_HITBOX = false;
     
+    private static final int CHARACTER_GAP_BY_INFO = 3;
+    private static final int HEALTH_BAR_HEIGHT = 10;
+    private static final int MANA_BAR_HEIGHT = 5;
+    private static final int BAR_BORDER = 1;
+    
     public EntityRenderer(CommonRenderer commonRenderer) {
         this.commonRenderer = commonRenderer;
         this.assetManager = Core.getAssetManager();
@@ -84,6 +89,12 @@ public class EntityRenderer {
     private void drawEntity(Graphics g, final Entity entity, final int x,
         final int y, final Color color, final int scale) {
         
+        if (entity instanceof GameCharacter && !((GameCharacter) entity).isInSelectScreen()) {
+            drawHealthBar(g, entity, x, y);
+            drawManaBar(g, entity, x, y);
+        }
+        
+        // 특수 캐릭터 처리 - 스케일 정보 전달
         if (entity instanceof ArcherCharacter) {
             if (entity instanceof GameCharacter && !((GameCharacter) entity).isInSelectScreen()) {
                 drawHealthBar(g, entity, x, y);
@@ -218,12 +229,33 @@ public class EntityRenderer {
             healthRatio = 0;
         }
         
-        int healthBarHeight = 10;
         g.setColor(new Color(0, 255, 0, 110));
-        g.drawRect(x - 1, y - healthBarHeight - 4, entity.getWidth() + 1, healthBarHeight + 1);
+        g.drawRect(x - BAR_BORDER,
+            y - HEALTH_BAR_HEIGHT - MANA_BAR_HEIGHT - CHARACTER_GAP_BY_INFO - 4 * BAR_BORDER,
+            entity.getWidth() + BAR_BORDER, HEALTH_BAR_HEIGHT + BAR_BORDER);
         g.setColor(new Color(255, 0, 0, 110));
-        g.fillRect(x, y - healthBarHeight - 3,
-            (int) (entity.getWidth() * healthRatio), healthBarHeight);
+        g.fillRect(x,
+            y - HEALTH_BAR_HEIGHT - MANA_BAR_HEIGHT - CHARACTER_GAP_BY_INFO - 3 * BAR_BORDER,
+            (int) (entity.getWidth() * healthRatio), HEALTH_BAR_HEIGHT);
+    }
+    
+    public void drawManaBar(Graphics g, final Entity entity, int x, int y) {
+        int maxMana = ((GameCharacter) entity).getCurrentStats().maxManaPoints;
+        int currentMana = ((GameCharacter) entity).getCurrentManaPoints();
+        double manaRatio = (double) currentMana / maxMana;
+        
+        if (manaRatio > 1) {
+            manaRatio = 1;
+        } else if (manaRatio < 0) {
+            manaRatio = 0;
+        }
+        
+        g.setColor(new Color(255, 255, 255, 128));
+        g.drawRect(x - BAR_BORDER, y - CHARACTER_GAP_BY_INFO - MANA_BAR_HEIGHT - 2 * BAR_BORDER,
+            entity.getWidth() + BAR_BORDER, MANA_BAR_HEIGHT + 2 * BAR_BORDER);
+        g.setColor(new Color(0, 0, 255));
+        g.fillRect(x, y - MANA_BAR_HEIGHT - CHARACTER_GAP_BY_INFO,
+            (int) (entity.getWidth() * manaRatio), MANA_BAR_HEIGHT);
     }
     
     private void drawMissingTexturePlaceholder(Graphics g, Entity entity, int x, int y) {
