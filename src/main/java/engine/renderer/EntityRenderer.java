@@ -10,7 +10,9 @@ import entity.Ship;
 import entity.Weapon;
 import entity.character.ArcherCharacter;
 import entity.character.GameCharacter;
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -24,6 +26,11 @@ public class EntityRenderer {
     
     // 디버깅용 히트박스 표시 여부
     private static final boolean SHOW_HITBOX = false;
+    
+    private static final int CHARACTER_GAP_BY_INFO = 3;
+    private static final int HEALTH_BAR_HEIGHT = 10;
+    private static final int MANA_BAR_HEIGHT = 5;
+    private static final int BAR_BORDER = 1;
     
     public EntityRenderer(CommonRenderer commonRenderer) {
         this.commonRenderer = commonRenderer;
@@ -65,6 +72,11 @@ public class EntityRenderer {
     
     /**
      * 지정된 색상으로 엔티티를 그립니다.
+     *
+     * @param entity    그릴 엔티티
+     * @param positionX X 좌표
+     * @param positionY Y 좌표
+     * @param color     적용할 색상
      */
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY, final Color color) {
@@ -79,10 +91,16 @@ public class EntityRenderer {
         
         if (entity instanceof GameCharacter && !((GameCharacter) entity).isInSelectScreen()) {
             drawHealthBar(g, entity, x, y);
+            drawManaBar(g, entity, x, y);
         }
         
         // 특수 캐릭터 처리 - 스케일 정보 전달
         if (entity instanceof ArcherCharacter) {
+            if (entity instanceof GameCharacter && !((GameCharacter) entity).isInSelectScreen()) {
+                drawHealthBar(g, entity, x, y);
+            }
+            
+            // 특수 캐릭터 처리 - 스케일 정보 전달
             if (SHOW_HITBOX) {
                 Color prev = g.getColor();
                 g.setColor(new Color(255, 0, 0, 128));
@@ -135,6 +153,13 @@ public class EntityRenderer {
         int entityWidthByScale = image.getWidth() * scale;
         int entityHeightByScale = image.getHeight() * scale;
         
+        Graphics2D g2d = (Graphics2D) g;
+        Composite originalComposite = g2d.getComposite();
+        if (color.getAlpha() < 255) {
+            g2d.setComposite(
+                AlphaComposite.getInstance(AlphaComposite.SRC_OVER, color.getAlpha() / 255f));
+        }
+        
         if (entity instanceof EnemyShip enemy) {
             boolean flip = !enemy.isFacingRight();
             
@@ -147,11 +172,17 @@ public class EntityRenderer {
             } else {
                 g.drawImage(image, drawX, drawY, entityWidthByScale, entityHeightByScale, null);
             }
-            
+            if (color.getAlpha() < 255) {
+                g2d.setComposite(originalComposite);
+            }
             return;
         }
         
         g.drawImage(image, x, y, entityWidthByScale, entityHeightByScale, null);
+        
+        if (color.getAlpha() < 255) {
+            g2d.setComposite(originalComposite);
+        }
         
         if (color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
@@ -198,21 +229,43 @@ public class EntityRenderer {
             healthRatio = 0;
         }
         
-        int healthBarHeight = 10;
         g.setColor(new Color(0, 255, 0, 110));
-        g.drawRect(x - 1, y - healthBarHeight - 4, entity.getWidth() + 1, healthBarHeight + 1);
+        g.drawRect(x - BAR_BORDER,
+            y - HEALTH_BAR_HEIGHT - MANA_BAR_HEIGHT - CHARACTER_GAP_BY_INFO - 4 * BAR_BORDER,
+            entity.getWidth() + BAR_BORDER, HEALTH_BAR_HEIGHT + BAR_BORDER);
         g.setColor(new Color(255, 0, 0, 110));
-        g.fillRect(x, y - healthBarHeight - 3,
-            (int) (entity.getWidth() * healthRatio), healthBarHeight);
+        g.fillRect(x,
+            y - HEALTH_BAR_HEIGHT - MANA_BAR_HEIGHT - CHARACTER_GAP_BY_INFO - 3 * BAR_BORDER,
+            (int) (entity.getWidth() * healthRatio), HEALTH_BAR_HEIGHT);
+    }
+    
+    public void drawManaBar(Graphics g, final Entity entity, int x, int y) {
+        int maxMana = ((GameCharacter) entity).getCurrentStats().maxManaPoints;
+        int currentMana = ((GameCharacter) entity).getCurrentManaPoints();
+        double manaRatio = (double) currentMana / maxMana;
+        
+        if (manaRatio > 1) {
+            manaRatio = 1;
+        } else if (manaRatio < 0) {
+            manaRatio = 0;
+        }
+        
+        g.setColor(new Color(255, 255, 255, 128));
+        g.drawRect(x - BAR_BORDER, y - CHARACTER_GAP_BY_INFO - MANA_BAR_HEIGHT - 2 * BAR_BORDER,
+            entity.getWidth() + BAR_BORDER, MANA_BAR_HEIGHT + 2 * BAR_BORDER);
+        g.setColor(new Color(0, 0, 255));
+        g.fillRect(x, y - MANA_BAR_HEIGHT - CHARACTER_GAP_BY_INFO,
+            (int) (entity.getWidth() * manaRatio), MANA_BAR_HEIGHT);
     }
     
     private void drawMissingTexturePlaceholder(Graphics g, Entity entity, int x, int y) {
         g.setColor(Color.PINK);
         g.fillRect(x, y, entity.getWidth(), entity.getHeight());
+        System.err.println("EntityRenderer: Can't find sprite for " + entity.getSpriteType());
     }
     
     /**
-     * 엔티티의 상태(체력, 플레이어 ID 등)에 따른 색상을 결정합니다.
+     * Determines the color based on the entity's status (physical strength, player ID, etc.).
      */
     private static Color getEntityColor(Entity entity) {
         Color baseColor = entity.getColor();
@@ -239,15 +292,8 @@ public class EntityRenderer {
     }
     
     private static Color calculateDamageAlpha(EnemyShip enemy, Color baseColor) {
-        int currentHp = enemy.getHealth();
-        int maxHp = enemy.getInitialHealth();
-        
-        if (currentHp > 0 && maxHp > 0) {
-            float healthRatio = (float) currentHp / maxHp;
-            int alpha = (int) (70 + 150 * healthRatio);
-            alpha = Math.max(0, Math.min(255, alpha));
-            
-            return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha);
+        if (enemy.isHitRecently()) {
+            return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), 128);
         }
         return baseColor;
     }

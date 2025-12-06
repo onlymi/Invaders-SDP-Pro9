@@ -233,9 +233,6 @@ public class GameScreen extends Screen {
             this.characters[1].setGameState(this.state);
             
             this.characters[1].setControlKeys(Core.getInputManager().getPlayer2Keys());
-            if (state.getLevel() > 1 && state.getPlayerHealth(1) > 0) {
-                this.characters[1].setCurrentHealthPoints(state.getPlayerHealth(1));
-            }
         } else {
             this.characters[0] = CharacterSpawner.createCharacter(this.characterTypeP1,
                 startX, startY, Entity.Team.PLAYER1, 1);
@@ -245,8 +242,15 @@ public class GameScreen extends Screen {
         }
         this.characters[0].setControlKeys(Core.getInputManager().getPlayer1Keys());
         
-        if (state.getLevel() > 1 && state.getPlayerHealth(0) > 0) {
-            this.characters[0].setCurrentHealthPoints(state.getPlayerHealth(0));
+        if (state.getLevel() > 1) {
+            // Player 1 체력 불러오기
+            if (this.characters[0] != null) {
+                this.characters[0].setCurrentHealthPoints(state.getPlayerHealth(0));
+            }
+            // Player 2 체력 불러오기
+            if (this.characters[1] != null) {
+                this.characters[1].setCurrentHealthPoints(state.getPlayerHealth(1));
+            }
         }
         
         this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
@@ -346,9 +350,9 @@ public class GameScreen extends Screen {
                         state.useFirstActiveItem(1);
                     }
                     
+                    character.handleKeyboard(inputManager, this, this.weapons, deltaTime);
                     // Handle Input (Movement & Shooting)
-                    boolean shotFired = character.handleKeyboard(inputManager, this, this.weapons,
-                        deltaTime);
+                    boolean shotFired = character.isFiring();
                     
                     if (shotFired) {
                         SoundManager.playOnce("shoot");
@@ -377,14 +381,14 @@ public class GameScreen extends Screen {
                         SoundManager.playOnce("shoot_enemies");
                     }
                 }
+                
+                updatePetsLogic();
+                manageCollisions();
+                cleanBullets();
+                
+                cleanItems();
+                manageItemPickups();
             }
-            
-            updatePetsLogic();
-            manageCollisions();
-            cleanBullets();
-            
-            cleanItems();
-            manageItemPickups();
             
             state.updateEffects();
             boolean lowHealth = false;
@@ -415,7 +419,7 @@ public class GameScreen extends Screen {
             }
             
             // End condition: achieved kill count or TEAM lives exhausted.
-            if ((this.enemyKillCount >= this.killsToWin || !state.teamAlive())
+            if ((this.enemyKillCount >= this.killsToWin || (!state.teamAlive() && !teamAlive))
                 && !this.levelFinished) {
                 
                 WeaponPool.recycle(this.weapons);
@@ -626,11 +630,13 @@ public class GameScreen extends Screen {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
             weapon.update();
+            
             boolean isOffScreenY = weapon.getPositionY() < SEPARATION_LINE_HEIGHT
                 || weapon.getPositionY() > this.height;
             boolean isOffScreenX = weapon.getPositionX() < 0
                 || weapon.getPositionX() > this.width;
-            if (isOffScreenY || isOffScreenX) {
+            
+            if (isOffScreenY || isOffScreenX || weapon.isExpired()) {
                 recyclable.add(weapon);
             }
         }
@@ -724,29 +730,26 @@ public class GameScreen extends Screen {
                         if (character.isInvincible()) {
                             continue;
                         }
-                        
-                        recyclable.add(weapon);
-                        
+                        if (weapon.getDuration() != -1 && weapon.isHitPlayer(p)) {
+                            continue;
+                        }
                         boolean hasShieldEffect =
-                            state != null && state.hasEffect(
-                                p,
+                            state != null && state.hasEffect(p,
                                 engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
                             );
-                        
                         if (hasShieldEffect) {
                             LOGGER.info("[GameScreen] Shield blocked damage for player " + (p + 1));
+                            recyclable.add(weapon);
                             handled = true;
                             break;
                         }
-                        
                         character.takeDamage(weapon.getDamage());
-                        
+                        // Decrement life if HP reaches 0
                         if (character.getCurrentHealthPoints() <= 0) {
                             this.state.decLife(p);
                             this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
                                 + state.getLivesRemaining());
                         }
-                        
                         this.drawManager.getGameScreenRenderer()
                             .triggerExplosion(
                                 character.getPositionX(),
@@ -754,21 +757,18 @@ public class GameScreen extends Screen {
                                 false,
                                 state.getLivesRemaining() == 1
                             );
-                        
                         SoundManager.playOnce("explosion");
-                        
                         this.tookDamageThisLevel = true;
-                        
                         this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
-                        
-                        this.LOGGER.info("Hit on player " + (p + 1) + ", team lives now: "
-                            + state.getLivesRemaining());
-                        
+                        if (weapon.getDuration() == -1) {
+                            recyclable.add(weapon);
+                        } else {
+                            weapon.addHitPlayer(p);
+                        }
                         handled = true;
                         break;
                     }
                 }
-                
                 if (handled) {
                     continue;
                 }
@@ -1197,5 +1197,9 @@ public class GameScreen extends Screen {
     
     public GameCharacter[] getCharacters() {
         return this.characters;
+    }
+    
+    public Set<Weapon> getWeapons() {
+        return this.weapons;
     }
 }

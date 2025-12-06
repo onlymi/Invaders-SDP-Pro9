@@ -43,15 +43,20 @@ public abstract class GameCharacter extends Entity {
     
     protected int currentHealthPoints;
     protected int currentManaPoints;
+    private float manaRegenAccumulator = 0f;
     
     private boolean isDie;
     public boolean isInSelectScreen;
+    public boolean isFiring;
     
     private int leftKey;
     private int rightKey;
     private int upKey;
     private int downKey;
     private int defaultAttackKey;
+    private int firstSkillKey;
+    private int secondSkillKey;
+    private int ultimateSkillKey;
     
     private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
     protected boolean isAttacking;
@@ -106,6 +111,7 @@ public abstract class GameCharacter extends Entity {
         
         this.isDie = false;
         this.isInSelectScreen = false;
+        this.isFiring = false;
         // 업그레이드 스탯 적용
         applyUserUpgrades();
         recalculateStats();
@@ -115,6 +121,9 @@ public abstract class GameCharacter extends Entity {
         this.upKey = KeyEvent.VK_W;
         this.downKey = KeyEvent.VK_S;
         this.defaultAttackKey = KeyEvent.VK_SPACE;
+        this.firstSkillKey = KeyEvent.VK_1;
+        this.secondSkillKey = KeyEvent.VK_2;
+        this.ultimateSkillKey = KeyEvent.VK_3;
         
         initializeKeyboardPressing();
         
@@ -136,6 +145,24 @@ public abstract class GameCharacter extends Entity {
      * @param deltaTime The time it took from the last frame to the present
      */
     public void update(float deltaTime) {
+        float manaRegenRate = 2f;
+        this.manaRegenAccumulator += manaRegenRate * deltaTime;
+        
+        if (this.manaRegenAccumulator >= 1.0f) {
+            int manaToAdd = (int) this.manaRegenAccumulator;
+            
+            // 현재 마나가 최대 마나보다 적을 때만 회복
+            if (this.currentManaPoints < this.baseStats.maxManaPoints) {
+                this.currentManaPoints = Math.min(
+                    this.currentManaPoints + manaToAdd,
+                    this.baseStats.maxManaPoints
+                );
+            }
+            
+            // 반영한 정수만큼 누적값에서 뺌 (남은 소수점은 다음 프레임으로 이월)
+            this.manaRegenAccumulator -= manaToAdd;
+        }
+        
         Iterator<Buff> iterator = activeBuffs.iterator();
         
         while (iterator.hasNext()) {
@@ -204,7 +231,7 @@ public abstract class GameCharacter extends Entity {
      * Applies stat upgrades from the user's store purchases. Upgrades are applied as percentage or
      * additive bonuses to the base stats.
      */
-    protected void applyUserUpgrades() { // Test에서 오버라이딩 및 호출이 가능하도록 protected로 변경.
+    protected void applyUserUpgrades() {
         UserStats stats = Core.getUserStats();
         if (stats == null) {
             return;
@@ -271,6 +298,7 @@ public abstract class GameCharacter extends Entity {
     public void addBuff(Buff buff) {
         buff.applyToStats(currentStats);
         this.activeBuffs.add(buff);
+        recalculateStats();
     }
     
     public void decreaseMana(int manaCost) {
@@ -281,15 +309,18 @@ public abstract class GameCharacter extends Entity {
      * Reapply all buffs that are currently active, starting with the base stat.
      */
     public void recalculateStats() {
-        float tempAttackSpeed = baseStats.attackSpeed;
-        int tempPhysDamage = baseStats.physicalDamage;
+        this.currentStats.attackSpeed = this.baseStats.attackSpeed;
+        this.currentStats.physicalDamage = this.baseStats.physicalDamage;
+        this.currentStats.movementSpeed = this.baseStats.movementSpeed;
         
         for (Buff buff : activeBuffs) {
             buff.applyToStats(this.currentStats);
         }
         
-        this.currentStats.attackSpeed = tempAttackSpeed;
-        this.currentStats.physicalDamage = tempPhysDamage;
+        int newCooldownTime = (int) (BASE_SHOOTING_COOLDOWN
+            - this.currentStats.attackSpeed * SHOOTING_COOLDOWN_FACTOR);
+        this.shootingCooldown = Core.getCooldown(newCooldownTime);
+        this.projectileSpeed = (int) (this.currentStats.attackSpeed * ATTACK_SPEED_FACTOR);
     }
     
     /**
@@ -303,6 +334,9 @@ public abstract class GameCharacter extends Entity {
         this.upKey = keys[2];
         this.downKey = keys[3];
         this.defaultAttackKey = keys[4];
+        this.firstSkillKey = keys[6];
+        this.secondSkillKey = keys[7];
+        this.ultimateSkillKey = keys[8];
     }
     
     public void setGameState(GameState gameState) {
@@ -313,6 +347,11 @@ public abstract class GameCharacter extends Entity {
         float deltaTime) {
         initializeKeyboardPressing();
         
+        handleMovement(inputManager, screen, deltaTime);
+        handleAttack(inputManager, weapons);
+    }
+    
+    public void handleMovement(InputManager inputManager, Screen screen, float deltaTime) {
         float dx = 0;
         float dy = 0;
         
@@ -390,19 +429,40 @@ public abstract class GameCharacter extends Entity {
                 this.positionY += movementY;
             }
         }
-        
+    }
+    
+    public void handleAttack(InputManager inputManager, Set<Weapon> weapons) {
+        this.isFiring = false;
+        this.isAttacking = false;
         if (inputManager.isKeyDown(this.defaultAttackKey)) {
+            this.isFiring = launchBasicAttack(weapons);
             this.isAttacking = true;
-            return launchBasicAttack(weapons);
         }
-        return false;
+        if (inputManager.isKeyDown(this.firstSkillKey)) {
+            if (!skills.isEmpty()) {
+                skills.get(0).activate(this);
+            }
+            this.isAttacking = true;
+        }
+        if (inputManager.isKeyDown(this.secondSkillKey)) {
+            if (skills.size() > 1) {
+                skills.get(1).activate(this);
+            }
+            this.isAttacking = true;
+        }
+        if (inputManager.isKeyDown(this.ultimateSkillKey)) {
+            if (skills.size() > 2) {
+                skills.get(2).activate(this);
+            }
+            this.isAttacking = true;
+        }
     }
     
     /**
      * Launch a basic attack.
      *
      * @param weapons The set of weapons to add the new weapon to.
-     * @return True if a weapon was fired, false if on cooldown.
+     * @return true if the attack was actually launched (cooldown finished), false otherwise.
      */
     public boolean launchBasicAttack(Set<Weapon> weapons) {
         if (this.shootingCooldown.checkFinished()) {
@@ -431,10 +491,12 @@ public abstract class GameCharacter extends Entity {
             Weapon weapon = WeaponPool.getWeapon(launchX, launchY, this.projectileSpeed,
                 this.projectileWidth, this.projectileHeight, this.team);
             
+            weapon.reset();
             weapon.setCharacter(this);
             weapon.setSpriteImage(this.projectileSpriteType);
             weapon.setPlayerId(this.playerId);
             weapon.setRange(this.currentStats.attackRange);
+            weapon.setDamage(this.currentStats.physicalDamage);
             weapons.add(weapon);
             return true;
         }
@@ -509,6 +571,10 @@ public abstract class GameCharacter extends Entity {
         return isDie;
     }
     
+    public boolean isFiring() {
+        return this.isFiring;
+    }
+    
     public boolean isAttacking() {
         return this.isAttacking;
     }
@@ -547,5 +613,18 @@ public abstract class GameCharacter extends Entity {
     
     public int getProjectileSpeed() {
         return this.projectileSpeed;
+    /**
+     * 특정 타입의 버프를 가지고 있는지 확인합니다.
+     *
+     * @param buffClass 확인할 버프 클래스
+     * @return 해당 버프가 활성화되어 있으면 true
+     */
+    public boolean hasBuff(Class<? extends Buff> buffClass) {
+        for (Buff buff : activeBuffs) {
+            if (buffClass.isInstance(buff)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

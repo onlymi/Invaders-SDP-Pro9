@@ -88,18 +88,17 @@ public class EnemyShip extends Entity {
     
     protected void initializeStats() {
         switch (this.spriteType) {
-            case EnemyShipA1:
-            case EnemyShipA2:
+            case EnemyA_Move:
+            case EnemyA_Attack:
                 this.pointValue = A_TYPE_POINTS;
                 this.coinValue = A_TYPE_COINS;
                 break;
-            case EnemyShipB1:
-            case EnemyShipB2:
+            case EnemyB_Move:
                 this.pointValue = B_TYPE_POINTS;
                 this.coinValue = B_TYPE_COINS;
                 break;
-            case EnemyShipC1:
-            case EnemyShipC2:
+            case EnemyC_move:
+            case EnemyC_attack:
                 this.pointValue = C_TYPE_POINTS;
                 this.coinValue = C_TYPE_COINS;
                 break;
@@ -282,6 +281,11 @@ public class EnemyShip extends Entity {
         if (this.health <= 0) {
             destroy();
         }
+    }
+    
+    public boolean isHitRecently() {
+        // 0.1초 내 피격되었는지 확인
+        return (System.currentTimeMillis() - this.lastHitTime) < 500;
     }
     
     public final int getDamage(int dmg) {

@@ -45,6 +45,7 @@ class GameCharacterHitTest {
         // 첫 번째 호출(Shooting)과 두 번째 호출(Destruction)을 구분하여 Mock 객체 반환
         coreMock.when(() -> Core.getCooldown(anyInt()))
             .thenReturn(shootingCooldown)
+            .thenReturn(shootingCooldown)
             .thenReturn(destructionCooldown);
         
         character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);

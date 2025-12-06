@@ -3,6 +3,8 @@ package engine;
 import engine.AssetManager.SpriteType;
 import engine.utils.Cooldown;
 import entity.EnemyShip;
+import entity.EnemyTypeA;
+import entity.EnemyTypeB;
 import entity.character.GameCharacter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -55,12 +57,20 @@ public class EnemyManager {
         Iterator<EnemyShip> iterator = enemies.iterator();
         while (iterator.hasNext()) {
             EnemyShip enemy = iterator.next();
-            
             // 가장 가까운 플레이어 찾기
             GameCharacter target = findTargetPlayer(enemy);
             
             // 타겟 정보를 넘겨주며 적 업데이트
             enemy.update(target, enemySpeedMultiplier);
+            if (enemy instanceof EnemyTypeA) {
+                ((EnemyTypeA) enemy).update(target, this.enemies);
+                ((EnemyTypeA) enemy).tryAttack(target, gameScreen.getWeapons());
+            } else if (enemy instanceof EnemyTypeB) {
+                ((EnemyTypeB) enemy).update(target, this.enemies);
+                ((EnemyTypeB) enemy).tryAttack(target, gameScreen.getWeapons());
+            } else {
+                enemy.update(target);
+            }
             
             // 화면 아래로 나가면 삭제
             if (enemy.getPositionY() > gameScreen.getHeight()) {
@@ -74,27 +84,48 @@ public class EnemyManager {
      * Spawns a random enemy at a random X position.
      */
     private void spawnEnemy() {
-        // 화면 너비 내에서 랜덤 X 좌표
-        int x = 50 + random.nextInt(gameScreen.getWidth() - 100);
-        int uiLine = gameScreen.getSeparationLineHeight();
-        int minY = uiLine + 50; // UI 제외
-        int maxY = gameScreen.getHeight() - 200; // 플레이어 근처 제외
-        // 화면 너비 내에서 랜덤 Y 좌표
-        int y = minY + random.nextInt(maxY - minY);
+        boolean isSafePosition;
+        int x, y;
+        int attempts = 0;
+        do {
+            isSafePosition = true;
+            // 화면 너비 내에서 랜덤 X 좌표
+            x = 50 + random.nextInt(gameScreen.getWidth() - 100);
+            int uiLine = gameScreen.getSeparationLineHeight();
+            int minY = uiLine + 50; // UI 제외
+            int maxY = gameScreen.getHeight() - 200; // 플레이어 근처 제외
+            // 화면 너비 내에서 랜덤 Y 좌표
+            y = minY + random.nextInt(maxY - minY);
+            
+            for (GameCharacter player : gameScreen.getCharacters()) {
+                if (player != null && !player.isDie()) {
+                    double distance = Math.sqrt(
+                        Math.pow(player.getPositionX() - x, 2) + Math.pow(player.getPositionY() - y,
+                            2));
+                    
+                    // 플레이어 반경 100px 이내에는 스폰 금지
+                    if (distance < 100) {
+                        isSafePosition = false;
+                        break;
+                    }
+                }
+            }
+            attempts++;
+        } while (!isSafePosition && attempts < 10);
         
         EnemyShip enemy;
         int type = random.nextInt(3);
         GameState gameState = gameScreen.getGameState();
-        switch (type) { // TODO: enemy 타입 만든 후 수정 예정
+        switch (type) {
             case 0:
-                enemy = new EnemyShip(x, y, SpriteType.EnemyShipA1);
+                enemy = new EnemyTypeA(x, y, SpriteType.EnemyA_Move);
                 break;
             case 1:
-                enemy = new EnemyShip(x, y, SpriteType.EnemyShipB1);
+                enemy = new EnemyTypeB(x, y, SpriteType.EnemyB_Move);
                 break;
             case 2:
             default:
-                enemy = new EnemyShip(x, y, SpriteType.EnemyShipC1);
+                enemy = new EnemyShip(x, y, SpriteType.EnemyC_move);
                 break;
         }
         this.enemies.add(enemy);
