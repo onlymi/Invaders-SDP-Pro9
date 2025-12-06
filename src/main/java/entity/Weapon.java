@@ -352,6 +352,8 @@ public class Weapon extends Entity {
         } else {
             this.rotation = 0;
         }
+    }
+    
     public void setDuration(final int duration) {
         this.duration = duration;
     }

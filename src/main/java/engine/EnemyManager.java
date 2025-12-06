@@ -69,7 +69,7 @@ public class EnemyManager {
                 ((EnemyTypeB) enemy).update(target, this.enemies);
                 ((EnemyTypeB) enemy).tryAttack(target, gameScreen.getWeapons());
             } else {
-                enemy.update(target);
+                enemy.update(state);
             }
             
             // 화면 아래로 나가면 삭제

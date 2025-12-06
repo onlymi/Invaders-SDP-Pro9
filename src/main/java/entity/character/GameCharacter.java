@@ -343,7 +343,7 @@ public abstract class GameCharacter extends Entity {
         this.gameState = gameState;
     }
     
-    public boolean handleKeyboard(InputManager inputManager, Screen screen, Set<Weapon> weapons,
+    public void handleKeyboard(InputManager inputManager, Screen screen, Set<Weapon> weapons,
         float deltaTime) {
         initializeKeyboardPressing();
         
@@ -613,6 +613,8 @@ public abstract class GameCharacter extends Entity {
     
     public int getProjectileSpeed() {
         return this.projectileSpeed;
+    }
+    
     /**
      * 특정 타입의 버프를 가지고 있는지 확인합니다.
      *
