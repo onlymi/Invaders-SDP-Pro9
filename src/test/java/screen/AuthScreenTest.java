@@ -40,6 +40,8 @@ class AuthScreenTest {
     private SoundManager soundManager;
     @Mock
     private AuthScreenRenderer authScreenRenderer;
+    @Mock
+    private Cooldown mockCooldown;
     
     private AuthScreen authScreen;
     private MockedStatic<Core> coreMock;
@@ -56,6 +58,7 @@ class AuthScreenTest {
         coreMock.when(Core::getDrawManager).thenReturn(drawManager);
         soundManagerMock.when(SoundManager::getInstance).thenReturn(soundManager);
         coreMock.when(Core::getSoundManager).thenReturn(soundManager);
+        coreMock.when(() -> Core.getCooldown(anyInt())).thenReturn(mockCooldown);
         coreMock.when(Core::getLogger).thenReturn(java.util.logging.Logger.getAnonymousLogger());
         
         // Cooldown(1000)을 Cooldown(0)으로 바꿔서 inputDelay를 즉시 통과시킴
@@ -64,6 +67,7 @@ class AuthScreenTest {
         
         // drawManager.getAuthScreenRenderer()가 null을 반환하지 않도록 설정
         when(drawManager.getAuthScreenRenderer()).thenReturn(authScreenRenderer);
+        when(mockCooldown.checkFinished()).thenReturn(true);
         
         // 가짜 객체들로 AuthScreen 생성
         authScreen = new AuthScreen(448, 520, 60);
