@@ -119,6 +119,9 @@ public class EntityRenderer {
             double centerX = x + (entity.getWidth() * scale) / 2.0;
             double centerY = y + (entity.getHeight() * scale) / 2.0;
             
+            if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
+                centerY = y;
+            }
             // getRotation()은 라디안 값을 반환하므로 Math.toRadians()를 제거함
             g2d.rotate(Math.toRadians(entity.getRotation()), centerX, centerY);
         }
@@ -155,7 +158,8 @@ public class EntityRenderer {
         
         Graphics2D g2d = (Graphics2D) g;
         Composite originalComposite = g2d.getComposite();
-        if (color.getAlpha() < 255) {
+        
+        if (color != null && color.getAlpha() < 255) {
             g2d.setComposite(
                 AlphaComposite.getInstance(AlphaComposite.SRC_OVER, color.getAlpha() / 255f));
         }
@@ -172,7 +176,8 @@ public class EntityRenderer {
             } else {
                 g.drawImage(image, drawX, drawY, entityWidthByScale, entityHeightByScale, null);
             }
-            if (color.getAlpha() < 255) {
+            
+            if (color != null && color.getAlpha() < 255) {
                 g2d.setComposite(originalComposite);
             }
             return;
@@ -180,11 +185,11 @@ public class EntityRenderer {
         
         g.drawImage(image, x, y, entityWidthByScale, entityHeightByScale, null);
         
-        if (color.getAlpha() < 255) {
+        if (color != null && color.getAlpha() < 255) {
             g2d.setComposite(originalComposite);
         }
         
-        if (color == Color.DARK_GRAY) {
+        if (color != null && color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
             g.fillRect(x, y, entityWidthByScale, entityHeightByScale);
         }

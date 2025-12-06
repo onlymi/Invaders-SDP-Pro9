@@ -2,17 +2,25 @@ package entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import engine.Core;
-import engine.SoundManager;
 import engine.AssetManager.SpriteType;
 import engine.Core;
+import engine.SoundManager;
 import engine.utils.Cooldown;
+import entity.character.GameCharacter;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,14 +38,17 @@ public class BossShipTest {
     private BossShip boss;
     
     private static final int BOSS_INITIAL_HEALTH = 500;
-    private static final int TOP_BOUNDARY = 68;
-    private static final int BOSS_MAX_Y = 340;
     private static final int SCREEN_WIDTH = 1200;
+    private static final int INITIAL_POS_Y = 80;
+    private static final int VISUAL_WIDTH = 360;
     
-    // [수정] Core와 SoundManager를 가로채기 위한 Mock 객체 선언
+    // Mock 객체
     @Mock
     private Cooldown mockCooldown;
+    @Mock
+    private GameCharacter mockPlayer;
     
+    // Static Mock 객체
     private MockedStatic<Core> coreMock;
     private MockedStatic<SoundManager> soundManagerMock;
     
@@ -47,22 +58,20 @@ public class BossShipTest {
         coreMock = mockStatic(Core.class);
         soundManagerMock = mockStatic(SoundManager.class);
         
-        // 2. Core.getCooldown() 호출 시 가짜 Cooldown 반환 (시간 체크 무시하고 항상 true 반환)
+        // 2. Mocking Core Dependencies
         coreMock.when(() -> Core.getCooldown(anyInt())).thenReturn(mockCooldown);
-        when(mockCooldown.checkFinished()).thenReturn(true);
-        
-        // 3. 화면 크기 가짜 반환
         coreMock.when(Core::getFrameWidth).thenReturn(SCREEN_WIDTH);
         coreMock.when(Core::getFrameHeight).thenReturn(800);
         
-        // 4. [중요] SoundManager.playOnce()가 호출되어도 아무 일도 안 일어나게 막음 (오디오 장치 없음 오류 방지)
+        // 3. Mocking SoundManager
         soundManagerMock.when(() -> SoundManager.playOnce(anyString())).thenAnswer(invocation -> null);
         
-        // 5. BossShip 생성 (이제 내부에서 Core나 SoundManager를 호출해도 안전함)
-        boss = new BossShip(100, TOP_BOUNDARY + 10);
+        // 4. BossShip 생성 (초기 X = 420, Y = 80)
+        int initialX = SCREEN_WIDTH / 2 - VISUAL_WIDTH / 2;
+        boss = new BossShip(initialX, INITIAL_POS_Y);
         
-        // 생성자에서 초기화되지 않은 bossAnimationCooldown을 테스트 코드에서 수동으로 주입
-        boss.bossAnimationCooldown = mockCooldown;
+        // 5. Cooldown Mock 설정: 기본적으로 모든 쿨다운은 완료된 상태로 시작 (테스트 제어용)
+        when(mockCooldown.checkFinished()).thenReturn(true);
     }
     
     @AfterEach
@@ -72,120 +81,188 @@ public class BossShipTest {
         soundManagerMock.close();
     }
     
-    // --- 1. 스탯 및 파괴 테스트 ---
+    // ---------------------- Getter Tests ----------------------
     
     @Test
-    void initialStatsAreSetCorrectly() {
-        assertEquals(BOSS_INITIAL_HEALTH, boss.getHealth(), "Initial health must be 500");
-        
-        assertEquals(5000, boss.getPointValue(), "Point value must be 5000");
-        
-        assertTrue(boss.isAttackEnabled(), "Attack must be enabled initially (by default implementation).");
+    void getHealth() {
+        assertEquals(BOSS_INITIAL_HEALTH, boss.getHealth());
     }
-    
-    void healthDecrementsAndDestroys() {
-        // 1. 일반 피격 테스트 (초기 체력에서 1 감소 확인)
-        int initialHp = boss.getHealth();
-        boss.hit();
-        assertEquals(initialHp - 1, boss.getHealth(),
-            "Health should decrease by 1 on hit.");
-        assertFalse(boss.isDestroyed(),
-            "Boss should not be destroyed yet (HP > 0).");
-        
-        // 2. 파괴 테스트를 위해 체력을 1로 만듦
-        // (현재 체력 - 1) 만큼 데미지를 입히면 1이 남습니다.
-        boss.getDamage(boss.getHealth() - 1);
-        assertEquals(1, boss.getHealth(),
-            "Health should be 1 before the final hit.");
-        
-        // 3. 마지막 타격 (HP: 1 -> 0) 및 파괴 확인
-        boss.hit();
-        assertEquals(0, boss.getHealth(),
-            "Health should be 0 after destruction.");
-        assertTrue(boss.isDestroyed(),
-            "Boss must be destroyed when health reaches 0.");
-        assertEquals(SpriteType.Explosion, boss.getSpriteType(),
-            "Sprite should change to Explosion on destruction.");
-    }
-        // --- 2. 움직임 및 경계 테스트 ---
-        
-        @Test
-        void initialMovementDirectionIsCorrect() {
-            assertTrue(boss.isMovingRight(), "Boss must start moving right.");
-            assertTrue(boss.isMovingDown(), "Boss must start moving down.");
-        }
-    
-    // --- 2. 이동 로직 테스트 ---
     
     @Test
-    void movementFlipsAtHorizontalBoundary() {
+    void getAttackPhase() {
+        // 초기 단계는 ATTACK_HOMING_MISSILE (1)
+        assertEquals(1, boss.getAttackPhase());
+    }
+    
+    @Test
+    void isAttackEnabled() {
+        assertTrue(boss.isAttackEnabled());
+    }
+    
+    @Test
+    void isMovingRight() {
         // 초기 상태: 오른쪽 이동 중
-        assertTrue(boss.isMovingRight(), "Initially moving right.");
-        
-        // 강제로 오른쪽 끝(화면 밖)으로 위치 이동
-        boss.setPositionX(1200); // Core.WIDTH 가정
-        boss.update(); // 이동 로직 실행
-        
-        boss.update();
-        assertFalse(boss.isMovingRight(), "Direction must flip to Left at right boundary.");
-        
-        // 좌측 경계 테스트
-        boss.setPositionX(0);
-        
-        boss.update();
-        assertTrue(boss.isMovingRight(), "Direction must flip to Right at left boundary.");
+        assertTrue(boss.isMovingRight());
     }
     
     @Test
-    void movementFlipsAtVerticalBoundary() {
-        // 초기 상태: 아래로 이동 중
-        assertTrue(boss.isMovingDown(), "Initially moving down.");
-        
-        // 강제로 아래쪽 한계(BOSS_MAX_Y = 340) 넘어서 이동
-        boss.setPositionY(350);
-        boss.update();
-        assertFalse(boss.isMovingDown(), "Direction must flip to Up at BOSS_MAX_Y.");
-        
-        // 상단 경계 테스트
-        boss.setPositionY(TOP_BOUNDARY);
-        
-        boss.update();
-        assertTrue(boss.isMovingDown(), "Direction must flip to Down at TOP_BOUNDARY.");
-    }
-    
-    // --- 3. 공격 활성화 및 패턴 전환 테스트 ---
-    
-    @Test
-    void attackEnablesAtThreshold() {
-        // HP 500 (임계값보다 높음)
-        assertTrue(boss.isAttackEnabled(), "Attack must be enabled at full HP.");
-        
-        // 1로 드롭
-        boss.update();
-        assertTrue(boss.isAttackEnabled(), "Attack must remain enabled just above threshold.");
-        
-        // HP를 임계값으로 드롭
-        boss.hit();
-        boss.update();
-        assertTrue(boss.isAttackEnabled(), "Attack remains enabled at threshold.");
+    void getLaserChargeTimer() {
+        // 초기 상태: 레이저 단계가 아니므로 0
+        assertEquals(0, boss.getLaserChargeTimer());
     }
     
     @Test
-    void animationCycleIsCorrect() {
-        // 초기 상태 확인
-        assertEquals(SpriteType.BossMainBody, boss.getSpriteType());
+    void readChargeTimer() {
+        // 초기 상태: 스프레드 단계가 아니므로 0
+        assertEquals(0, boss.readChargeTimer());
+    }
+    
+    @Test
+    void getProjectiles() {
+        assertNotNull(boss.getProjectiles());
+        assertTrue(boss.getProjectiles().isEmpty());
+    }
+    
+    // ---------------------- Hitbox Test ----------------------
+    
+    @Test
+    void getHitboxRectangles() {
+        // 초기 X: 420, Y: 80
+        int initialX = SCREEN_WIDTH / 2 - VISUAL_WIDTH / 2;
         
-        // 1회 업데이트 (BossShip1 -> BossShip2)
-        // Cooldown이 끝났다고 가정하기 위해 강제로 시간을 만료시키고 업데이트
-        // (실제 Cooldown 구현이 복잡하므로, 여기서는 hit() 횟수로 대체하거나, update() 호출에만 의존)
-        // 여기서는 update()를 쿨다운 시간 간격(500ms)에 맞게 충분히 많이 호출한다고 가정합니다.
+        List<Rectangle> hitboxes = boss.getHitboxRectangles();
+        assertEquals(2, hitboxes.size(), "히트박스는 2개여야 합니다.");
         
-        // BossShip.update()의 애니메이션 로직은 쿨다운에 의존하므로, 테스트에서는 쿨다운을 강제로 만료시키는 Mocking이 이상적입니다.
-        // Mocking 없이 간단히 로직만 확인:
+        // 히트박스 1: 메인 몸통 (120x190, X: +120, Y: +50)
+        Rectangle body = hitboxes.get(0);
+        assertEquals(120, body.width);
+        assertEquals(190, body.height);
+        // X = 420 + 120 = 540
+        assertEquals(initialX + 120, body.x, "몸통 히트박스 X 위치가 올바르게 보정되어야 합니다.");
+        // Y = 80 + 50 = 130
+        assertEquals(INITIAL_POS_Y + 50, body.y, "몸통 히트박스 Y 위치가 올바르게 설정되어야 합니다.");
         
-        // (쿨다운이 만료되었다고 가정하고) 1회 업데이트
-        // 실제 테스트에서는 Cooldown.checkFinished()가 true를 반환하도록 시간을 조작해야 합니다.
+        // 히트박스 2: 뿔 부분 (320x50, X: +20, Y: +0)
+        Rectangle horn = hitboxes.get(1);
+        assertEquals(320, horn.width);
+        assertEquals(120, horn.height);
+        assertEquals(initialX + 20, horn.x, "뿔 히트박스 X 위치는 보정되지 않아야 합니다.");
+        assertEquals(INITIAL_POS_Y, horn.y, "뿔 히트박스 Y 위치는 보정되지 않아야 합니다.");
+    }
+    
+    // ---------------------- Movement Test (X-only) ----------------------
+    
+    @Test
+    void move() {
+        int initialX = boss.getPositionX();
         
-        // 여기서는 코드를 간결하게 유지하기 위해 강제 호출 대신, 직접적인 Getter로 스프라이트 타입을 확인합니다.
+        // 초기 상태: movingRight = true, currentSpeedX = 2
+        boss.move(0, 0);
+        assertEquals(initialX + 2, boss.getPositionX(), "오른쪽으로 2픽셀 이동해야 합니다.");
+        
+        // 방향 변경 시뮬레이션
+        boss.move(0, 0);
+        boss.movingRight = false;
+        
+        // 왼쪽 이동 확인
+        boss.move(0, 0);
+        assertEquals(initialX + 2, boss.getPositionX(), "왼쪽으로 2픽셀 이동해야 합니다.");
+    }
+    
+    @Test
+    void update_BoundaryFlip_Horizontal() {
+        // [수정된 테스트] 오른쪽 경계에서 방향 전환 및 위치 제약 검증
+        
+        // BossShip의 X축 이동 속도 (BossShip.BOSS_BASE_SPEED_X = 2)
+        final int SPEED_X = 2;
+        
+        // 경계선: SCREEN_WIDTH - boss.width = 1200 - 360 = 840
+        // 경계 제약값: SCREEN_WIDTH - boss.width - 1 = 839
+        final int CONSTRAIN_X = SCREEN_WIDTH - boss.width - 1; // 839
+        
+        // Given: 보스를 오른쪽 경계에 도달하는 위치(840)로 설정합니다.
+        boss.positionX = CONSTRAIN_X + 1; // 840
+        boss.movingRight = true;
+        
+        // When: 업데이트 실행
+        boss.update();
+        
+        // Then:
+        // 1. 방향 전환 확인
+        assertFalse(boss.isMovingRight(), "오른쪽 경계(840)에서 왼쪽으로 방향을 전환해야 합니다.");
+        
+        // 2. 최종 위치 확인: 위치 제약(839)이 적용된 후, 새 방향(-2)으로 이동해야 합니다.
+        // 최종 위치 = 제약값(839) - SPEED_X(2) = 837
+        assertEquals(CONSTRAIN_X - SPEED_X, boss.getPositionX(), "X 위치가 경계 제약 후 새 방향으로 이동해야 합니다."); // 837
+    }
+    
+    // ---------------------- Health & Destruction Test ----------------------
+    
+    @Test
+    void hit() {
+        // Given: 보스 체력 500
+        // When: 100 데미지 피격
+        boss.hit(100);
+        
+        // Then: 체력 감소 및 파괴 아님
+        assertEquals(400, boss.getHealth());
+        assertFalse(boss.isDestroyed());
+        
+        // When: 마지막 피격
+        boss.hit(400);
+        
+        // Then: 파괴 상태 전환 및 스프라이트 변경
+        assertEquals(0, boss.getHealth());
+        assertTrue(boss.isDestroyed());
+        assertEquals(SpriteType.Explosion, boss.getSpriteType());
+    }
+    
+    // ---------------------- Attack Pattern Test ----------------------
+    
+    @Test
+    void updateAttackPattern_PhaseTransition() {
+        // 초기 Phase: 1 (HOMING_MISSILE)
+        assertEquals(1, boss.getAttackPhase());
+        
+        // Mock Player 설정 (타겟 필요)
+        when(mockPlayer.getPositionX()).thenReturn(500);
+        when(mockPlayer.getPositionY()).thenReturn(500);
+        when(mockPlayer.getCurrentHealthPoints()).thenReturn(100);
+        
+        GameCharacter[] players = {mockPlayer};
+        
+        // 1. Phase 1 실행 (쿨다운 완료 상태)
+        boss.updateAttackPattern(players);
+        
+        // 검증: HOMING_MISSILE 발사됨
+        assertEquals(1, boss.getProjectiles().size());
+        
+        // 검증: Phase 2 (LASER_CHARGE)로 전환
+        assertEquals(2, boss.getAttackPhase());
+        assertNotEquals(0, boss.getLaserChargeTimer(), "레이저 충전 타이머가 시작되어야 합니다.");
+        
+        // 2. Phase 2 실행 (충전/발사 쿨다운은 완료 상태)
+        // 충전 완료 -> 해골 소환 및 레이저 발사 딜레이 시작
+        boss.updateAttackPattern(players);
+        // 검증: 해골이 소환되어야 함 (총알 목록이 1 + 2 = 3개여야 함)
+        assertEquals(3, boss.getProjectiles().size());
+        
+        // 3. Phase 2 - 레이저 발사 딜레이 완료 후 레이저 발사
+        // laserFireDelayCooldown만 완료
+        boss.updateAttackPattern(players);
+        // 검증: 레이저가 발사되어야 함 (3 + 6 = 9개)
+        assertEquals(9, boss.getProjectiles().size());
+        
+        // 4. Phase 2 - 레이저 활성화 기간 완료 후 Phase 3로 전환
+        boss.updateAttackPattern(players);
+        
+        // 검증: Phase 3 (SPREAD_CHARGE)로 전환
+        assertEquals(3, boss.getAttackPhase());
+        
+        // 5. Phase 3 실행 (쿨다운 완료 상태)
+        boss.updateAttackPattern(players);
+        
+        // 검증: Phase 1 (HOMING_MISSILE)로 루프 전환
+        assertEquals(1, boss.getAttackPhase());
     }
 }
