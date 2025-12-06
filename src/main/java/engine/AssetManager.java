@@ -209,7 +209,7 @@ public final class AssetManager {
          * Enemy B.
          */
         EnemyB_Move(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
-        EnemyB_Attack(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
+        EnemyB_Weapon(SourceCategory.WEAPON, "enemy/typeB_weapon.png", 24, 10),
         /**
          * Enemy C.
          */

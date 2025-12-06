@@ -4,6 +4,7 @@ import engine.AssetManager.SpriteType;
 import engine.utils.Cooldown;
 import entity.EnemyShip;
 import entity.EnemyTypeA;
+import entity.EnemyTypeB;
 import entity.character.GameCharacter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,6 +55,9 @@ public class EnemyManager {
             if (enemy instanceof EnemyTypeA) {
                 ((EnemyTypeA) enemy).update(target, this.enemies);
                 ((EnemyTypeA) enemy).tryAttack(target, gameScreen.getWeapons());
+            } else if (enemy instanceof EnemyTypeB) {
+                ((EnemyTypeB) enemy).update(target, this.enemies);
+                ((EnemyTypeB) enemy).tryAttack(target, gameScreen.getWeapons());
             } else {
                 enemy.update(target);
             }
@@ -102,12 +106,12 @@ public class EnemyManager {
         EnemyShip enemy;
         int type = random.nextInt(3);
         GameState gameState = gameScreen.getGameState();
-        switch (type) { // TODO: enemy 타입 만든 후 수정 예정
+        switch (type) {
             case 0:
                 enemy = new EnemyTypeA(x, y, SpriteType.EnemyA_Move);
                 break;
             case 1:
-                enemy = new EnemyShip(x, y, SpriteType.EnemyB_Move);
+                enemy = new EnemyTypeB(x, y, SpriteType.EnemyB_Move);
                 break;
             case 2:
             default:
