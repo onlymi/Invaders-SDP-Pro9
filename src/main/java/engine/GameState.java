@@ -378,6 +378,7 @@ public class GameState {
         }
         
         String valueStr = (effectValue != null) ? " (value: " + effectValue + ")" : "";
+        int playerId = playerIndex + 1;
         
         if (state.active && state.cooldown != null) {
             // Extend existing effect
@@ -385,8 +386,8 @@ public class GameState {
             
             state.effectValue = effectValue;
             
-            logger.info("[GameState] Player " + playerIndex + " extended " + type
-                + valueStr + ") by " + durationSeconds + "s to " + state.cooldown.getDuration());
+            logger.info("[GameState] Player " + playerId + " extended " + type
+                + valueStr + " by " + durationSeconds + "s to " + state.cooldown.getDuration());
         } else {
             // Start new effect
             state.cooldown = Core.getCooldown(durationSeconds * 1000);
@@ -395,8 +396,8 @@ public class GameState {
             
             state.effectValue = effectValue;
             
-            logger.info("[GameState] Player " + playerIndex + " started " + type
-                + valueStr + ") for " + durationSeconds + "s");
+            logger.info("[GameState] Player " + playerId + " started " + type
+                + valueStr + " for " + durationSeconds + "s");
         }
     }
     
@@ -461,8 +462,10 @@ public class GameState {
             for (Map.Entry<ItemEffectType, EffectState> entry : effects.entrySet()) {
                 EffectState state = entry.getValue();
                 if (state.active && state.cooldown != null && state.cooldown.checkFinished()) {
+                    int playerId = p + 1;
                     logger.info(
-                        "[GameState] Player " + p + " effect " + entry.getKey() + " expired.");
+                        "[GameState] Player " + playerId + " effect " + entry.getKey()
+                            + " expired.");
                     state.active = false;
                     state.cooldown = null;  // Release reference
                     state.effectValue = null;
@@ -474,11 +477,7 @@ public class GameState {
         updateActiveItemCooldowns();
     }
     
-    /**
-     * Clear all active effects for a specific player
-     */
-    public void clearEffects(int playerIndex) {
-        //
+    public void clearEffect(int playerIndex, ItemEffectType type) {
         if (playerIndex < 0 || playerIndex >= NUM_PLAYERS) {
             return;
         }
@@ -488,18 +487,35 @@ public class GameState {
             return;
         }
         
-        // for - all effect types for this player
-        for (Map.Entry<ItemEffectType, EffectState> entry : effects.entrySet()) {
-            // get effect state
-            EffectState state = entry.getValue();
-            // if state active then false
-            if (state.active) {
-                state.active = false;
-                state.cooldown = null;
-                state.effectValue = null;
-            }
+        EffectState state = effects.get(type);
+        if (state == null) {
+            return;
         }
-        logger.info("[GameState] Player " + playerIndex + ": All effects cleared.");
+        
+        state.active = false;
+        state.cooldown = null;
+        state.effectValue = null;
+    }
+    
+    /**
+     * Clear all active effects for a specific player
+     */
+    public void clearEffects(int playerIndex) {
+        if (playerIndex < 0 || playerIndex >= NUM_PLAYERS) {
+            return;
+        }
+        
+        Map<ItemEffectType, EffectState> effects = playerEffects.get(playerIndex);
+        if (effects == null) {
+            return;
+        }
+        
+        for (ItemEffectType type : ItemEffectType.values()) {
+            clearEffect(playerIndex, type);
+        }
+        
+        int playerId = playerIndex + 1;
+        logger.info("[GameState] Player " + playerId + ": All effects cleared.");
     }
     
     /**
@@ -555,7 +571,7 @@ public class GameState {
     }
     
     /**
-     * Uses the first available active item for this player. (Simple v1: no slot UI, no selection)
+     * Uses the first available active item for this player.
      */
     public void useFirstActiveItem(final int playerIndex) {
         if (playerIndex < 0 || playerIndex >= NUM_PLAYERS) {
@@ -576,6 +592,7 @@ public class GameState {
         String type = data.getType().toUpperCase();
         
         boolean applied = false;
+        int playerId = playerIndex + 1;
         
         switch (type) {
             case "MOVE_SPEED_UP" -> {
@@ -585,15 +602,14 @@ public class GameState {
                     data.getEffectValue(),
                     data.getEffectDuration()
                 );
-                logger.info("[GameState] MOVE_SPEED_UP activated!");
+                logger.info("[GameState] MOVE_SPEED_UP activated by P" + playerId + "!");
                 applied = true;
             }
             
             case "TIME_FREEZE" -> {
-                int playerId = playerIndex + 1;
                 boolean ok = ItemEffect.applyTimeFreeze(
                     this,
-                    playerId,
+                    playerIndex,
                     data.getEffectValue(),
                     data.getEffectDuration()
                 );
@@ -608,12 +624,11 @@ public class GameState {
             }
             
             case "TIME_SLOW" -> {
-                int playerId = playerIndex + 1;
                 boolean ok = ItemEffect.applyTimeSlow(
                     this,
-                    playerId,
-                    data.getEffectValue(),      // slow % (e.g., 50)
-                    data.getEffectDuration()    // seconds
+                    playerIndex,
+                    data.getEffectValue(),
+                    data.getEffectDuration()
                 );
                 if (ok) {
                     logger.info("[GameState] TIME_SLOW activated by P" + playerId
@@ -624,10 +639,9 @@ public class GameState {
             }
             
             case "DASH" -> {
-                int playerId = playerIndex + 1;
                 boolean ok = ItemEffect.applyDash(
                     this,
-                    playerId,
+                    playerIndex,
                     data.getEffectValue(),
                     data.getEffectDuration()
                 );
@@ -640,17 +654,17 @@ public class GameState {
             }
             
             case "SHIELD" -> {
-                addEffect(playerIndex,
+                addEffect(
+                    playerIndex,
                     ItemEffectType.SHIELD,
                     data.getEffectValue(),
                     data.getEffectDuration()
                 );
-                logger.info("[GameState] SHIELD activated!");
+                logger.info("[GameState] SHIELD activated by P" + playerId + "!");
                 applied = true;
             }
             
             default -> {
-                // Handle PET_* family
                 if (type.startsWith("PET_")) {
                     addEffect(
                         playerIndex,
@@ -658,7 +672,7 @@ public class GameState {
                         data.getEffectValue(),
                         data.getEffectDuration()
                     );
-                    logger.info("[GameState] PET item activated: " + type
+                    logger.info("[GameState] PET item activated by P" + playerId + ": " + type
                         + " (value=" + data.getEffectValue()
                         + ", duration=" + data.getEffectDuration() + "s)");
                     applied = true;
@@ -668,10 +682,9 @@ public class GameState {
             }
         }
         
-        // 슬롯 비우기
         if (applied) {
             clearActiveSlot(playerIndex);
-            logger.info("[GameState] Player " + (playerIndex + 1)
+            logger.info("[GameState] Player " + playerId
                 + " used active item and cleared slot: " + data.getId());
         }
     }

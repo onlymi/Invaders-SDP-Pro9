@@ -165,6 +165,9 @@ public final class AssetManager {
         
         BossMainBody(SourceCategory.ENEMY, "boss_main.png", 240, 160),
         
+        // pet_gun bullet
+        PetGunProjectile(SourceCategory.WEAPON, "pet/pet_gun_bullet.png", 16, 16),
+        
         /**
          * Player ship.
          */
@@ -232,16 +235,16 @@ public final class AssetManager {
         /**
          * Item Graphics Temp.
          */
-        ItemScore(SourceCategory.ITEM, 5, 5),
-        ItemCoin(SourceCategory.ITEM, 5, 5),
-        ItemHeal(SourceCategory.ITEM, 5, 5),
-        ItemScoreBooster(SourceCategory.ITEM, 5, 5),
-        ItemMoveSpeedUp(SourceCategory.ITEM, 5, 5),
-        ItemTimeFreeze(SourceCategory.ITEM, 5, 5),
-        ItemTimeSlow(SourceCategory.ITEM, 5, 5),
-        ItemDash(SourceCategory.ITEM, 5, 5),
-        ItemPetGun(SourceCategory.ITEM, 5, 5),
-        ItemShield(SourceCategory.ITEM, 5, 5);
+        ItemScore(SourceCategory.ITEM_IMAGE, "SCORE.png", 32, 32),
+        ItemCoin(SourceCategory.ITEM_IMAGE, "COIN.png", 32, 32),
+        ItemHeal(SourceCategory.ITEM_IMAGE, "HEAL.png", 32, 32),
+        ItemScoreBooster(SourceCategory.ITEM_IMAGE, "SCOREBOOST.png", 32, 32),
+        ItemMoveSpeedUp(SourceCategory.ITEM_IMAGE, "MOVE_SPEED_UP.png", 32, 32),
+        ItemTimeFreeze(SourceCategory.ITEM_IMAGE, "TIME_FREEZE.png", 32, 32),
+        ItemTimeSlow(SourceCategory.ITEM_IMAGE, "TIME_SLOW.png", 32, 32),
+        ItemDash(SourceCategory.ITEM_IMAGE, "DASH.png", 32, 32),
+        ItemShield(SourceCategory.ITEM_IMAGE, "SHIELD.png", 32, 32),
+        ItemPetGun(SourceCategory.ITEM_IMAGE, "PET_GUN.png", 32, 32);
         
         // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;

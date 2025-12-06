@@ -63,7 +63,7 @@ class AuthScreenTest {
         
         // Cooldown(1000)을 Cooldown(0)으로 바꿔서 inputDelay를 즉시 통과시킴
         coreMock.when(() -> Core.getCooldown(anyInt()))
-            .thenReturn(new Cooldown(0));
+            .thenReturn(new Cooldown(-1));
         
         // drawManager.getAuthScreenRenderer()가 null을 반환하지 않도록 설정
         when(drawManager.getAuthScreenRenderer()).thenReturn(authScreenRenderer);

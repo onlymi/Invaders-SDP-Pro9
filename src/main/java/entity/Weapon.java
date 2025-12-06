@@ -320,6 +320,40 @@ public class Weapon extends Entity {
         this.homingTimer = null;
     }
     
+    // Set direction for item pet series
+    public void setDirection(int dirX, int dirY) {
+        this.velocityX = 0;
+        this.velocityY = 0;
+        
+        if (dirX < 0) {
+            this.velocityX = -this.speed;
+        } else if (dirX > 0) {
+            this.velocityX = this.speed;
+        }
+        
+        if (dirY > 0) {
+            this.velocityY = this.speed;
+        } else if (dirY < 0) {
+            this.velocityY = -this.speed;
+        }
+        
+        if (this.velocityX == 0 && this.velocityY == 0) {
+            this.velocityY = -this.speed;
+        }
+        
+        if (this.velocityX != 0 && this.velocityY != 0) {
+            this.velocityX = (int) (this.velocityX * DIAGONAL_CORRECTION_FACTOR);
+            this.velocityY = (int) (this.velocityY * DIAGONAL_CORRECTION_FACTOR);
+        }
+        
+        if (this.velocityX != 0 || this.velocityY != 0) {
+            this.rotation =
+                Math.toDegrees(Math.atan2(this.velocityY, this.velocityX)) + 90;
+        } else {
+            this.rotation = 0;
+        }
+    }
+    
     public void setDuration(final int duration) {
         this.duration = duration;
     }

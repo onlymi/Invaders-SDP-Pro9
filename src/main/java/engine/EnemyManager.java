@@ -41,6 +41,13 @@ public class EnemyManager {
         if (gameScreen.getGameState().areEnemiesFrozen()) {
             return;
         }
+        
+        double enemySpeedMultiplier = 1.0;
+        GameState state = gameScreen.getGameState();
+        if (state != null) {
+            enemySpeedMultiplier = state.getEnemySpeedMultiplier();
+        }
+        
         // 스폰 로직
         if (this.spawnCooldown.checkFinished()) {
             spawnEnemy();
@@ -52,6 +59,9 @@ public class EnemyManager {
             EnemyShip enemy = iterator.next();
             // 가장 가까운 플레이어 찾기
             GameCharacter target = findTargetPlayer(enemy);
+            
+            // 타겟 정보를 넘겨주며 적 업데이트
+            enemy.update(target, enemySpeedMultiplier);
             if (enemy instanceof EnemyTypeA) {
                 ((EnemyTypeA) enemy).update(target, this.enemies);
                 ((EnemyTypeA) enemy).tryAttack(target, gameScreen.getWeapons());
@@ -59,7 +69,7 @@ public class EnemyManager {
                 ((EnemyTypeB) enemy).update(target, this.enemies);
                 ((EnemyTypeB) enemy).tryAttack(target, gameScreen.getWeapons());
             } else {
-                enemy.update(target);
+                enemy.update(state);
             }
             
             // 화면 아래로 나가면 삭제
