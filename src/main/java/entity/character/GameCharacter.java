@@ -407,10 +407,12 @@ public abstract class GameCharacter extends Entity {
             Weapon weapon = WeaponPool.getWeapon(launchX, launchY, this.projectileSpeed,
                 this.projectileWidth, this.projectileHeight, this.team);
             
+            weapon.reset();
             weapon.setCharacter(this);
             weapon.setSpriteImage(this.projectileSpriteType);
             weapon.setPlayerId(this.playerId);
             weapon.setRange(this.currentStats.attackRange);
+            weapon.setDamage(this.currentStats.physicalDamage);
             weapons.add(weapon);
             return true;
         }

@@ -219,12 +219,12 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
         for (List<EnemyShip> column : this.enemyShips) {
             for (int i = 0; i < this.nShipsHigh; i++) {
                 if (i / (float) this.nShipsHigh < PROPORTION_C) {
-                    spriteType = SpriteType.EnemyShipC1;
+                    spriteType = SpriteType.EnemyC_move;
                 } else if (i / (float) this.nShipsHigh < PROPORTION_B
                     + PROPORTION_C) {
-                    spriteType = SpriteType.EnemyShipB1;
+                    spriteType = SpriteType.EnemyB_Move;
                 } else {
-                    spriteType = SpriteType.EnemyShipA1;
+                    spriteType = SpriteType.EnemyA_Move;
                 }
                 
                 column.add(new EnemyShip((SEPARATION_DISTANCE
@@ -475,13 +475,13 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
             
             int weaponSpeed = weapon_SPEED;
             
-            if (shooter.getSpriteType() == SpriteType.EnemyShipB1
-                || shooter.getSpriteType() == SpriteType.EnemyShipB2) {
+            if (shooter.getSpriteType() == SpriteType.EnemyB_Move
+                || shooter.getSpriteType() == SpriteType.EnemyB_Attack) {
                 weaponSpeed = weapon_SPEED * 2;
             }
             
-            if (shooter.getSpriteType() == SpriteType.EnemyShipC1
-                || shooter.getSpriteType() == SpriteType.EnemyShipC2) {
+            if (shooter.getSpriteType() == SpriteType.EnemyC_move
+                || shooter.getSpriteType() == SpriteType.EnemyC_attack) {
                 int offset = 6;
                 
                 Weapon b1 = WeaponPool.getWeapon(

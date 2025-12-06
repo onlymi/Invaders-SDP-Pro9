@@ -378,14 +378,14 @@ public class GameScreen extends Screen {
                         SoundManager.playOnce("shoot_enemies");
                     }
                 }
+                
+                updatePetsLogic();
+                manageCollisions();
+                cleanBullets();
+                
+                cleanItems();
+                manageItemPickups();
             }
-            
-            updatePetsLogic();
-            manageCollisions();
-            cleanBullets();
-            
-            cleanItems();
-            manageItemPickups();
             
             state.updateEffects();
             boolean lowHealth = false;
@@ -627,11 +627,13 @@ public class GameScreen extends Screen {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
             weapon.update();
+            
             boolean isOffScreenY = weapon.getPositionY() < SEPARATION_LINE_HEIGHT
                 || weapon.getPositionY() > this.height;
             boolean isOffScreenX = weapon.getPositionX() < 0
                 || weapon.getPositionX() > this.width;
-            if (isOffScreenY || isOffScreenX) {
+            
+            if (isOffScreenY || isOffScreenX || weapon.isExpired()) {
                 recyclable.add(weapon);
             }
         }
@@ -725,29 +727,26 @@ public class GameScreen extends Screen {
                         if (character.isInvincible()) {
                             continue;
                         }
-                        
-                        recyclable.add(weapon);
-                        
+                        if (weapon.getDuration() != -1 && weapon.isHitPlayer(p)) {
+                            continue;
+                        }
                         boolean hasShieldEffect =
-                            state != null && state.hasEffect(
-                                p,
+                            state != null && state.hasEffect(p,
                                 engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
                             );
-                        
+                        if (hasShieldEffect) {
+                            LOGGER.info("[GameScreen] Shield blocked damage for player " + (p + 1));
+                            recyclable.add(weapon);
+                            handled = true;
+                            break;
+                        }
                         character.takeDamage(weapon.getDamage());
-                        
                         // Decrement life if HP reaches 0
                         if (character.getCurrentHealthPoints() <= 0) {
                             this.state.decLife(p);
                             this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
                                 + state.getLivesRemaining());
                         }
-                        if (hasShieldEffect) {
-                            LOGGER.info("[GameScreen] Shield blocked damage for player " + (p + 1));
-                            handled = true;
-                            break;
-                        }
-                        
                         this.drawManager.getGameScreenRenderer()
                             .triggerExplosion(
                                 character.getPositionX(),
@@ -755,24 +754,18 @@ public class GameScreen extends Screen {
                                 false,
                                 state.getLivesRemaining() == 1
                             );
-                        
-                        character.takeDamage(1);
                         SoundManager.playOnce("explosion");
-                        // this.state.decLife(p);
-                        
-                        // Record damage for Survivor achievement check
                         this.tookDamageThisLevel = true;
-                        
                         this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
-                        
-                        this.LOGGER.info("Hit on player " + (p + 1) + ", team lives now: "
-                            + state.getLivesRemaining());
-                        
+                        if (weapon.getDuration() == -1) {
+                            recyclable.add(weapon);
+                        } else {
+                            weapon.addHitPlayer(p);
+                        }
                         handled = true;
                         break;
                     }
                 }
-                
                 if (handled) {
                     continue;
                 }
@@ -1157,5 +1150,9 @@ public class GameScreen extends Screen {
     
     public GameCharacter[] getCharacters() {
         return this.characters;
+    }
+    
+    public Set<Weapon> getWeapons() {
+        return this.weapons;
     }
 }

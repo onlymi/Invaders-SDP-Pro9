@@ -49,6 +49,7 @@ public final class WeaponPool {
             weapon = new Weapon(positionX, positionY, width, height, speed);
             weapon.setPositionX(positionX - width / 2);
         }
+        weapon.reset();
         weapon.setSize(width, height); // weapon size
         weapon.setTeam(team); // team setting
         // User's logic applied to weapon
@@ -91,6 +92,7 @@ public final class WeaponPool {
             weapon.setTeam(team); // team setting
         }
         // User's logic applied to weapon (consistency)
+        weapon.reset();
         weapon.setCharacter(null);
         weapon.setSpeedX(0);
         weapon.setBossBullet(false);
