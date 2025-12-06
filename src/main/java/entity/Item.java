@@ -7,7 +7,6 @@ import engine.gameplay.item.ActivationType;
 import engine.gameplay.item.ItemDB;
 import engine.gameplay.item.ItemData;
 import engine.gameplay.item.ItemEffect;
-import engine.gameplay.item.ItemManager;
 import java.awt.Color;
 import java.util.logging.Logger;
 
@@ -64,15 +63,7 @@ public class Item extends Entity {
         this.data = data;
         this.type = (data != null) ? data.getType() : null;
         this.itemSpeed = speed;
-        if (data != null && data.getDropTier() != null) {
-            try {
-                ItemManager.DropTier tier =
-                    ItemManager.DropTier.valueOf(data.getDropTier().trim().toUpperCase());
-                this.changeColor(tier.color);
-            } catch (IllegalArgumentException e) {
-                logger.warning("[Item] Unknown dropTier: " + data.getDropTier());
-            }
-        }
+        
         setSprite();
     }
     

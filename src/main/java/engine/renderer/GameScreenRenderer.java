@@ -537,13 +537,20 @@ public class GameScreenRenderer {
             return;
         }
         
-        boolean[][] sprite = AssetManager.getInstance().getSpriteMap(st);
+        AssetManager am = AssetManager.getInstance();
+        
+        java.awt.image.BufferedImage img = am.getSpriteImage(st);
+        if (img != null) {
+            drawImageFitBox(g2d, img, x, y, size);
+            return;
+        }
+        
+        boolean[][] sprite = am.getSpriteMap(st);
         if (sprite == null) {
             return;
         }
         
         int tier = parseDropTier(active.getDropTier());
-        
         Color uiColor = colorByTier(tier);
         drawSpriteFitBox(g2d, sprite, x, y, size, uiColor);
     }
@@ -637,5 +644,22 @@ public class GameScreenRenderer {
     
     public void triggerCustomExplosion(int x, int y, Color color) {
         explosions.add(new Explosion(x, y, color));
+    }
+    
+    private void drawImageFitBox(Graphics2D g2d,
+        java.awt.image.BufferedImage img,
+        int x, int y,
+        int boxSize) {
+        int w = img.getWidth();
+        int h = img.getHeight();
+        
+        double scale = Math.min((double) boxSize / w, (double) boxSize / h);
+        int drawW = (int) Math.round(w * scale);
+        int drawH = (int) Math.round(h * scale);
+        
+        int drawX = x + (boxSize - drawW) / 2;
+        int drawY = y + (boxSize - drawH) / 2;
+        
+        g2d.drawImage(img, drawX, drawY, drawW, drawH, null);
     }
 }
