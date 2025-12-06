@@ -209,9 +209,9 @@ public class GameScreen extends Screen {
         
         // --- Character Initialization & Control Setup ---
         this.enemyManager = new EnemyManager(this);
-        if (this.level == 6) {
-            int bossWidth = 240;
-            this.bossShip = new BossShip(this.width / 2 - bossWidth / 2, 120);
+        if (this.level == 1) {
+            int bossWidth = 480;
+            this.bossShip = new BossShip(this.width / 2 - bossWidth / 2, 40);
             this.LOGGER.info("Boss Stage Initialized!");
             this.basicGameSpace.setBossStage(true);
         } else {
@@ -240,6 +240,7 @@ public class GameScreen extends Screen {
             this.characters[0].setControlKeys(Core.getInputManager().getPlayer1Keys());
             this.characters[1] = null;
         }
+        // P1 Controls
         this.characters[0].setControlKeys(Core.getInputManager().getPlayer1Keys());
         
         if (state.getLevel() > 1) {
@@ -367,7 +368,7 @@ public class GameScreen extends Screen {
                 if (this.bossShip != null) {
                     this.bossShip.update();
                     if (!this.bossShip.isDestroyed()) {
-                        this.bossShip.shoot(this.weapons, this.characters);
+                        this.bossShip.updateAttackPattern(this.characters);
                     }
                 } else {
                     this.enemyManager.update();
@@ -505,7 +506,16 @@ public class GameScreen extends Screen {
             drawManager.getEntityRenderer()
                 .drawEntity(drawManager.getBackBufferGraphics(), this.bossShip,
                     this.bossShip.getPositionX(), this.bossShip.getPositionY());
+            for (Weapon bossWeapon : this.bossShip.getProjectiles()) {
+                drawManager.getEntityRenderer().drawEntity(
+                    drawManager.getBackBufferGraphics(), bossWeapon,
+                    bossWeapon.getPositionX(), bossWeapon.getPositionY());
+            }
+            drawManager.drawBossHpBar(this.bossShip, this);
         }
+        
+        
+        
         
         // Enemies
         this.enemyManager.draw();
@@ -631,12 +641,19 @@ public class GameScreen extends Screen {
         for (Weapon weapon : this.weapons) {
             weapon.update();
             
+            // [수정] 보스 패턴 무기(해골, 레이저)는 화면 밖으로 나가도 삭제하지 않음
+            boolean isBossPatternWeapon = (weapon.getSpriteType() == SpriteType.GasterBlaster
+                || weapon.getSpriteType() == SpriteType.BigLaserBeam);
+            
             boolean isOffScreenY = weapon.getPositionY() < SEPARATION_LINE_HEIGHT
                 || weapon.getPositionY() > this.height;
             boolean isOffScreenX = weapon.getPositionX() < 0
                 || weapon.getPositionX() > this.width;
             
-            if (isOffScreenY || isOffScreenX || weapon.isExpired()) {
+            boolean isOffScreen = isOffScreenY || isOffScreenX;
+            
+            // 삭제 조건: 보스 무기가 아니고 화면 밖으로 나갔거나, 수명이 다한 경우
+            if ((!isBossPatternWeapon && isOffScreen) || weapon.isExpired()) {
                 recyclable.add(weapon);
             }
         }
@@ -721,30 +738,49 @@ public class GameScreen extends Screen {
         for (Weapon weapon : this.weapons) {
             if (weapon.getOwnerPlayerId() == 0) {
                 // Enemy weapon vs players / pets
+                
+                // [수정] 가스터 블래스터(해골)는 충돌/피격 판정이 없으므로 무시
+                if (weapon.getSpriteType() == SpriteType.GasterBlaster) {
+                    continue;
+                }
+                
+                // [수정] 레이저 여부 확인
+                boolean isLaser = (weapon.getSpriteType() == SpriteType.BigLaserBeam);
+                
                 boolean handled = false;
                 
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     GameCharacter character = this.characters[p];
                     if (character != null && character.getCurrentHealthPoints() > 0
                         && checkCollision(weapon, character) && !this.levelFinished) {
+                        
                         if (character.isInvincible()) {
                             continue;
                         }
+                        
+                        // 이미 피격된 플레이어는 레이저 중복 데미지 방지 (Weapon의 hitPlayers 활용)
                         if (weapon.getDuration() != -1 && weapon.isHitPlayer(p)) {
                             continue;
                         }
+                        
                         boolean hasShieldEffect =
                             state != null && state.hasEffect(p,
                                 engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
                             );
+                        
                         if (hasShieldEffect) {
                             LOGGER.info("[GameScreen] Shield blocked damage for player " + (p + 1));
-                            recyclable.add(weapon);
+                            // 실드가 있어도 레이저는 사라지지 않게 처리 (일반 총알만 제거)
+                            if (!isLaser) {
+                                recyclable.add(weapon);
+                            }
                             handled = true;
                             break;
                         }
+                        
+                        // 데미지 처리
                         character.takeDamage(weapon.getDamage());
-                        // Decrement life if HP reaches 0
+                        
                         if (character.getCurrentHealthPoints() <= 0) {
                             this.state.decLife(p);
                             this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
@@ -760,27 +796,34 @@ public class GameScreen extends Screen {
                         SoundManager.playOnce("explosion");
                         this.tookDamageThisLevel = true;
                         this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
-                        if (weapon.getDuration() == -1) {
+                        
+                        // [핵심 수정] 레이저는 충돌 후에도 사라지지 않음 (관통)
+                        // 일반 총알(duration == -1)인 경우에만 삭제 목록에 추가
+                        if (!isLaser && weapon.getDuration() == -1) {
                             recyclable.add(weapon);
                         } else {
+                            // 레이저나 근접 무기처럼 지속되는 무기는 피격 기록만 추가
                             weapon.addHitPlayer(p);
                         }
                         handled = true;
                         break;
                     }
                 }
+                
+                // ... (Pet 충돌 로직은 그대로 두거나 필요시 동일하게 isLaser 체크 추가) ...
                 if (handled) {
                     continue;
                 }
                 
+                // Pet 충돌 로직 (레이저에 펫이 죽게 할지 여부는 선택사항, 여기선 기존 로직 유지하되 레이저 보호)
                 for (Pet pet : pets) {
-                    if (pet.isDead() || pet.isExpired()) {
-                        continue;
-                    }
+                    if (pet.isDead() || pet.isExpired()) continue;
                     
                     if (checkCollision(weapon, pet) && !this.levelFinished) {
-                        recyclable.add(weapon);
-                        
+                        // 레이저는 펫을 뚫고 지나감 (삭제 안 함)
+                        if (!isLaser) {
+                            recyclable.add(weapon);
+                        }
                         pet.takeDamage(1);
                         
                         this.LOGGER.info("[GameScreen] Pet hit by enemy weapon. owner="
@@ -791,9 +834,10 @@ public class GameScreen extends Screen {
                 }
                 
             } else {
+                // ... (Player weapon 로직 기존과 동일) ...
                 // Player weapon vs enemies
-                final int ownerId = weapon.getOwnerPlayerId(); // 1 or 2 (0 if unset)
-                final int pIdx = (ownerId == 2) ? 1 : 0; // default to P1 when unset
+                final int ownerId = weapon.getOwnerPlayerId();
+                final int pIdx = (ownerId == 2) ? 1 : 0;
                 boolean finalShip = this.enemyManager.lastShip();
                 
                 for (EnemyShip enemyShip : this.enemyManager.getEnemies()) {
@@ -876,59 +920,66 @@ public class GameScreen extends Screen {
                 }
             }
         }
-        
-        // player vs enemy body collision
-        for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
-            GameCharacter player = this.characters[p];
-            if (player == null || player.getCurrentHealthPoints() <= 0 || player.isInvincible()) {
-                continue;
-            }
-            
-            for (EnemyShip enemy : this.enemyManager.getEnemies()) {
-                if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
-                    boolean hasShieldEffect =
-                        state != null && state.hasEffect(
-                            p,
-                            engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
-                        );
-                    
-                    if (hasShieldEffect) {
-                        state.clearEffect(
-                            p,
-                            engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
-                        );
-                        
-                        double dx = enemy.getPositionX() - player.getPositionX();
-                        double dy = enemy.getPositionY() - player.getPositionY();
-                        double dist = Math.sqrt(dx * dx + dy * dy);
-                        
-                        if (dist > 0) {
-                            enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
-                        }
-                        
-                        this.LOGGER.info(
-                            "[GameScreen] Shield consumed and knocked back enemy for player "
-                                + (p + 1));
+        if (this.bossShip != null && !this.bossShip.isDestroyed()) {
+            for (Weapon bossWeapon : this.bossShip.getProjectiles()) {
+                // 가스터 블래스터(해골)는 충돌 무시
+                if (bossWeapon.getSpriteType() == SpriteType.GasterBlaster) continue;
+                
+                boolean isLaser = (bossWeapon.getSpriteType() == SpriteType.BigLaserBeam);
+                
+                for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
+                    GameCharacter player = this.characters[p];
+                    if (player == null || player.getCurrentHealthPoints() <= 0 || player.isInvincible()) {
                         continue;
                     }
                     
-                    player.takeDamage(5);
-                    
-                    // [FIXED] Decrement life on collision death
-                    if (player.getCurrentHealthPoints() <= 0) {
-                        this.state.decLife(p);
+                    for (EnemyShip enemy : this.enemyManager.getEnemies()) {
+                        if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
+                            boolean hasShieldEffect =
+                                state != null && state.hasEffect(
+                                    p,
+                                    engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
+                                );
+                            
+                            if (hasShieldEffect) {
+                                state.clearEffect(
+                                    p,
+                                    engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
+                                );
+                                
+                                double dx = enemy.getPositionX() - player.getPositionX();
+                                double dy = enemy.getPositionY() - player.getPositionY();
+                                double dist = Math.sqrt(dx * dx + dy * dy);
+                                
+                                if (dist > 0) {
+                                    enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                                }
+                                
+                                this.LOGGER.info(
+                                    "[GameScreen] Shield consumed and knocked back enemy for player "
+                                        + (p + 1));
+                                continue;
+                            }
+                            
+                            player.takeDamage(5);
+                            
+                            // [FIXED] Decrement life on collision death
+                            if (player.getCurrentHealthPoints() <= 0) {
+                                this.state.decLife(p);
+                            }
+                            
+                            double dx = enemy.getPositionX() - player.getPositionX();
+                            double dy = enemy.getPositionY() - player.getPositionY();
+                            double dist = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (dist > 0) {
+                                enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                            }
+                            
+                            this.LOGGER.info(
+                                "Collision! Player " + (p + 1) + " hit by enemy body.");
+                        }
                     }
-                    
-                    double dx = enemy.getPositionX() - player.getPositionX();
-                    double dy = enemy.getPositionY() - player.getPositionY();
-                    double dist = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (dist > 0) {
-                        enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
-                    }
-                    
-                    this.LOGGER.info(
-                        "Collision! Player " + (p + 1) + " hit by enemy body.");
                 }
             }
         }
@@ -948,6 +999,41 @@ public class GameScreen extends Screen {
         // 1. Create a basic rectangle (based on current position and size)
         Rectangle r1 = new Rectangle(a.getPositionX(), a.getPositionY(),
             a.getWidth(), a.getHeight());
+        if (b instanceof BossShip boss) {
+            for (java.awt.Rectangle r2 : boss.getHitboxRectangles()) {
+                
+                // BossShip의 개별 히트박스와 무기(a)의 충돌 검사
+                if (a.getRotation() != 0) {
+                    // 무기(a)가 회전된 경우: Area 사용
+                    Area areaA = new Area(r1);
+                    AffineTransform atA = new AffineTransform();
+                    
+                    double anchorX = r1.getCenterX();
+                    double anchorY = r1.getCenterY();
+                    
+                    if (a.getSpriteType() == SpriteType.BigLaserBeam) {
+                        anchorY = r1.getY();
+                    }
+                    
+                    atA.rotate(Math.toRadians(a.getRotation()), anchorX, anchorY);
+                    areaA.transform(atA);
+                    
+                    Area areaB = new Area(r2); // BossShip의 히트박스는 회전하지 않음
+                    areaA.intersect(areaB);
+                    if (!areaA.isEmpty()) {
+                        return true; // 충돌 발견 시 즉시 반환
+                    }
+                } else {
+                    // 무기(a)가 회전되지 않은 경우: 단순 intersects 사용
+                    if (r1.intersects(r2)) {
+                        return true; // 충돌 발견 시 즉시 반환
+                    }
+                }
+            }
+            // 모든 히트박스와 충돌하지 않은 경우
+            return false;
+        }
+        
         Rectangle r2 = new Rectangle(b.getPositionX(), b.getPositionY(),
             b.getWidth(), b.getHeight());
         

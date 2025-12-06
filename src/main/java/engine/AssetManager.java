@@ -163,7 +163,7 @@ public final class AssetManager {
         CharacterHealerWalk2(SourceCategory.CHARACTER, "healer/healer_basic.png",
             characterWidth, characterHeight),
         
-        BossMainBody(SourceCategory.ENEMY, "boss_main.png", 240, 160),
+        BossMainBody(SourceCategory.ENEMY, "boss_main.png", 360, 240),
         
         // pet_gun bullet
         PetGunProjectile(SourceCategory.WEAPON, "pet/pet_gun_bullet.png", 16, 16),
@@ -354,7 +354,7 @@ public final class AssetManager {
             soundMap.put("win", loadSound("sound/win.wav"));
             soundMap.put("lose", loadSound("sound/lose.wav"));
             soundMap.put("enemy_A_attack_sound", loadSound("sound/swing_weapon.wav"));
-            soundMap.put("laser_big", loadSound("sound/shoot_enemies.wav"));
+            soundMap.put("laser_big", loadSound("sound/laser.wav"));
             soundMap.put("boss_hit", loadSound("sound/invader_killed.wav"));
             
             LOGGER.info("Finished loading the sounds.");

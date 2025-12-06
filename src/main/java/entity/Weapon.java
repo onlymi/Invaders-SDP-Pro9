@@ -22,7 +22,6 @@ public class Weapon extends Entity {
     private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
     private int speed;
     private int speedX = 0;
-    private int speedY = 0;
     
     private int velocityX = 0;
     private int velocityY = 0;
@@ -59,6 +58,7 @@ public class Weapon extends Entity {
     
     private boolean isBossBullet = false;
     private boolean isBigLaser = false;
+    private boolean isBossSkull = false;
     
     /**
      * Constructor, establishes the bullet's properties.
@@ -98,9 +98,12 @@ public class Weapon extends Entity {
     
     public final void setCharacter(GameCharacter character) {
         this.character = character;
+        
+        this.velocityX = 0;
+        this.velocityY = 0;
+        this.speedX = 0;
+        
         if (this.character != null) {
-            this.velocityX = 0;
-            this.velocityY = 0;
             
             if (this.character.isFacingLeft()) {
                 this.velocityX = -this.speed;
@@ -176,6 +179,14 @@ public class Weapon extends Entity {
         setSpriteMap();
     }
     
+    public void setBossSkull(boolean isBossSkull) {
+        this.isBossSkull = isBossSkull;
+    }
+    
+    public boolean isBossSkull() {
+        return this.isBossSkull;
+    }
+    
     public void setSpriteType(SpriteType spriteType) {
         this.spriteType = spriteType;
     }
@@ -220,14 +231,17 @@ public class Weapon extends Entity {
                     - (this.positionY + this.height / 2.0);
                 double angle = Math.atan2(dy, dx);
                 
-                this.speedX = (int) (HOMING_AGILITY * Math.cos(angle));
-                this.speed = (int) (HOMING_AGILITY * Math.sin(angle));
+                this.velocityX = (int) (HOMING_AGILITY * Math.cos(angle));
+                this.velocityY = (int) (HOMING_AGILITY * Math.sin(angle));
                 this.rotation = Math.toDegrees(angle) - 90;
+            } else {
+                if (this.velocityX == 0 && this.velocityY == 0) {
+                    this.velocityY = this.speed;
+                }
             }
         }
         this.positionY += this.velocityY;
         this.positionX += this.velocityX;
-        this.positionX += this.speedX;
         
         if (this.maxRange > 0) {
             double distanceTraveled = Math.sqrt(
@@ -235,7 +249,6 @@ public class Weapon extends Entity {
                     + Math.pow(this.positionY - this.initialY, 2)
             );
             if (distanceTraveled >= this.maxRange * ATTACK_RANGE_FACTOR) {
-                // 화면 밖으로 보내서 소멸 처리 (일반적인 풀링 회수 방식)
                 this.positionY = OFF_SCREEN_Y;
             }
         }
@@ -248,6 +261,13 @@ public class Weapon extends Entity {
      */
     public final void setSpeed(final int speed) {
         this.speed = speed;
+        this.velocityY = speed;
+        this.velocityX = 0;
+    }
+    
+    public void setSpeedX(int speedX) {
+        this.speedX = speedX;
+        this.velocityX = speedX;
     }
     
     /**
@@ -259,9 +279,7 @@ public class Weapon extends Entity {
         return this.speed;
     }
     
-    public void setSpeedX(int speedX) {
-        this.speedX = speedX;
-    }
+    
     
     public int getSpeedX() {
         return this.speedX;
@@ -309,7 +327,7 @@ public class Weapon extends Entity {
     public void setHoming(GameCharacter target) {
         this.target = target;
         this.isHoming = true;
-        this.homingTimer = Core.getCooldown(9000);
+        this.homingTimer = Core.getCooldown(5000);
         this.homingTimer.reset();
     }
     
@@ -378,7 +396,7 @@ public class Weapon extends Entity {
     }
     
     public void reset() {
-        this.createTime = System.currentTimeMillis(); // 생성 시간 초기화
+        this.createTime = System.currentTimeMillis();
         this.duration = -1;
         this.isHoming = false;
         this.target = null;
@@ -386,6 +404,12 @@ public class Weapon extends Entity {
         this.speedX = 0;
         this.damage = 0;
         this.ownerPlayerId = 0;
+        this.playerId = 0;
+        this.maxRange = -1;
+        
+        // [추가] 재활용 시 색상을 기본값(흰색)으로 초기화
+        this.changeColor(Color.WHITE);
+        
         if (this.hitPlayers != null) {
             this.hitPlayers.clear();
         }
