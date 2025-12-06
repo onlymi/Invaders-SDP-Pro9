@@ -230,9 +230,6 @@ public class GameScreen extends Screen {
                 startX + gapBetweenCharacters, startY, Entity.Team.PLAYER2, 2);
             // P2 Controls
             this.characters[1].setControlKeys(Core.getInputManager().getPlayer2Keys());
-            if (state.getLevel() > 1 && state.getPlayerHealth(1) > 0) {
-                this.characters[1].setCurrentHealthPoints(state.getPlayerHealth(1));
-            }
         } else {
             this.characters[0] = CharacterSpawner.createCharacter(this.characterTypeP1,
                 startX, startY, Entity.Team.PLAYER1, 1);
@@ -242,8 +239,15 @@ public class GameScreen extends Screen {
         // P1 Controls
         this.characters[0].setControlKeys(Core.getInputManager().getPlayer1Keys());
         
-        if (state.getLevel() > 1 && state.getPlayerHealth(0) > 0) {
-            this.characters[0].setCurrentHealthPoints(state.getPlayerHealth(0));
+        if (state.getLevel() > 1) {
+            // Player 1 체력 불러오기
+            if (this.characters[0] != null) {
+                this.characters[0].setCurrentHealthPoints(state.getPlayerHealth(0));
+            }
+            // Player 2 체력 불러오기
+            if (this.characters[1] != null) {
+                this.characters[1].setCurrentHealthPoints(state.getPlayerHealth(1));
+            }
         }
         
         this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
@@ -343,9 +347,9 @@ public class GameScreen extends Screen {
                         state.useFirstActiveItem(1);
                     }
                     
+                    character.handleKeyboard(inputManager, this, this.weapons, deltaTime);
                     // Handle Input (Movement & Shooting)
-                    boolean shotFired = character.handleKeyboard(inputManager, this, this.weapons,
-                        deltaTime);
+                    boolean shotFired = character.isFiring();
                     
                     if (shotFired) {
                         SoundManager.playOnce("shoot");
@@ -412,7 +416,7 @@ public class GameScreen extends Screen {
             }
             
             // End condition: achieved kill count or TEAM lives exhausted.
-            if ((this.enemyKillCount >= this.killsToWin || !state.teamAlive())
+            if ((this.enemyKillCount >= this.killsToWin || (!state.teamAlive() && !teamAlive))
                 && !this.levelFinished) {
                 
                 WeaponPool.recycle(this.weapons);

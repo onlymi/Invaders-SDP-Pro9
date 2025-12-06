@@ -90,7 +90,7 @@ class GameScreenCollisionTest {
         when(mockAssetManager.getCharacterWidth()).thenReturn(32);
         when(mockAssetManager.getCharacterHeight()).thenReturn(32);
         
-        int[] dummyKeys = {0, 0, 0, 0, 0};
+        int[] dummyKeys = {0, 0, 0, 0, 0, 0, 0, 0, 0};
         when(mockInputManager.getPlayer1Keys()).thenReturn(dummyKeys);
         when(mockInputManager.getPlayer2Keys()).thenReturn(dummyKeys);
         

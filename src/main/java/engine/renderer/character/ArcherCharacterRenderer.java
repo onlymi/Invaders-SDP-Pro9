@@ -2,9 +2,13 @@ package engine.renderer.character;
 
 import engine.AssetManager;
 import engine.AssetManager.SpriteType;
+import entity.buff.RapidFireSkillBuff;
 import entity.character.ArcherCharacter;
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 public class ArcherCharacterRenderer {
@@ -68,10 +72,13 @@ public class ArcherCharacterRenderer {
             }
         }
         
+        int widthByScale = 0;
+        int heightByScale = 0;
+        
         // 이미지 그리기 (스케일 적용)
         if (currentSprite != null) {
-            int widthByScale = currentSprite.getWidth() * scale;
-            int heightByScale = currentSprite.getHeight() * scale;
+            widthByScale = currentSprite.getWidth() * scale;
+            heightByScale = currentSprite.getHeight() * scale;
             
             // character.getPositionX() 대신 인자로 받은 x, y 사용 (렌더러에서 좌표 보정을 할 수 있으므로)
             g.drawImage(currentSprite, x, y, widthByScale, heightByScale, null);
@@ -79,6 +86,32 @@ public class ArcherCharacterRenderer {
             if (color == Color.DARK_GRAY) {
                 g.setColor(new Color(0, 0, 0, 200));
                 g.fillRect(x, y, widthByScale, heightByScale);
+            }
+        }
+        
+        if (!character.isDie() && character.hasBuff(RapidFireSkillBuff.class)) {
+            BufferedImage skillEffect = assetManager.getSpriteImage(
+                SpriteType.CharacterArcherFirstSkill);
+            
+            if (skillEffect != null) {
+                Graphics2D g2d = (Graphics2D) g;
+                Composite originalComposite = g2d.getComposite(); // 원래 상태 저장
+                
+                // 투명도 설정 (0.5f는 50% 투명)
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+                
+                int effectWidth = skillEffect.getWidth() * scale;
+                int effectHeight = skillEffect.getHeight() * scale;
+                
+                // 캐릭터의 정중앙에 이펙트가 오도록 좌표 계산
+                // (캐릭터 중심 - 이펙트 중심)
+                int effectX = x + (widthByScale - effectWidth) / 2;
+                int effectY = y + (heightByScale - effectHeight) / 2;
+                
+                g2d.drawImage(skillEffect, effectX, effectY, effectWidth, effectHeight, null);
+                
+                // 그래픽 설정을 원래대로 복구
+                g2d.setComposite(originalComposite);
             }
         }
     }

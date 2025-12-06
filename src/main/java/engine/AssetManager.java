@@ -81,9 +81,20 @@ public final class AssetManager {
             characterWidth, characterHeight, 4),
         CharacterArcherGravestone(SourceCategory.CHARACTER, "archer/archer_gravestone.png",
             characterWidth, characterHeight),
+        // Archer Weapon
         CharacterArcherDefaultProjectile(SourceCategory.WEAPON,
             "archer/default_attack_archer.png",
             14, 32),
+        CharacterArcherFirstSkill(SourceCategory.WEAPON,
+            "archer/effect_skill1_archer.png",
+            49, 64),
+        CharacterArcherSecondSkill(SourceCategory.WEAPON,
+            "archer/effect_skill2_archer.png",
+            14, 32),
+        CharacterArcherUltimateSkill(SourceCategory.WEAPON,
+            "archer/effect_ultimate_archer.png",
+            14, 32),
+        
         /**
          * Wizard Character.
          */
@@ -198,7 +209,7 @@ public final class AssetManager {
          * Enemy B.
          */
         EnemyB_Move(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
-        EnemyB_Attack(SourceCategory.ENEMY, "enemy_type_b/Enemy_typeB.png", 48, 48),
+        EnemyB_Weapon(SourceCategory.WEAPON, "enemy/typeB_weapon.png", 24, 10),
         /**
          * Enemy C.
          */

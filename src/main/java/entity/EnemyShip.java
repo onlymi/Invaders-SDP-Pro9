@@ -94,7 +94,6 @@ public class EnemyShip extends Entity {
                 this.coinValue = A_TYPE_COINS;
                 break;
             case EnemyB_Move:
-            case EnemyB_Attack:
                 this.pointValue = B_TYPE_POINTS;
                 this.coinValue = B_TYPE_COINS;
                 break;
@@ -259,22 +258,6 @@ public class EnemyShip extends Entity {
     public boolean isHitRecently() {
         // 0.1초 내 피격되었는지 확인
         return (System.currentTimeMillis() - this.lastHitTime) < 500;
-    }
-    
-    private void changeAnimationSprite() {
-        if (spriteType == SpriteType.EnemyA_Move) {
-            spriteType = SpriteType.EnemyA_Attack;
-        } else if (spriteType == SpriteType.EnemyA_Attack) {
-            spriteType = SpriteType.EnemyA_Move;
-        } else if (spriteType == SpriteType.EnemyB_Move) {
-            spriteType = SpriteType.EnemyB_Attack;
-        } else if (spriteType == SpriteType.EnemyB_Attack) {
-            spriteType = SpriteType.EnemyB_Move;
-        } else if (spriteType == SpriteType.EnemyC_move) {
-            spriteType = SpriteType.EnemyC_attack;
-        } else if (spriteType == SpriteType.EnemyC_attack) {
-            spriteType = SpriteType.EnemyC_move;
-        }
     }
     
     public final int getDamage(int dmg) {

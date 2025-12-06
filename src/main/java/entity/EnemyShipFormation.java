@@ -453,57 +453,6 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
     }
     
     /**
-     * Shoots a weapon downwards. Fires weapons from C-type and B-type enemies in the formation.
-     * C-type fires double weapons, B-type fires faster weapons.
-     *
-     * @param weapons weapons set to add the weapon being shot.
-     */
-    public final void shoot(final Set<Weapon> weapons) {
-        if (this.shooters.isEmpty()) {
-            return;
-        }
-        
-        int index = (int) (Math.random() * this.shooters.size());
-        EnemyShip shooter = this.shooters.get(index);
-        
-        if (this.shootingCooldown.checkFinished()) {
-            this.shootingCooldown.reset();
-            
-            int weaponWidth = 3 * 2;
-            int weaponHeight = 5 * 2;
-            int spawnY = shooter.getPositionY() + shooter.getHeight();
-            
-            int weaponSpeed = weapon_SPEED;
-            
-            if (shooter.getSpriteType() == SpriteType.EnemyB_Move
-                || shooter.getSpriteType() == SpriteType.EnemyB_Attack) {
-                weaponSpeed = weapon_SPEED * 2;
-            }
-            
-            if (shooter.getSpriteType() == SpriteType.EnemyC_move
-                || shooter.getSpriteType() == SpriteType.EnemyC_attack) {
-                int offset = 6;
-                
-                Weapon b1 = WeaponPool.getWeapon(
-                    shooter.getPositionX() + shooter.getWidth() / 2 - offset,
-                    spawnY, weaponWidth, weaponHeight, weaponSpeed, Entity.Team.ENEMY);
-                weapons.add(b1);
-                
-                Weapon b2 = WeaponPool.getWeapon(
-                    shooter.getPositionX() + shooter.getWidth() / 2 + offset,
-                    spawnY, weaponWidth, weaponHeight, weaponSpeed, Entity.Team.ENEMY);
-                weapons.add(b2);
-                
-            } else {
-                Weapon b = WeaponPool.getWeapon(
-                    shooter.getPositionX() + shooter.getWidth() / 2,
-                    spawnY, weaponWidth, weaponHeight, weaponSpeed, Entity.Team.ENEMY);
-                weapons.add(b);
-            }
-        }
-    }
-    
-    /**
      * Destroys a ship.
      *
      * @param destroyedShip Ship to be destroyed.

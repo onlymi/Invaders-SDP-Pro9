@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 public abstract class Skill {
     
-    private static final Logger LOGGER = Core.getLogger();
+    private final Logger logger;
     
     protected String name;
     protected int manaCost;
@@ -24,11 +24,12 @@ public abstract class Skill {
         this.name = name;
         this.manaCost = manaCost;
         this.coolDown = Core.getCooldown(coolTime);
+        this.logger = Core.getLogger();
     }
     
     public void activate(GameCharacter attacker) {
         if (attacker == null) {
-            LOGGER.warning(name + " skill requires an attacker.");
+            this.logger.warning(name + " skill requires an attacker.");
             return;
         }
         if (!canActivate(attacker)) {
