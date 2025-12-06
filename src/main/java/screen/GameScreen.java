@@ -209,7 +209,7 @@ public class GameScreen extends Screen {
         
         // --- Character Initialization & Control Setup ---
         this.enemyManager = new EnemyManager(this);
-        if (this.level == 6) {
+        if (this.level == 1) {
             int bossWidth = 240;
             this.bossShip = new BossShip(this.width / 2 - bossWidth / 2, 120);
             this.LOGGER.info("Boss Stage Initialized!");
@@ -502,6 +502,7 @@ public class GameScreen extends Screen {
             drawManager.getEntityRenderer()
                 .drawEntity(drawManager.getBackBufferGraphics(), this.bossShip,
                     this.bossShip.getPositionX(), this.bossShip.getPositionY());
+            drawManager.drawBossHpBar(this.bossShip, this);
         }
         
         // Enemies
@@ -627,16 +628,21 @@ public class GameScreen extends Screen {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
             weapon.update();
-            if (weapon.isBossSkull()) {
-                continue;
-            }
+            boolean isBossPatternWeapon = (weapon.getSpriteType() == SpriteType.GasterBlaster
+                || weapon.getSpriteType() == SpriteType.BigLaserBeam);
             
+            // 화면 밖인지 체크 (기존 로직)
             boolean isOffScreenY = weapon.getPositionY() < SEPARATION_LINE_HEIGHT
                 || weapon.getPositionY() > this.height;
             boolean isOffScreenX = weapon.getPositionX() < 0
                 || weapon.getPositionX() > this.width;
             
-            if (isOffScreenY || isOffScreenX || weapon.isExpired()) {
+            boolean isOffScreen = isOffScreenY || isOffScreenX;
+            
+            // 수정된 삭제 조건:
+            // 1. 보스 패턴 무기가 아니고 화면 밖으로 나갔거나
+            // 2. 수명(duration)이 다 되었을 때만 삭제
+            if ((!isBossPatternWeapon && isOffScreen) || weapon.isExpired()) {
                 recyclable.add(weapon);
             }
         }
@@ -727,6 +733,11 @@ public class GameScreen extends Screen {
             if (weapon.getOwnerPlayerId() == 0) {
                 // Enemy weapon vs players / pets
                 boolean handled = false;
+                
+                if (weapon.getSpriteType() == SpriteType.GasterBlaster
+                    || weapon.getSpriteType() == SpriteType.BigLaserBeam) {
+                    continue;
+                }
                 
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     GameCharacter character = this.characters[p];
