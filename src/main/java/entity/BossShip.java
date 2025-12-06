@@ -134,11 +134,12 @@ public class BossShip extends EnemyShip {
             // Missile Interval Cooldown Check
             if (this.attackCooldown.checkFinished()) {
                 
-                SoundManager.playOnce("shoot_enemies");
-                
                 // Create a missile projectile
                 Weapon missile = WeaponPool.getWeapon(spawnX, spawnY,
                     MISSILE_SPEED, BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
+                missile.setBossBullet(true);
+                missile.changeColor(Color.RED);
+                missile.setSize(BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT);
                 weapons.add(missile);
                 
                 // If a target exists, enable homing behavior on the missile
@@ -164,8 +165,8 @@ public class BossShip extends EnemyShip {
                 
                 // Constants for positioning
                 int xOffset = 180; // Horizontal distance from boss center
-                int skullY = spawnY - 100; // Y position for skulls
-                double laserY = spawnY + (SKULL_HEIGHT / 2.0); // Laser origin Y (center of skull)
+                int skullY = spawnY - 100; // Y position for skulls (Top-Left Y of Skull)
+                double laserOriginY = skullY + (SKULL_HEIGHT / 2.0); // Laser origin Y (center of skull)
                 
                 // [Step 1] Spawn Skulls & Aim (Warning Phase)
                 if (!this.hasSpawnedSkulls) {
@@ -179,17 +180,19 @@ public class BossShip extends EnemyShip {
                             : spawnY + 600;
                     
                     // Calculate angle for the Left Skull to aim at the target
-                    double startXLeft = (spawnX - xOffset);
-                    this.lockedAngleLeft = Math.atan2(targetY - laserY, targetX - startXLeft);
+                    double startXLeft = (spawnX - xOffset) + 30; // <--- X좌표에 +30
+                    double startYLeft = laserOriginY + 30; // <--- Y좌표에 +30
+                    this.lockedAngleLeft = Math.atan2(targetY - startYLeft, targetX - startXLeft); // <--- 수정된 좌표로 각도 계산
                     
                     // Calculate angle for the Right Skull to aim at the target
-                    double startXRight = (spawnX + xOffset);
-                    this.lockedAngleRight = Math.atan2(targetY - laserY, targetX - startXRight);
-                    
+                    double startXRight = (spawnX + xOffset) + 30; // <--- X좌표에 +30
+                    double startYRight = laserOriginY + 30; // <--- Y좌표에 +30
+                    this.lockedAngleRight = Math.atan2(targetY - startYRight, targetX - startXRight); // <--- 수정된 좌표로 각도 계산
                     // Spawn Left Skull and rotate it towards the target
                     this.activeLeftSkull = WeaponPool.getWeapon(spawnX - xOffset, skullY, 0,
                         SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
                     this.activeLeftSkull.setSpriteType(SpriteType.GasterBlaster);
+                    this.activeLeftSkull.setBossSkull(true);
                     this.activeLeftSkull.setRotation(Math.toDegrees(this.lockedAngleLeft));
                     weapons.add(this.activeLeftSkull);
                     
@@ -197,6 +200,7 @@ public class BossShip extends EnemyShip {
                     this.activeRightSkull = WeaponPool.getWeapon(spawnX + xOffset, skullY, 0,
                         SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
                     this.activeRightSkull.setSpriteType(SpriteType.GasterBlaster);
+                    this.activeRightSkull.setBossSkull(true);
                     this.activeRightSkull.setRotation(Math.toDegrees(this.lockedAngleRight));
                     weapons.add(this.activeRightSkull);
                     
@@ -206,15 +210,15 @@ public class BossShip extends EnemyShip {
                 } else if (!this.isFiring) { // [Step 2] Fire Lasers (Active Phase)
                     // Check if the warning delay has passed
                     if (this.laserFireDelayCooldown.checkFinished()) {
-                        SoundManager.playOnce("laser_big");
                         
                         double laserSpeed = 0; // Static beam (speed 0)
                         int laserLength = 2000; // Very long length to cover the screen
                         
                         // Create Left Lasers (Stack 3 beams for persistence against single hits)
-                        double startXLeft = spawnX - xOffset;
+                        double startXLeft = (spawnX - xOffset) + 30; // <--- X좌표에 +30
+                        double startYLeft = laserOriginY + 30;
                         for (int i = 0; i < 3; i++) {
-                            Weapon leftLaser = WeaponPool.getWeapon((int) startXLeft, (int) laserY,
+                            Weapon leftLaser = WeaponPool.getWeapon((int) startXLeft, (int) startYLeft,
                                 0, 11 * 4, laserLength, Entity.Team.ENEMY);
                             leftLaser.setBigLaser(true);
                             leftLaser.setBossBullet(false);
@@ -227,10 +231,12 @@ public class BossShip extends EnemyShip {
                         }
                         
                         // Create Right Lasers (Stack 3 beams)
-                        double startXRight = spawnX + xOffset;
+                        double startXRight = (spawnX + xOffset) + 30; // <--- X좌표에 +30
+                        double startYRight = laserOriginY + 30;
                         for (int i = 0; i < 3; i++) {
                             Weapon rightLaser = WeaponPool.getWeapon((int) startXRight,
-                                (int) laserY, 0, 11 * 4, laserLength, Entity.Team.ENEMY);
+                                (int) startYRight,
+                                0, 11 * 4, laserLength, Entity.Team.ENEMY);
                             rightLaser.setBigLaser(true);
                             rightLaser.setBossBullet(false);
                             rightLaser.setSpeedX(0);

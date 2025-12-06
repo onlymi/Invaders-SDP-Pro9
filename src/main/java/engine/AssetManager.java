@@ -347,7 +347,7 @@ public final class AssetManager {
             soundMap.put("special_ship_sound", loadSound("sound/special_ship_sound.wav"));
             soundMap.put("win", loadSound("sound/win.wav"));
             soundMap.put("lose", loadSound("sound/lose.wav"));
-            soundMap.put("laser_big", loadSound("sound/shoot_enemies.wav"));
+            soundMap.put("laser_big", loadSound("sound/laser.wav"));
             soundMap.put("boss_hit", loadSound("sound/invader_killed.wav"));
             
             LOGGER.info("Finished loading the sounds.");

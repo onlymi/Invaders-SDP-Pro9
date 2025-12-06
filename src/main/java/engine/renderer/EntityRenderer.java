@@ -101,6 +101,9 @@ public class EntityRenderer {
             double centerX = x + (entity.getWidth() * scale) / 2.0;
             double centerY = y + (entity.getHeight() * scale) / 2.0;
             
+            if (entity.getSpriteType() == SpriteType.BigLaserBeam) {
+                centerY = y;
+            }
             // getRotation()은 라디안 값을 반환하므로 Math.toRadians()를 제거함
             g2d.rotate(Math.toRadians(entity.getRotation()), centerX, centerY);
         }

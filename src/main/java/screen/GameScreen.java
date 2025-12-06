@@ -209,7 +209,7 @@ public class GameScreen extends Screen {
         
         // --- Character Initialization & Control Setup ---
         this.enemyManager = new EnemyManager(this);
-        if (this.level == 6) {
+        if (this.level == 1) {
             int bossWidth = 240;
             this.bossShip = new BossShip(this.width / 2 - bossWidth / 2, 120);
             this.LOGGER.info("Boss Stage Initialized!");
@@ -623,10 +623,15 @@ public class GameScreen extends Screen {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
             weapon.update();
+            if (weapon.isBossSkull()) {
+                continue;
+            }
+            
             boolean isOffScreenY = weapon.getPositionY() < SEPARATION_LINE_HEIGHT
                 || weapon.getPositionY() > this.height;
-            boolean isOffScreenX = weapon.getPositionX() < 0
+            boolean isOffScreenX = weapon.getPositionX() + weapon.getWidth() < 0
                 || weapon.getPositionX() > this.width;
+            
             if (isOffScreenY || isOffScreenX) {
                 recyclable.add(weapon);
             }
@@ -710,6 +715,11 @@ public class GameScreen extends Screen {
     private void manageCollisions() {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
+            
+            if (weapon.isBossSkull()) {
+                continue;
+            }
+            
             if (weapon.getOwnerPlayerId() == 0) {
                 // Enemy weapon vs players / pets
                 boolean handled = false;

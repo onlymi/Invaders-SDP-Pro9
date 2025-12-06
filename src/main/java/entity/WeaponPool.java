@@ -1,6 +1,7 @@
 package entity;
 
 import entity.Entity.Team;
+import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,7 +55,11 @@ public final class WeaponPool {
         // User's logic applied to weapon
         weapon.setCharacter(null);
         weapon.setSpeedX(0);
+        weapon.setOwnerPlayerId(0);
+        weapon.changeColor(Color.WHITE);
         weapon.setBossBullet(false);
+        weapon.setBigLaser(false);
+        weapon.setBossSkull(false);
         weapon.setRotation(0);
         weapon.resetHoming();
         weapon.setSpriteMap();
@@ -94,7 +99,10 @@ public final class WeaponPool {
         weapon.setCharacter(null);
         weapon.setSpeedX(0);
         weapon.setBossBullet(false);
+        weapon.setBigLaser(false);
+        weapon.setBossSkull(false);
         weapon.setRotation(0);
+        weapon.changeColor(Color.WHITE);
         weapon.resetHoming();
         weapon.setSpriteMap();
         return weapon;
