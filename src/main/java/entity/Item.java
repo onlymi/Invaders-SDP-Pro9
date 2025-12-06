@@ -198,6 +198,15 @@ public class Item extends Entity {
             case "TIME_FREEZE":
                 applied = ItemEffect.applyTimeFreeze(gameState, playerId, value, duration);
                 break;
+            case "TIME_SLOW":
+                applied = ItemEffect.applyTimeSlow(gameState, playerId, value, duration);
+                break;
+            case "DASH":
+                applied = ItemEffect.applyDash(gameState, playerId, value, duration);
+                break;
+            case "PET_GUN":
+                applied = ItemEffect.applyPetSupport(gameState, playerId, duration);
+                break;
             default:
                 this.logger.warning("[Item]: No ItemEffect for type " + data.getType());
                 applied = false;

@@ -39,6 +39,13 @@ public class EnemyManager {
         if (gameScreen.getGameState().areEnemiesFrozen()) {
             return;
         }
+        
+        double enemySpeedMultiplier = 1.0;
+        GameState state = gameScreen.getGameState();
+        if (state != null) {
+            enemySpeedMultiplier = state.getEnemySpeedMultiplier();
+        }
+        
         // 스폰 로직
         if (this.spawnCooldown.checkFinished()) {
             spawnEnemy();
@@ -53,7 +60,7 @@ public class EnemyManager {
             GameCharacter target = findTargetPlayer(enemy);
             
             // 타겟 정보를 넘겨주며 적 업데이트
-            enemy.update(target);
+            enemy.update(target, enemySpeedMultiplier);
             
             // 화면 아래로 나가면 삭제
             if (enemy.getPositionY() > gameScreen.getHeight()) {

@@ -173,22 +173,24 @@ public class EnemyShip extends Entity {
         update();
     }
     
-    public void update(GameCharacter player) {
+    public void update(GameCharacter player, double speedMultiplier) {
+        if (speedMultiplier < 0.0) {
+            speedMultiplier = 0.0;
+        }
+        
         update();
         
         if (player != null && !player.isInvincible()) {
-            moveTowards(player);
+            moveTowards(player, speedMultiplier);
         }
         
         long currentTime = System.currentTimeMillis();
         double floatingOffset =
             Math.sin(currentTime * FLOATING_SPEED + this.floatingPhase) * FLOATING_AMPLITUDE;
         
-        // 넉벡 적용
         this.preciseX += knockbackX;
         this.preciseY += knockbackY;
         
-        // 넉벡 감쇠
         this.knockbackX *= knockbackDecay;
         this.knockbackY *= knockbackDecay;
         if (Math.abs(this.knockbackX) < 0.1) {
@@ -199,6 +201,32 @@ public class EnemyShip extends Entity {
         }
         this.positionX = (int) preciseX;
         this.positionY = (int) (preciseY + floatingOffset);
+    }
+    
+    private void moveTowards(GameCharacter player, double speedMultiplier) {
+        double targetX = player.positionX;
+        double targetY = player.positionY;
+        
+        double dirX = targetX - this.positionX;
+        double dirY = targetY - this.positionY;
+        
+        if (dirX < 0) {
+            this.isFacingRight = false;
+        } else {
+            this.isFacingRight = true;
+        }
+        
+        double distance = Math.sqrt(dirX * dirX + dirY * dirY);
+        
+        if (distance > 0) {
+            dirX /= distance;
+            dirY /= distance;
+            
+            double speed = 1.0 * speedMultiplier;
+            
+            this.preciseX += dirX * speed;
+            this.preciseY += dirY * speed;
+        }
     }
     
     private void moveTowards(GameCharacter player) {

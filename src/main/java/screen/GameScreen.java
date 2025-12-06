@@ -226,9 +226,12 @@ public class GameScreen extends Screen {
         if (state.isCoop()) {
             this.characters[0] = CharacterSpawner.createCharacter(this.characterTypeP1,
                 startX - gapBetweenCharacters, startY, Entity.Team.PLAYER1, 1);
+            this.characters[0].setGameState(this.state);
+            
             this.characters[1] = CharacterSpawner.createCharacter(this.characterTypeP2,
                 startX + gapBetweenCharacters, startY, Entity.Team.PLAYER2, 2);
-            // P2 Controls
+            this.characters[1].setGameState(this.state);
+            
             this.characters[1].setControlKeys(Core.getInputManager().getPlayer2Keys());
             if (state.getLevel() > 1 && state.getPlayerHealth(1) > 0) {
                 this.characters[1].setCurrentHealthPoints(state.getPlayerHealth(1));
@@ -236,10 +239,10 @@ public class GameScreen extends Screen {
         } else {
             this.characters[0] = CharacterSpawner.createCharacter(this.characterTypeP1,
                 startX, startY, Entity.Team.PLAYER1, 1);
+            this.characters[0].setGameState(this.state);
             this.characters[0].setControlKeys(Core.getInputManager().getPlayer1Keys());
             this.characters[1] = null;
         }
-        // P1 Controls
         this.characters[0].setControlKeys(Core.getInputManager().getPlayer1Keys());
         
         if (state.getLevel() > 1 && state.getPlayerHealth(0) > 0) {
@@ -730,18 +733,18 @@ public class GameScreen extends Screen {
                                 engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
                             );
                         
-                        character.takeDamage(weapon.getDamage());
-                        
-                        // Decrement life if HP reaches 0
-                        if (character.getCurrentHealthPoints() <= 0) {
-                            this.state.decLife(p);
-                            this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
-                                + state.getLivesRemaining());
-                        }
                         if (hasShieldEffect) {
                             LOGGER.info("[GameScreen] Shield blocked damage for player " + (p + 1));
                             handled = true;
                             break;
+                        }
+                        
+                        character.takeDamage(weapon.getDamage());
+                        
+                        if (character.getCurrentHealthPoints() <= 0) {
+                            this.state.decLife(p);
+                            this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
+                                + state.getLivesRemaining());
                         }
                         
                         this.drawManager.getGameScreenRenderer()
@@ -752,11 +755,8 @@ public class GameScreen extends Screen {
                                 state.getLivesRemaining() == 1
                             );
                         
-                        character.takeDamage(1);
                         SoundManager.playOnce("explosion");
-                        // this.state.decLife(p);
                         
-                        // Record damage for Survivor achievement check
                         this.tookDamageThisLevel = true;
                         
                         this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
@@ -886,6 +886,32 @@ public class GameScreen extends Screen {
             
             for (EnemyShip enemy : this.enemyManager.getEnemies()) {
                 if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
+                    boolean hasShieldEffect =
+                        state != null && state.hasEffect(
+                            p,
+                            engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
+                        );
+                    
+                    if (hasShieldEffect) {
+                        state.clearEffect(
+                            p,
+                            engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
+                        );
+                        
+                        double dx = enemy.getPositionX() - player.getPositionX();
+                        double dy = enemy.getPositionY() - player.getPositionY();
+                        double dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist > 0) {
+                            enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                        }
+                        
+                        this.LOGGER.info(
+                            "[GameScreen] Shield consumed and knocked back enemy for player "
+                                + (p + 1));
+                        continue;
+                    }
+                    
                     player.takeDamage(5);
                     
                     // [FIXED] Decrement life on collision death
@@ -893,7 +919,6 @@ public class GameScreen extends Screen {
                         this.state.decLife(p);
                     }
                     
-                    // enemy knockback
                     double dx = enemy.getPositionX() - player.getPositionX();
                     double dy = enemy.getPositionY() - player.getPositionY();
                     double dist = Math.sqrt(dx * dx + dy * dy);
@@ -1090,8 +1115,8 @@ public class GameScreen extends Screen {
     }
     
     private void spawnPetForPlayer(int playerId, GameCharacter owner) {
-        int startX = owner.getPositionX() + owner.getWidth() + 10;
-        int startY = owner.getPositionY() - 10;
+        int startX = owner.getPositionX() + owner.getWidth() / 2;
+        int startY = owner.getPositionY() + owner.getHeight() / 2;
         
         int petWidth = 16;
         int petHeight = 16;
@@ -1099,6 +1124,23 @@ public class GameScreen extends Screen {
         
         long lifetimeMs = 6000L;
         long shotIntervalMs = 1000L;
+        
+        int dirX = 0;
+        int dirY = -1;
+        
+        if (owner.isFacingLeft()) {
+            dirX = -1;
+            dirY = 0;
+        } else if (owner.isFacingRight()) {
+            dirX = 1;
+            dirY = 0;
+        } else if (owner.isFacingFront()) {
+            dirX = 0;
+            dirY = 1;
+        } else if (owner.isFacingBack()) {
+            dirX = 0;
+            dirY = -1;
+        }
         
         Pet pet = new Pet(
             startX,
@@ -1110,7 +1152,9 @@ public class GameScreen extends Screen {
             Pet.PetKind.GUN,
             this.state,
             lifetimeMs,
-            shotIntervalMs
+            shotIntervalMs,
+            dirX,
+            dirY
         );
         
         pets.add(pet);

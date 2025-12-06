@@ -2,8 +2,10 @@ package entity.character;
 
 import engine.AssetManager.SpriteType;
 import engine.Core;
+import engine.GameState;
 import engine.InputManager;
 import engine.UserStats;
+import engine.gameplay.item.ItemEffect.ItemEffectType;
 import engine.utils.Cooldown;
 import entity.Entity;
 import entity.Weapon;
@@ -27,6 +29,12 @@ public abstract class GameCharacter extends Entity {
     protected ArrayList<Skill> skills;
     protected List<Buff> activeBuffs;
     protected boolean unlocked;
+    
+    protected GameState gameState;
+    private boolean moveSpeedUpActivePrev = false;
+    private boolean dashActivePrev = false;
+    private int lastMoveDirX = 0;
+    private int lastMoveDirY = 0;
     
     // Default stats value that only change at level-up
     protected final CharacterStats baseStats;
@@ -141,6 +149,55 @@ public abstract class GameCharacter extends Entity {
         }
         
         this.isDie = this.currentHealthPoints <= 0;
+        
+        if (this.gameState != null) {
+            int index = this.playerId - 1;
+            if (index >= 0 && index < GameState.NUM_PLAYERS) {
+                boolean dashNow = this.gameState.hasEffect(index, ItemEffectType.DASH);
+                
+                if (dashNow && !this.dashActivePrev) {
+                    int dirX = this.lastMoveDirX;
+                    int dirY = this.lastMoveDirY;
+                    
+                    if (dirX == 0 && dirY == 0) {
+                        dirX = 1;
+                    }
+                    
+                    int dashMultiplier = 1;
+                    Integer dashVal = this.gameState.getEffectValue(index, ItemEffectType.DASH);
+                    if (dashVal != null && dashVal > 0) {
+                        dashMultiplier = dashVal;
+                    }
+                    
+                    int baseStep = (int) Math.round(this.currentStats.movementSpeed);
+                    int dashDistance = baseStep * dashMultiplier * 48;
+                    
+                    double len = Math.sqrt(dirX * dirX + dirY * dirY);
+                    int shiftX;
+                    int shiftY;
+                    if (len == 0.0) {
+                        shiftX = dashDistance;
+                        shiftY = 0;
+                    } else {
+                        shiftX = (int) Math.round(dashDistance * dirX / len);
+                        shiftY = (int) Math.round(dashDistance * dirY / len);
+                    }
+                    
+                    this.positionX += shiftX;
+                    this.positionY += shiftY;
+                    
+                    Core.getLogger().info("[GameCharacter] DASH burst applied: dirX=" + dirX
+                        + ", dirY=" + dirY
+                        + ", step=" + baseStep
+                        + ", mul=" + dashMultiplier
+                        + ", dist=" + dashDistance
+                        + ", shiftX=" + shiftX
+                        + ", shiftY=" + shiftY);
+                }
+                
+                this.dashActivePrev = dashNow;
+            }
+        }
     }
     
     /**
@@ -248,6 +305,10 @@ public abstract class GameCharacter extends Entity {
         this.defaultAttackKey = keys[4];
     }
     
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
+    
     public boolean handleKeyboard(InputManager inputManager, Screen screen, Set<Weapon> weapons,
         float deltaTime) {
         initializeKeyboardPressing();
@@ -258,18 +319,29 @@ public abstract class GameCharacter extends Entity {
         if (inputManager.isKeyDown(this.leftKey)) {
             dx -= 1;
             this.isFacingLeft = true;
+            this.lastMoveDirX = -1;
         }
         if (inputManager.isKeyDown(this.rightKey)) {
             dx += 1;
             this.isFacingRight = true;
+            this.lastMoveDirX = 1;
         }
         if (inputManager.isKeyDown(this.upKey)) {
             dy -= 1;
             this.isFacingBack = true;
+            this.lastMoveDirY = -1;
         }
         if (inputManager.isKeyDown(this.downKey)) {
             dy += 1;
             this.isFacingFront = true;
+            this.lastMoveDirY = 1;
+        }
+        
+        if (dx == 0) {
+            this.lastMoveDirX = 0;
+        }
+        if (dy == 0) {
+            this.lastMoveDirY = 0;
         }
         
         if (dx != 0 || dy != 0) {
@@ -281,7 +353,19 @@ public abstract class GameCharacter extends Entity {
                 dy *= DIAGONAL_CORRECTION_FACTOR;
             }
             
-            float speed = this.currentStats.movementSpeed * MOVEMENT_SPEED_FACTOR * deltaTime;
+            float baseSpeed = this.currentStats.movementSpeed;
+            if (this.gameState != null) {
+                int index = this.playerId - 1;
+                if (index >= 0 && index < GameState.NUM_PLAYERS) {
+                    Integer percent = this.gameState.getEffectValue(index,
+                        ItemEffectType.MOVE_SPEED_UP);
+                    if (percent != null) {
+                        baseSpeed = (float) Math.round(baseSpeed * (1.0 + percent / 100.0));
+                    }
+                }
+            }
+            
+            float speed = baseSpeed * MOVEMENT_SPEED_FACTOR * deltaTime;
             int movementX = Math.round(dx * speed);
             int movementY = Math.round(dy * speed);
             
@@ -447,5 +531,21 @@ public abstract class GameCharacter extends Entity {
     
     public boolean isFacingBack() {
         return isFacingBack;
+    }
+    
+    public SpriteType getProjectileSpriteType() {
+        return this.projectileSpriteType;
+    }
+    
+    public int getProjectileWidth() {
+        return this.projectileWidth;
+    }
+    
+    public int getProjectileHeight() {
+        return this.projectileHeight;
+    }
+    
+    public int getProjectileSpeed() {
+        return this.projectileSpeed;
     }
 }

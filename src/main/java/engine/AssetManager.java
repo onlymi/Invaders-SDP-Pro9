@@ -154,6 +154,9 @@ public final class AssetManager {
         
         BossMainBody(SourceCategory.ENEMY, "boss_main.png", 240, 160),
         
+        // pet_gun bullet
+        PetGunProjectile(SourceCategory.WEAPON, "pet/pet_gun_bullet.png", 16, 16),
+        
         /**
          * Player ship.
          */
