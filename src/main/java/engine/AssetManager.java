@@ -163,7 +163,7 @@ public final class AssetManager {
         CharacterHealerWalk2(SourceCategory.CHARACTER, "healer/healer_basic.png",
             characterWidth, characterHeight),
         
-        BossMainBody(SourceCategory.ENEMY, "boss_main.png", 240, 160),
+        BossMainBody(SourceCategory.ENEMY, "boss_main.png", 360, 240),
         
         /**
          * Player ship.

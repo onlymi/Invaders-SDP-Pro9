@@ -7,6 +7,7 @@ import engine.utils.Cooldown;
 import entity.character.GameCharacter;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +39,8 @@ public class BossShip extends EnemyShip {
     private static final int SPREAD_BULLETS = 16;
     private static final int BOSS_BULLET_WIDTH = 20;
     private static final int BOSS_BULLET_HEIGHT = 20;
+    
+    // Skull & Laser Stats
     private static final int SKULL_WIDTH = 128;
     private static final int SKULL_HEIGHT = 128;
     
@@ -85,10 +88,11 @@ public class BossShip extends EnemyShip {
     final int screenHeight = Core.getFrameHeight();
     
     public BossShip(final int positionX, final int positionY) {
+        // 480x320 사이즈의 보스 스프라이트 사용
         super(positionX, positionY, SpriteType.BossMainBody);
         
-        this.width = 240;
-        this.height = 160;
+        this.width = 480;
+        this.height = 320;
         
         this.health = BOSS_INITIAL_HEALTH;
         this.initialHealth = BOSS_INITIAL_HEALTH;
@@ -132,7 +136,7 @@ public class BossShip extends EnemyShip {
         updateMovement();
         updateTimers();
         
-        // Update all boss projectiles (movement, animation)
+        // Update all boss projectiles (movement, animation, cleanup)
         updateProjectiles();
     }
     
@@ -162,6 +166,25 @@ public class BossShip extends EnemyShip {
         }
     }
     
+    private void updateProjectiles() {
+        List<Weapon> toRecycle = new ArrayList<>();
+        for (Weapon w : bossProjectiles) {
+            w.update();
+            
+            // 화면 밖으로 나갔거나(레이저/해골 제외), 충돌/수명만료로 인해 만료된 경우(duration=0 or expired)
+            boolean isLaserOrSkull = (w.getSpriteType() == SpriteType.GasterBlaster || w.getSpriteType() == SpriteType.BigLaserBeam);
+            
+            // 화면 밖 삭제 (일반 탄막만 해당)
+            boolean offScreen = w.getPositionY() > screenHeight || w.getPositionY() < 0
+                || w.getPositionX() < 0 || w.getPositionX() > screenWidth;
+            
+            if ((!isLaserOrSkull && offScreen) || w.isExpired()) {
+                toRecycle.add(w);
+            }
+        }
+        recycleWeapons(toRecycle);
+    }
+    
     @Override
     public final void move(final int distanceX, final int distanceY) {
         int movementX = this.movingRight ? this.currentSpeedX : -this.currentSpeedX;
@@ -187,22 +210,25 @@ public class BossShip extends EnemyShip {
         }
     }
     
+    // --- Phase 1: Homing Missile ---
     private void handleHomingMissilePhase(int spawnX, int spawnY, GameCharacter target) {
         if (this.attackCooldown.checkFinished()) {
             SoundManager.playOnce("shoot_enemies");
             
             Weapon missile = WeaponPool.getWeapon(spawnX, spawnY,
                 MISSILE_SPEED, BOSS_BULLET_WIDTH, BOSS_BULLET_HEIGHT, Entity.Team.ENEMY);
+            
             if (target != null) {
                 missile.setHoming(target);
             }
             
+            // 미사일 설정
             missile.changeColor(Color.RED);
-            // [추가] 미사일 공격력 설정 (1 데미지)
-            missile.setDamage(30);
+            missile.setDamage(1);
             
             this.bossProjectiles.add(missile);
             
+            // Transition
             this.attackPhase = ATTACK_LASER_CHARGE;
             this.laserChargeCooldown.reset();
             this.laserChargeTimer = LASER_CHARGE_TIME;
@@ -212,24 +238,24 @@ public class BossShip extends EnemyShip {
         }
     }
     
+    // --- Phase 2: Laser Charge ---
     private void handleLaserChargePhase(int spawnX, int spawnY, GameCharacter target) {
         if (!this.laserChargeCooldown.checkFinished()) return;
         
-        int xOffset = 180;
-        // [수정] 해골의 Y 위치를 명확하게 정의 (보스 본체 위쪽)
+        int xOffset = 360; // 480 폭에 맞게 조정
         int skullY = spawnY - 100;
         
         // Step 1: Spawn Skulls & Aim
         if (!this.hasSpawnedSkulls) {
-            // [수정] 인자 단순화 (계산된 좌표를 내부에서 일관되게 사용)
-            spawnSkulls(spawnX, xOffset, skullY, target);
+            // [수정] spawnY 인자 추가 전달
+            spawnSkulls(spawnX, spawnY, xOffset, skullY, target);
             this.hasSpawnedSkulls = true;
             this.laserFireDelayCooldown.reset();
         }
         // Step 2: Fire Lasers
         else if (!this.isFiring) {
             if (this.laserFireDelayCooldown.checkFinished()) {
-                // [수정] 저장된 해골 객체의 위치를 그대로 사용하여 발사
+                // [수정] fireLasers 인자 제거
                 fireLasers();
                 this.isFiring = true;
                 this.laserActiveCooldown.reset();
@@ -240,6 +266,7 @@ public class BossShip extends EnemyShip {
             if (this.laserActiveCooldown.checkFinished()) {
                 cleanupLaserPhase();
                 
+                // Transition
                 this.attackPhase = ATTACK_SPREAD_CHARGE;
                 this.spreadChargeCooldown.reset();
                 this.changeColor(Color.ORANGE);
@@ -249,55 +276,44 @@ public class BossShip extends EnemyShip {
         }
     }
     
-    // [수정] spawnY 파라미터 추가
-    private void spawnSkulls(int spawnX, int xOffset, int skullY, GameCharacter target) {
+    // [수정] 조준 및 발사 위치 보정 로직 통합
+    private void spawnSkulls(int spawnX, int spawnY, int xOffset, int skullY, GameCharacter target) {
         SoundManager.playOnce("laser_big");
         
         double targetX = (target != null) ? target.getPositionX() + target.getWidth() / 2.0 : spawnX;
+        // [수정] 조준 기준점: 플레이어 중심 (또는 발밑)
         double targetY = (target != null) ? target.getPositionY() + target.getHeight() / 2.0 : spawnY + 600;
         
         // --- Left Skull ---
-        // 실제 생성될 해골의 중심 좌표 계산
         double leftSkullCenterX = (spawnX - xOffset) + (SKULL_WIDTH / 2.0);
         double leftSkullCenterY = skullY + (SKULL_HEIGHT / 2.0);
-        
-        // 중심 좌표 기준으로 각도 계산
         this.lockedAngleLeft = Math.atan2(targetY - leftSkullCenterY, targetX - leftSkullCenterX);
-        
-        // 생성 (좌상단 좌표 기준)
         this.activeLeftSkull = createSkull(spawnX - xOffset, skullY, this.lockedAngleLeft);
         this.bossProjectiles.add(this.activeLeftSkull);
         
         // --- Right Skull ---
         double rightSkullCenterX = (spawnX + xOffset) + (SKULL_WIDTH / 2.0);
         double rightSkullCenterY = skullY + (SKULL_HEIGHT / 2.0);
-        
         this.lockedAngleRight = Math.atan2(targetY - rightSkullCenterY, targetX - rightSkullCenterX);
-        
         this.activeRightSkull = createSkull(spawnX + xOffset, skullY, this.lockedAngleRight);
         this.bossProjectiles.add(this.activeRightSkull);
     }
     
     private Weapon createSkull(int x, int y, double angle) {
-        // SKULL_WIDTH와 SKULL_HEIGHT는 클래스 상단에 상수로 정의되어 있어야 합니다 (128).
         Weapon skull = WeaponPool.getWeapon(x, y, 0, SKULL_WIDTH, SKULL_HEIGHT, Entity.Team.ENEMY);
-        
         skull.setSpriteType(SpriteType.GasterBlaster);
-        
-        // 각도 설정 (라디안 -> 도 변환)
+        // 각도 설정 (라디안 -> 도)
         skull.setRotation(Math.toDegrees(angle));
-        
-        // 해골은 데미지를 주지 않는 배경/발사대 역할이므로 데미지 0
-        skull.setDamage(0);
-        
+        skull.setDamage(0); // 해골 자체는 데미지 없음
         return skull;
     }
     
+    // [수정] 인자 제거 및 발사 위치 보정 로직
     private void fireLasers() {
         SoundManager.playOnce("laser_big");
         int laserLength = 2000;
         
-        // 왼쪽 레이저
+        // 왼쪽 레이저 발사
         if (this.activeLeftSkull != null) {
             double originX = this.activeLeftSkull.getPositionX() + (SKULL_WIDTH / 2.0);
             double originY = this.activeLeftSkull.getPositionY() + (SKULL_HEIGHT / 2.0);
@@ -305,7 +321,7 @@ public class BossShip extends EnemyShip {
             createLaserBeam(originX, originY, laserLength, this.lockedAngleLeft, this.activeLeftLasers);
         }
         
-        // 오른쪽 레이저
+        // 오른쪽 레이저 발사
         if (this.activeRightSkull != null) {
             double originX = this.activeRightSkull.getPositionX() + (SKULL_WIDTH / 2.0);
             double originY = this.activeRightSkull.getPositionY() + (SKULL_HEIGHT / 2.0);
@@ -315,16 +331,14 @@ public class BossShip extends EnemyShip {
     }
     
     private void createLaserBeam(double originX, double originY, int length, double angle, List<Weapon> trackList) {
-        int laserWidth = 11 * 4; // 레이저 너비 (스프라이트 크기 * 스케일)
+        int laserWidth = 11 * 4;
         double halfLength = length / 2.0;
         
-        // [중요] 레이저의 "물리적 중심점(Center)" 계산
-        // 해골 중심(origin)에서 발사 각도(angle) 방향으로, 레이저 길이의 절반만큼 나아간 지점이
-        // 레이저 엔티티의 중심점이 되어야 합니다.
+        // [중요] 레이저의 "물리적 중심점(Center)" 계산 (회전 축 보정)
         double centerX = originX + Math.cos(angle) * halfLength;
         double centerY = originY + Math.sin(angle) * halfLength;
         
-        // [중요] WeaponPool은 "좌측 상단(Top-Left)" 좌표를 원하므로 변환
+        // WeaponPool 생성을 위한 "좌측 상단" 좌표 변환 (레이저 너비 보정 포함)
         int spawnX = (int) (centerX - laserWidth / 2.0);
         int spawnY = (int) (centerY - halfLength);
         
@@ -335,10 +349,10 @@ public class BossShip extends EnemyShip {
             laser.setBossBullet(false);
             laser.setSpeed(0);
             
-            // 수직 스프라이트이므로 -90도 회전 보정
-            laser.setRotation(Math.toDegrees(angle) - 90);
+            // [중요] 회전 각도 보정: +90도 (레이저 스프라이트 방향 보정)
+            laser.setRotation(Math.toDegrees(angle) + 90);
             
-            // [요청하신 공격력 추가]
+            // 공격력 설정
             laser.setDamage(1);
             
             this.bossProjectiles.add(laser);
@@ -347,11 +361,9 @@ public class BossShip extends EnemyShip {
     }
     
     private void cleanupLaserPhase() {
-        // Recycle Lasers
         recycleWeapons(this.activeLeftLasers);
         recycleWeapons(this.activeRightLasers);
         
-        // Recycle Skulls
         if (this.activeLeftSkull != null) recycleWeapon(this.activeLeftSkull);
         if (this.activeRightSkull != null) recycleWeapon(this.activeRightSkull);
         
@@ -359,6 +371,7 @@ public class BossShip extends EnemyShip {
         this.activeRightSkull = null;
     }
     
+    // --- Phase 3: Spread Charge ---
     private void handleSpreadChargePhase(int spawnX, int spawnY) {
         if (this.spreadChargeCooldown.checkFinished()) {
             SoundManager.playOnce("shoot_enemies");
@@ -376,12 +389,13 @@ public class BossShip extends EnemyShip {
                 spreadBullet.setSpeedX(velX);
                 spreadBullet.setBossBullet(true);
                 
-                // [추가] 탄막 공격력 설정 (1 데미지)
-                spreadBullet.setDamage(20);
+                // 탄막 공격력 설정
+                spreadBullet.setDamage(1);
                 
                 this.bossProjectiles.add(spreadBullet);
             }
             
+            // Loop back to Phase 1
             this.attackPhase = ATTACK_HOMING_MISSILE;
             this.attackCooldown.reset();
             this.changeColor(Color.CYAN);
@@ -390,21 +404,18 @@ public class BossShip extends EnemyShip {
     
     // --- Helper Methods ---
     
-    /**
-     * Safely recycles a list of weapons and removes them from the boss's active list.
-     */
     private void recycleWeapons(List<Weapon> weaponsToRecycle) {
         if (weaponsToRecycle == null || weaponsToRecycle.isEmpty()) return;
         
-        this.bossProjectiles.removeAll(weaponsToRecycle); // Remove from update/draw list
-        WeaponPool.recycle(new java.util.HashSet<>(weaponsToRecycle)); // Return to pool
+        this.bossProjectiles.removeAll(weaponsToRecycle);
+        WeaponPool.recycle(new HashSet<>(weaponsToRecycle));
         weaponsToRecycle.clear();
     }
     
     private void recycleWeapon(Weapon w) {
         if (w == null) return;
         this.bossProjectiles.remove(w);
-        WeaponPool.recycle(java.util.Set.of(w));
+        WeaponPool.recycle(Set.of(w));
     }
     
     private GameCharacter getNearestTarget(GameCharacter[] players, int x, int y) {
@@ -425,7 +436,6 @@ public class BossShip extends EnemyShip {
     
     /**
      * Returns the list of projectiles currently active and owned by the boss.
-     * GameScreen should use this for collision detection and drawing.
      */
     public List<Weapon> getProjectiles() {
         return this.bossProjectiles;
@@ -445,23 +455,6 @@ public class BossShip extends EnemyShip {
         } else {
             SoundManager.playOnce("boss_hit");
         }
-    }
-    
-    private void updateProjectiles() {
-        List<Weapon> toRecycle = new ArrayList<>();
-        for (Weapon w : bossProjectiles) {
-            w.update();
-            // 화면 밖으로 나갔거나(레이저 제외), 충돌로 인해 만료된 경우(duration=0)
-            boolean isLaserOrSkull = (w.getSpriteType() == SpriteType.GasterBlaster || w.getSpriteType() == SpriteType.BigLaserBeam);
-            
-            // 화면 밖 삭제 (일반 탄막만)
-            boolean offScreen = w.getPositionY() > screenHeight || w.getPositionY() < 0 || w.getPositionX() < 0 || w.getPositionX() > screenWidth;
-            
-            if ((!isLaserOrSkull && offScreen) || w.isExpired()) {
-                toRecycle.add(w);
-            }
-        }
-        recycleWeapons(toRecycle);
     }
     
     @Override
