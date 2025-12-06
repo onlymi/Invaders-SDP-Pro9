@@ -22,7 +22,7 @@ public class EnemyTypeA extends EnemyShip {
      * variable for move.
      */
     private static final double MOVE_SPEED = 1.5; // 이동 속도
-    private static final double SEPARATION_RADIUS = 60.0; // 서로 밀어내는 거리
+    private static final double SEPARATION_RADIUS = 30.0; // 서로 밀어내는 거리
     private static final double SEPARATION_FORCE = 0.5; // 밀어내는 힘의 세기
     
     /**
@@ -94,6 +94,7 @@ public class EnemyTypeA extends EnemyShip {
             }
             this.isFacingRight = (dirX >= 0);
         }
+        // 적끼리 겹치지 않게 분리 로직
         if (allEnemies != null) {
             for (EnemyShip other : allEnemies) {
                 if (other == this || other.isDestroyed()) {
@@ -116,7 +117,7 @@ public class EnemyTypeA extends EnemyShip {
         this.knockbackX *= this.knockbackDecay;
         this.knockbackY *= this.knockbackDecay;
         
-        // floating movement
+        // floating animation
         long currentTime = System.currentTimeMillis();
         double floatingOffset = Math.sin(currentTime * 0.005 + this.floatingPhase) * 5.0;
         
@@ -143,8 +144,6 @@ public class EnemyTypeA extends EnemyShip {
     
     private void performMeleeAttack(Set<Weapon> weapons, GameCharacter player) {
         SpriteType weaponSprite = SpriteType.EnemyA_Weapon;
-        int attackImageWidth = weaponSprite.getWidth();
-        int attackImageHeight = weaponSprite.getHeight();
         int hitboxWidth = 16;
         int hitboxHeight = 32;
         int centerX = this.positionX + this.width / 2;
