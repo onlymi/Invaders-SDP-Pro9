@@ -362,7 +362,7 @@ public class Weapon extends Entity {
     }
     
     public void reset() {
-        this.createTime = System.currentTimeMillis(); // 생성 시간 초기화
+        this.createTime = System.currentTimeMillis();
         this.duration = -1;
         this.isHoming = false;
         this.target = null;
@@ -370,6 +370,12 @@ public class Weapon extends Entity {
         this.speedX = 0;
         this.damage = 0;
         this.ownerPlayerId = 0;
+        this.playerId = 0;
+        this.maxRange = -1;
+        
+        // [추가] 재활용 시 색상을 기본값(흰색)으로 초기화
+        this.changeColor(Color.WHITE);
+        
         if (this.hitPlayers != null) {
             this.hitPlayers.clear();
         }

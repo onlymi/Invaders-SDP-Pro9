@@ -364,7 +364,7 @@ public class GameScreen extends Screen {
                 if (this.bossShip != null) {
                     this.bossShip.update();
                     if (!this.bossShip.isDestroyed()) {
-                        this.bossShip.shoot(this.weapons, this.characters);
+                        this.bossShip.updateAttackPattern(this.characters);
                     }
                 } else {
                     this.enemyManager.update();
@@ -502,8 +502,16 @@ public class GameScreen extends Screen {
             drawManager.getEntityRenderer()
                 .drawEntity(drawManager.getBackBufferGraphics(), this.bossShip,
                     this.bossShip.getPositionX(), this.bossShip.getPositionY());
+            for (Weapon bossWeapon : this.bossShip.getProjectiles()) {
+                drawManager.getEntityRenderer().drawEntity(
+                    drawManager.getBackBufferGraphics(), bossWeapon,
+                    bossWeapon.getPositionX(), bossWeapon.getPositionY());
+            }
             drawManager.drawBossHpBar(this.bossShip, this);
         }
+        
+        
+        
         
         // Enemies
         this.enemyManager.draw();
@@ -628,10 +636,11 @@ public class GameScreen extends Screen {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
             weapon.update();
+            
+            // [수정] 보스 패턴 무기(해골, 레이저)는 화면 밖으로 나가도 삭제하지 않음
             boolean isBossPatternWeapon = (weapon.getSpriteType() == SpriteType.GasterBlaster
                 || weapon.getSpriteType() == SpriteType.BigLaserBeam);
             
-            // 화면 밖인지 체크 (기존 로직)
             boolean isOffScreenY = weapon.getPositionY() < SEPARATION_LINE_HEIGHT
                 || weapon.getPositionY() > this.height;
             boolean isOffScreenX = weapon.getPositionX() < 0
@@ -639,9 +648,7 @@ public class GameScreen extends Screen {
             
             boolean isOffScreen = isOffScreenY || isOffScreenX;
             
-            // 수정된 삭제 조건:
-            // 1. 보스 패턴 무기가 아니고 화면 밖으로 나갔거나
-            // 2. 수명(duration)이 다 되었을 때만 삭제
+            // 삭제 조건: 보스 무기가 아니고 화면 밖으로 나갔거나, 수명이 다한 경우
             if ((!isBossPatternWeapon && isOffScreen) || weapon.isExpired()) {
                 recyclable.add(weapon);
             }
@@ -725,43 +732,51 @@ public class GameScreen extends Screen {
     private void manageCollisions() {
         Set<Weapon> recyclable = new HashSet<Weapon>();
         for (Weapon weapon : this.weapons) {
-            
-            if (weapon.isBossSkull()) {
-                continue;
-            }
-            
             if (weapon.getOwnerPlayerId() == 0) {
                 // Enemy weapon vs players / pets
-                boolean handled = false;
                 
-                if (weapon.getSpriteType() == SpriteType.GasterBlaster
-                    || weapon.getSpriteType() == SpriteType.BigLaserBeam) {
+                // [수정] 가스터 블래스터(해골)는 충돌/피격 판정이 없으므로 무시
+                if (weapon.getSpriteType() == SpriteType.GasterBlaster) {
                     continue;
                 }
+                
+                // [수정] 레이저 여부 확인
+                boolean isLaser = (weapon.getSpriteType() == SpriteType.BigLaserBeam);
+                
+                boolean handled = false;
                 
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     GameCharacter character = this.characters[p];
                     if (character != null && character.getCurrentHealthPoints() > 0
                         && checkCollision(weapon, character) && !this.levelFinished) {
+                        
                         if (character.isInvincible()) {
                             continue;
                         }
+                        
+                        // 이미 피격된 플레이어는 레이저 중복 데미지 방지 (Weapon의 hitPlayers 활용)
                         if (weapon.getDuration() != -1 && weapon.isHitPlayer(p)) {
                             continue;
                         }
+                        
                         boolean hasShieldEffect =
                             state != null && state.hasEffect(p,
                                 engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
                             );
+                        
                         if (hasShieldEffect) {
                             LOGGER.info("[GameScreen] Shield blocked damage for player " + (p + 1));
-                            recyclable.add(weapon);
+                            // 실드가 있어도 레이저는 사라지지 않게 처리 (일반 총알만 제거)
+                            if (!isLaser) {
+                                recyclable.add(weapon);
+                            }
                             handled = true;
                             break;
                         }
+                        
+                        // 데미지 처리
                         character.takeDamage(weapon.getDamage());
                         
-                        // Decrement life if HP reaches 0
                         if (character.getCurrentHealthPoints() <= 0) {
                             this.state.decLife(p);
                             this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
@@ -777,40 +792,44 @@ public class GameScreen extends Screen {
                         SoundManager.playOnce("explosion");
                         this.tookDamageThisLevel = true;
                         this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
-                        if (weapon.getDuration() == -1) {
+                        
+                        // [핵심 수정] 레이저는 충돌 후에도 사라지지 않음 (관통)
+                        // 일반 총알(duration == -1)인 경우에만 삭제 목록에 추가
+                        if (!isLaser && weapon.getDuration() == -1) {
                             recyclable.add(weapon);
                         } else {
+                            // 레이저나 근접 무기처럼 지속되는 무기는 피격 기록만 추가
                             weapon.addHitPlayer(p);
                         }
                         handled = true;
                         break;
                     }
                 }
+                
+                // ... (Pet 충돌 로직은 그대로 두거나 필요시 동일하게 isLaser 체크 추가) ...
                 if (handled) {
                     continue;
                 }
                 
+                // Pet 충돌 로직 (레이저에 펫이 죽게 할지 여부는 선택사항, 여기선 기존 로직 유지하되 레이저 보호)
                 for (Pet pet : pets) {
-                    if (pet.isDead() || pet.isExpired()) {
-                        continue;
-                    }
+                    if (pet.isDead() || pet.isExpired()) continue;
                     
                     if (checkCollision(weapon, pet) && !this.levelFinished) {
-                        recyclable.add(weapon);
-                        
+                        // 레이저는 펫을 뚫고 지나감 (삭제 안 함)
+                        if (!isLaser) {
+                            recyclable.add(weapon);
+                        }
                         pet.takeDamage(1);
-                        
-                        this.LOGGER.info("[GameScreen] Pet hit by enemy weapon. owner="
-                            + pet.getOwnerPlayerId());
-                        
                         break;
                     }
                 }
                 
             } else {
+                // ... (Player weapon 로직 기존과 동일) ...
                 // Player weapon vs enemies
-                final int ownerId = weapon.getOwnerPlayerId(); // 1 or 2 (0 if unset)
-                final int pIdx = (ownerId == 2) ? 1 : 0; // default to P1 when unset
+                final int ownerId = weapon.getOwnerPlayerId();
+                final int pIdx = (ownerId == 2) ? 1 : 0;
                 boolean finalShip = this.enemyManager.lastShip();
                 
                 for (EnemyShip enemyShip : this.enemyManager.getEnemies()) {
@@ -893,34 +912,46 @@ public class GameScreen extends Screen {
                 }
             }
         }
-        
-        // player vs enemy body collision
-        for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
-            GameCharacter player = this.characters[p];
-            if (player == null || player.getCurrentHealthPoints() <= 0 || player.isInvincible()) {
-                continue;
-            }
-            
-            for (EnemyShip enemy : this.enemyManager.getEnemies()) {
-                if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
-                    player.takeDamage(5);
-                    
-                    // [FIXED] Decrement life on collision death
-                    if (player.getCurrentHealthPoints() <= 0) {
-                        this.state.decLife(p);
+        if (this.bossShip != null && !this.bossShip.isDestroyed()) {
+            for (Weapon bossWeapon : this.bossShip.getProjectiles()) {
+                // 가스터 블래스터(해골)는 충돌 무시
+                if (bossWeapon.getSpriteType() == SpriteType.GasterBlaster) continue;
+                
+                boolean isLaser = (bossWeapon.getSpriteType() == SpriteType.BigLaserBeam);
+                
+                for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
+                    GameCharacter character = this.characters[p];
+                    if (character != null && character.getCurrentHealthPoints() > 0
+                        && checkCollision(bossWeapon, character)) {
+                        
+                        if (character.isInvincible()) continue;
+                        if (bossWeapon.getDuration() != -1 && bossWeapon.isHitPlayer(p)) continue;
+                        
+                        // 데미지 처리
+                        character.takeDamage(bossWeapon.getDamage());
+                        if (character.getCurrentHealthPoints() <= 0) {
+                            this.state.decLife(p);
+                        }
+                        
+                        // 이펙트 및 사운드
+                        this.drawManager.getGameScreenRenderer().triggerExplosion(
+                            character.getPositionX(), character.getPositionY(), false, false);
+                        SoundManager.playOnce("explosion");
+                        
+                        // 레이저가 아니면 피격 후 제거 대상에 추가 (보스 리스트에서 제거)
+                        // 단, 보스 무기 리스트는 BossShip 내부에서 관리되므로 여기서는 상태만 변경하거나
+                        // BossShip에 제거 요청을 해야 하지만, 편의상 '지속형이 아닌 경우' 제거하도록 구현 필요.
+                        // 레이저(지속형)는 hitPlayer 기록만 남김.
+                        if (!isLaser && bossWeapon.getDuration() == -1) {
+                            // 일반 탄막: 화면 밖으로 나가거나 충돌 시 BossShip.cleanUp() 등에서 처리되도록 유도
+                            // 여기서는 BossShip의 리스트를 직접 건드리기 어려우므로
+                            // Weapon.isExpired()를 true로 만들거나 duration을 0으로 설정하여
+                            // BossShip.updateProjectiles() 내부에서 삭제되게 할 수 있음.
+                            bossWeapon.setDuration(0); // 즉시 만료 처리
+                        } else {
+                            bossWeapon.addHitPlayer(p);
+                        }
                     }
-                    
-                    // enemy knockback
-                    double dx = enemy.getPositionX() - player.getPositionX();
-                    double dy = enemy.getPositionY() - player.getPositionY();
-                    double dist = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (dist > 0) {
-                        enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
-                    }
-                    
-                    this.LOGGER.info(
-                        "Collision! Player " + (p + 1) + " hit by enemy body.");
                 }
             }
         }
