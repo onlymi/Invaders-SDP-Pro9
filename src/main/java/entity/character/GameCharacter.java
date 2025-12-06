@@ -560,6 +560,10 @@ public abstract class GameCharacter extends Entity {
         this.projectileSpeed = projectileSpeed;
     }
     
+    public void setProjectileSpriteType(SpriteType projectileSpriteType) {
+        this.projectileSpriteType = projectileSpriteType;
+    }
+    
     public void setCurrentHealthPoints(int playerHealth) {
         this.currentHealthPoints = playerHealth;
     }
@@ -586,14 +590,6 @@ public abstract class GameCharacter extends Entity {
     
     public int getPlayerId() {
         return this.playerId;
-    }
-    
-    public void setProjectileSpriteType(SpriteType projectileSpriteType) {
-        this.projectileSpriteType = projectileSpriteType;
-    }
-    
-    public SpriteType getProjectileSpriteType() {
-        return this.projectileSpriteType;
     }
     
     public boolean isInSelectScreen() {
