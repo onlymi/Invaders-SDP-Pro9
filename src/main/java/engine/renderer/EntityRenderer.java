@@ -10,7 +10,9 @@ import entity.Ship;
 import entity.Weapon;
 import entity.character.ArcherCharacter;
 import entity.character.GameCharacter;
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -65,6 +67,11 @@ public class EntityRenderer {
     
     /**
      * 지정된 색상으로 엔티티를 그립니다.
+     *
+     * @param entity    그릴 엔티티
+     * @param positionX X 좌표
+     * @param positionY Y 좌표
+     * @param color     적용할 색상
      */
     public void drawEntity(Graphics g, final Entity entity, final int positionX,
         final int positionY, final Color color) {
@@ -77,12 +84,12 @@ public class EntityRenderer {
     private void drawEntity(Graphics g, final Entity entity, final int x,
         final int y, final Color color, final int scale) {
         
-        if (entity instanceof GameCharacter && !((GameCharacter) entity).isInSelectScreen()) {
-            drawHealthBar(g, entity, x, y);
-        }
-        
-        // 특수 캐릭터 처리 - 스케일 정보 전달
         if (entity instanceof ArcherCharacter) {
+            if (entity instanceof GameCharacter && !((GameCharacter) entity).isInSelectScreen()) {
+                drawHealthBar(g, entity, x, y);
+            }
+            
+            // 특수 캐릭터 처리 - 스케일 정보 전달
             if (SHOW_HITBOX) {
                 Color prev = g.getColor();
                 g.setColor(new Color(255, 0, 0, 128));
@@ -135,6 +142,13 @@ public class EntityRenderer {
         int entityWidthByScale = image.getWidth() * scale;
         int entityHeightByScale = image.getHeight() * scale;
         
+        Graphics2D g2d = (Graphics2D) g;
+        Composite originalComposite = g2d.getComposite();
+        if (color.getAlpha() < 255) {
+            g2d.setComposite(
+                AlphaComposite.getInstance(AlphaComposite.SRC_OVER, color.getAlpha() / 255f));
+        }
+        
         if (entity instanceof EnemyShip enemy) {
             boolean flip = !enemy.isFacingRight();
             
@@ -147,11 +161,17 @@ public class EntityRenderer {
             } else {
                 g.drawImage(image, drawX, drawY, entityWidthByScale, entityHeightByScale, null);
             }
-            
+            if (color.getAlpha() < 255) {
+                g2d.setComposite(originalComposite);
+            }
             return;
         }
         
         g.drawImage(image, x, y, entityWidthByScale, entityHeightByScale, null);
+        
+        if (color.getAlpha() < 255) {
+            g2d.setComposite(originalComposite);
+        }
         
         if (color == Color.DARK_GRAY) {
             g.setColor(new Color(0, 0, 0, 200));
@@ -209,10 +229,11 @@ public class EntityRenderer {
     private void drawMissingTexturePlaceholder(Graphics g, Entity entity, int x, int y) {
         g.setColor(Color.PINK);
         g.fillRect(x, y, entity.getWidth(), entity.getHeight());
+        System.err.println("EntityRenderer: Can't find sprite for " + entity.getSpriteType());
     }
     
     /**
-     * 엔티티의 상태(체력, 플레이어 ID 등)에 따른 색상을 결정합니다.
+     * Determines the color based on the entity's status (physical strength, player ID, etc.).
      */
     private static Color getEntityColor(Entity entity) {
         Color baseColor = entity.getColor();
@@ -239,15 +260,8 @@ public class EntityRenderer {
     }
     
     private static Color calculateDamageAlpha(EnemyShip enemy, Color baseColor) {
-        int currentHp = enemy.getHealth();
-        int maxHp = enemy.getInitialHealth();
-        
-        if (currentHp > 0 && maxHp > 0) {
-            float healthRatio = (float) currentHp / maxHp;
-            int alpha = (int) (70 + 150 * healthRatio);
-            alpha = Math.max(0, Math.min(255, alpha));
-            
-            return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha);
+        if (enemy.isHitRecently()) {
+            return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), 128);
         }
         return baseColor;
     }
