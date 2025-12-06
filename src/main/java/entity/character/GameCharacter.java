@@ -50,7 +50,7 @@ public abstract class GameCharacter extends Entity {
     private int secondSkillKey;
     private int ultimateSkillKey;
     
-    private static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
+    public static final float DIAGONAL_CORRECTION_FACTOR = (float) (1.0 / Math.sqrt(2));
     protected boolean isAttacking;
     protected boolean isMoving;
     protected boolean isFacingLeft;
@@ -62,6 +62,7 @@ public abstract class GameCharacter extends Entity {
     private static final int BASE_SHOOTING_COOLDOWN = 1500;
     private Cooldown shootingCooldown;
     private final Cooldown destructionCooldown;
+    private Cooldown stunCooldown;
     
     protected SpriteType projectileSpriteType; // Image type of projectile
     protected int projectileWidth;
@@ -69,7 +70,7 @@ public abstract class GameCharacter extends Entity {
     protected int projectileSpeed;
     
     protected static final int MOVEMENT_SPEED_FACTOR = 150;
-    protected static final int ATTACK_SPEED_FACTOR = 10;
+    public static final int ATTACK_SPEED_FACTOR = 10;
     protected static final int SHOOTING_COOLDOWN_FACTOR = 500;
     
     /**
@@ -124,6 +125,7 @@ public abstract class GameCharacter extends Entity {
             - this.currentStats.attackSpeed * SHOOTING_COOLDOWN_FACTOR));
         this.shootingCooldown.reset();
         this.destructionCooldown = Core.getCooldown(DESTRUCTION_COOLDOWN);
+        this.stunCooldown = Core.getCooldown(0);
         
         this.projectileSpriteType = SpriteType.PlayerBullet;
         this.projectileWidth = 3;
@@ -282,9 +284,23 @@ public abstract class GameCharacter extends Entity {
         this.ultimateSkillKey = keys[8];
     }
     
+    /**
+     * 캐릭터를 일정 시간 동안 행동 불가 상태(경직)로 만듭니다.
+     *
+     * @param duration 경직 지속 시간 (밀리초 단위)
+     */
+    public void stun(int duration) {
+        this.stunCooldown = Core.getCooldown(duration);
+        this.stunCooldown.reset();
+    }
+    
     public void handleKeyboard(InputManager inputManager, Screen screen, Set<Weapon> weapons,
         float deltaTime) {
         initializeKeyboardPressing();
+        
+        if (!this.stunCooldown.checkFinished()) {
+            return;
+        }
         
         handleMovement(inputManager, screen, deltaTime);
         handleAttack(inputManager, weapons);
@@ -356,22 +372,60 @@ public abstract class GameCharacter extends Entity {
         }
         if (inputManager.isKeyDown(this.firstSkillKey)) {
             if (!skills.isEmpty()) {
-                skills.get(0).activate(this);
+                skills.get(0).activate(this, weapons);
             }
             this.isAttacking = true;
         }
         if (inputManager.isKeyDown(this.secondSkillKey)) {
             if (skills.size() > 1) {
-                skills.get(1).activate(this);
+                skills.get(1).activate(this, weapons);
             }
             this.isAttacking = true;
         }
         if (inputManager.isKeyDown(this.ultimateSkillKey)) {
             if (skills.size() > 2) {
-                skills.get(2).activate(this);
+                skills.get(2).activate(this, weapons);
             }
             this.isAttacking = true;
         }
+    }
+    
+    /**
+     * Projector generation method to be used in common with basic attacks and skills.
+     */
+    public Weapon createWeapon(Set<Weapon> weapons) {
+        int launchX;
+        int launchY;
+        
+        if (this.isFacingLeft) {
+            launchX = this.positionX - (this.projectileWidth / 2);
+            launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
+        } else if (this.isFacingRight) {
+            launchX = this.positionX + this.width + (this.projectileWidth / 2);
+            launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
+        } else if (this.isFacingFront) {
+            launchX = this.positionX + (this.width / 2);
+            launchY = this.positionY + this.height;
+        } else if (this.isFacingBack) {
+            launchX = this.positionX + (this.width / 2);
+            launchY = this.positionY - this.projectileHeight;
+        } else {
+            launchX = this.positionX + (this.width / 2);
+            launchY = this.positionY - this.projectileHeight;
+        }
+        
+        // 투사체 생성
+        Weapon weapon = WeaponPool.getWeapon(launchX, launchY, this.projectileSpeed,
+            this.projectileWidth, this.projectileHeight, this.team);
+        
+        weapon.setCharacter(this);
+        weapon.setSpriteImage(this.projectileSpriteType);
+        weapon.setPlayerId(this.playerId);
+        weapon.setRange(this.currentStats.attackRange);
+        
+        weapons.add(weapon);
+        
+        return weapon;
     }
     
     /**
@@ -384,36 +438,7 @@ public abstract class GameCharacter extends Entity {
         if (this.shootingCooldown.checkFinished()) {
             this.shootingCooldown.reset();
             
-            int launchX;
-            int launchY;
-            
-            if (isFacingLeft) {
-                launchX = this.positionX - (this.projectileWidth / 2);
-                launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
-            } else if (isFacingRight) {
-                launchX = this.positionX + this.width + (this.projectileWidth / 2);
-                launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
-            } else if (isFacingFront) {
-                launchX = this.positionX + (this.width / 2);
-                launchY = this.positionY + this.height;
-            } else if (isFacingBack) {
-                launchX = this.positionX + (this.width / 2);
-                launchY = this.positionY - this.projectileHeight;
-            } else {
-                launchX = this.positionX + (this.width / 2);
-                launchY = this.positionY - this.projectileHeight;
-            }
-            
-            Weapon weapon = WeaponPool.getWeapon(launchX, launchY, this.projectileSpeed,
-                this.projectileWidth, this.projectileHeight, this.team);
-            
-            weapon.reset();
-            weapon.setCharacter(this);
-            weapon.setSpriteImage(this.projectileSpriteType);
-            weapon.setPlayerId(this.playerId);
-            weapon.setRange(this.currentStats.attackRange);
-            weapon.setDamage(this.currentStats.physicalDamage);
-            weapons.add(weapon);
+            createWeapon(weapons);
             return true;
         }
         return false;
@@ -477,6 +502,14 @@ public abstract class GameCharacter extends Entity {
     
     public int getPlayerId() {
         return this.playerId;
+    }
+    
+    public void setProjectileSpriteType(SpriteType projectileSpriteType) {
+        this.projectileSpriteType = projectileSpriteType;
+    }
+    
+    public SpriteType getProjectileSpriteType() {
+        return this.projectileSpriteType;
     }
     
     public boolean isInSelectScreen() {
