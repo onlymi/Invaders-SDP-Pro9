@@ -46,14 +46,11 @@ public class BossShip extends EnemyShip {
     
     // Boss Movement
     private static final int BOSS_BASE_SPEED_X = 2;
-    private static final int BOSS_BASE_SPEED_Y = 1;
     private static final int TOP_BOUNDARY = 68;
     private static final int BOSS_MAX_Y = 340;
     
     private int currentSpeedX;
-    private int currentSpeedY;
     boolean movingRight;
-    private boolean movingDown;
     
     // Attack State
     private int attackPhase;
@@ -102,9 +99,7 @@ public class BossShip extends EnemyShip {
         this.changeColor(Color.CYAN);
         
         this.currentSpeedX = BOSS_BASE_SPEED_X;
-        this.currentSpeedY = BOSS_BASE_SPEED_Y;
         this.movingRight = true;
-        this.movingDown = true;
         
         this.attackPhase = ATTACK_HOMING_MISSILE;
         
@@ -147,11 +142,6 @@ public class BossShip extends EnemyShip {
             if (this.positionX + this.width >= screenWidth) this.positionX = screenWidth - this.width - 1;
         }
         
-        if (this.positionY + this.height >= BOSS_MAX_Y || this.positionY <= TOP_BOUNDARY) {
-            this.movingDown = !this.movingDown;
-            if (this.positionY <= TOP_BOUNDARY) this.positionY = TOP_BOUNDARY + 1;
-            if (this.positionY + this.height >= BOSS_MAX_Y) this.positionY = BOSS_MAX_Y - this.height - 1;
-        }
         
         move(0, 0); // Apply internal speed
     }
@@ -188,9 +178,7 @@ public class BossShip extends EnemyShip {
     @Override
     public final void move(final int distanceX, final int distanceY) {
         int movementX = this.movingRight ? this.currentSpeedX : -this.currentSpeedX;
-        int movementY = this.movingDown ? this.currentSpeedY : -this.currentSpeedY;
         this.positionX += movementX;
-        this.positionY += movementY;
     }
     
     /**
@@ -224,7 +212,7 @@ public class BossShip extends EnemyShip {
             
             // 미사일 설정
             missile.changeColor(Color.RED);
-            missile.setDamage(1);
+            missile.setDamage(20);
             
             this.bossProjectiles.add(missile);
             
@@ -310,7 +298,6 @@ public class BossShip extends EnemyShip {
     
     // [수정] 인자 제거 및 발사 위치 보정 로직
     private void fireLasers() {
-        SoundManager.playOnce("laser_big");
         int laserLength = 2000;
         
         // 왼쪽 레이저 발사
@@ -332,15 +319,15 @@ public class BossShip extends EnemyShip {
     
     private void createLaserBeam(double originX, double originY, int length, double angle, List<Weapon> trackList) {
         int laserWidth = 11 * 4;
-        double halfLength = length / 2.0;
         
-        // [중요] 레이저의 "물리적 중심점(Center)" 계산 (회전 축 보정)
-        double centerX = originX + Math.cos(angle) * halfLength;
-        double centerY = originY + Math.sin(angle) * halfLength;
+        // spawnX: 레이저의 X축 중앙이 해골 중심(originX)에 오도록 재설정
+        int spawnX = (int) (originX - (laserWidth / 2.0));
         
-        // WeaponPool 생성을 위한 "좌측 상단" 좌표 변환 (레이저 너비 보정 포함)
-        int spawnX = (int) (centerX - laserWidth / 2.0);
-        int spawnY = (int) (centerY - halfLength);
+        // spawnY: 레이저 상단 Y좌표가 해골 중심 Y에 오도록 설정
+        int spawnY = (int) originY;
+        
+        // [수정] 조준 오차 보정: 3.0도로 상향 조정하여 조준을 오른쪽으로 미세하게 이동
+        double angleOffsetDegrees = -7.0;
         
         for (int i = 0; i < 3; i++) {
             Weapon laser = WeaponPool.getWeapon(spawnX, spawnY, 0, laserWidth, length, Entity.Team.ENEMY);
@@ -349,8 +336,8 @@ public class BossShip extends EnemyShip {
             laser.setBossBullet(false);
             laser.setSpeed(0);
             
-            // [중요] 회전 각도 보정: +90도 (레이저 스프라이트 방향 보정)
-            laser.setRotation(Math.toDegrees(angle) + 90);
+            // 최종 회전 각도: 계산된 각도 + 90(스프라이트 보정) + 180(방향 반전) + 3.0도 (조준 오차 보정)
+            laser.setRotation(Math.toDegrees(angle) + 90 + 180 + angleOffsetDegrees);
             
             // 공격력 설정
             laser.setDamage(1);
@@ -390,7 +377,7 @@ public class BossShip extends EnemyShip {
                 spreadBullet.setBossBullet(true);
                 
                 // 탄막 공격력 설정
-                spreadBullet.setDamage(1);
+                spreadBullet.setDamage(10);
                 
                 this.bossProjectiles.add(spreadBullet);
             }
@@ -462,7 +449,6 @@ public class BossShip extends EnemyShip {
     public final int getAttackPhase() { return this.attackPhase; }
     public final boolean isAttackEnabled() { return this.isAttackEnabled; }
     public final boolean isMovingRight() { return this.movingRight; }
-    public final boolean isMovingDown() { return this.movingDown; }
     public final int getLaserChargeTimer() { return this.laserChargeTimer; }
     public int readChargeTimer() { return this.spreadChargeTimer; }
 }
