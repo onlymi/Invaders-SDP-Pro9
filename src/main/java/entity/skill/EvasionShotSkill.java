@@ -9,8 +9,8 @@ import screen.GameScreen;
 
 public class EvasionShotSkill extends Skill {
     
-    private static final int MANA_COST = 1;
-    private static final float COOLDOWN_SECOND = 1.0f;
+    private static final int MANA_COST = 25;
+    private static final float COOLDOWN_SECOND = 10.0f;
     private static final int JUMP_DISTANCE = 150;
     private static final float STUN_DURATION = 0.5f;
     
