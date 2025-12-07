@@ -89,15 +89,12 @@ public class SignUpScreen extends Screen {
         }
         
         if (this.selectionCooldown.checkFinished() && this.inputDelay.checkFinished()) {
-            boolean isTextInputActive = (this.activeField == 0 || this.activeField == 1);
-            if (inputManager.isKeyDown(KeyEvent.VK_UP) || inputManager.isKeyDown(KeyEvent.VK_TAB)
-                || (!isTextInputActive && inputManager.isKeyDown(KeyEvent.VK_W))) {
+            if (inputManager.isKeyDown(KeyEvent.VK_UP) || inputManager.isKeyDown(KeyEvent.VK_TAB)) {
                 this.soundManager.playOnce("hover");
                 previousField();
                 this.selectionCooldown.reset();
             }
-            if (inputManager.isKeyDown(KeyEvent.VK_DOWN) || (!isTextInputActive
-                && inputManager.isKeyDown(KeyEvent.VK_S))) {
+            if (inputManager.isKeyDown(KeyEvent.VK_DOWN)) {
                 this.soundManager.playOnce("hover");
                 nextField();
                 this.selectionCooldown.reset();
