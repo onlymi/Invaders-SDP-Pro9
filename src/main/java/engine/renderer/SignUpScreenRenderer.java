@@ -55,6 +55,11 @@ public class SignUpScreenRenderer {
         commonRenderer.drawCenteredBigString(graphics, screen, "Sign Up", screen.getHeight() / 4);
         
         graphics.setFont(commonRenderer.getFontRegular());
+        graphics.setColor(Color.GRAY);
+        commonRenderer.drawCenteredRegularString(graphics, screen,
+            "select with arrows, confirm with space / enter", screen.getHeight() / 3);
+        
+        graphics.setFont(commonRenderer.getFontRegular());
         fontMetrics = graphics.getFontMetrics(commonRenderer.getFontRegular());
         
         int boxWidth = 200;

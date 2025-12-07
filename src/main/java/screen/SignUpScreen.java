@@ -89,12 +89,15 @@ public class SignUpScreen extends Screen {
         }
         
         if (this.selectionCooldown.checkFinished() && this.inputDelay.checkFinished()) {
-            if (inputManager.isKeyDown(KeyEvent.VK_UP) || inputManager.isKeyDown(KeyEvent.VK_TAB)) {
+            boolean isTextInputActive = (this.activeField == 0 || this.activeField == 1);
+            if (inputManager.isKeyDown(KeyEvent.VK_UP) || inputManager.isKeyDown(KeyEvent.VK_TAB)
+                || (!isTextInputActive && inputManager.isKeyDown(KeyEvent.VK_W))) {
                 this.soundManager.playOnce("hover");
                 previousField();
                 this.selectionCooldown.reset();
             }
-            if (inputManager.isKeyDown(KeyEvent.VK_DOWN)) {
+            if (inputManager.isKeyDown(KeyEvent.VK_DOWN) || (!isTextInputActive
+                && inputManager.isKeyDown(KeyEvent.VK_S))) {
                 this.soundManager.playOnce("hover");
                 nextField();
                 this.selectionCooldown.reset();
@@ -128,7 +131,7 @@ public class SignUpScreen extends Screen {
         
         // Get typed character
         char typedChar = InputManager.getLastChar();
-        if (typedChar >= ' ' && typedChar <= '~') {
+        if (typedChar > ' ' && typedChar <= '~') {
             // User restarts the input, clear the previous error message
             clearFailureMessage();
             if (this.activeField == 0) {

@@ -15,7 +15,7 @@ public class LogInScreen extends Screen {
     /**
      * Milliseconds between menu selection changes.
      */
-    private static final int SELECTION_TIME = 100;
+    private static final int SELECTION_TIME = 200;
     /**
      * Cooldown timer for menu selections.
      */
@@ -86,6 +86,7 @@ public class LogInScreen extends Screen {
         }
         
         if (this.selectionCooldown.checkFinished() && this.inputDelay.checkFinished()) {
+            
             if (inputManager.isKeyDown(KeyEvent.VK_UP) || inputManager.isKeyDown(KeyEvent.VK_TAB)) {
                 this.soundManager.playOnce("hover");
                 previousField();
@@ -96,6 +97,7 @@ public class LogInScreen extends Screen {
                 nextField();
                 this.selectionCooldown.reset();
             }
+            
             handleTextInput();
             
             if (inputManager.isKeyDown(KeyEvent.VK_ENTER) || inputManager.isKeyDown(
@@ -125,7 +127,7 @@ public class LogInScreen extends Screen {
         
         // Character 입력
         char typedChar = InputManager.getLastChar();
-        if (typedChar >= ' ' && typedChar <= '~') {
+        if (typedChar > ' ' && typedChar <= '~') {
             clearFailureMessage();
             if (this.activeField == 0) {
                 this.idInput.append(typedChar);
