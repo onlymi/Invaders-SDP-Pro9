@@ -2,6 +2,7 @@ package engine.gameplay.item;
 
 import engine.Core;
 import engine.GameState;
+import entity.character.GameCharacter;
 import java.util.logging.Logger;
 
 public class ItemEffect {
@@ -77,6 +78,52 @@ public class ItemEffect {
         
         logger.info("Player added " + lifeAmount + " lives. before : " + beforeLife + ", after : "
             + gameState.getLivesRemaining());
+    }
+    
+    /**
+     * Heals the given character's HP instead of lives.
+     *
+     * @param gameState  Current game state.
+     * @param character  Target character to heal.
+     * @param healAmount Amount of HP to heal.
+     * @return true if any HP was healed, false otherwise.
+     */
+    public static boolean applyHealToCharacter(final GameState gameState,
+        final GameCharacter character, final int healAmount) {
+        
+        if (gameState == null || character == null || healAmount <= 0) {
+            return false;
+        }
+        
+        int beforeHp = character.getCurrentHealthPoints();
+        int maxHp = character.getCurrentStats().maxHealthPoints;
+        int afterHp = beforeHp + healAmount;
+        
+        if (afterHp > maxHp) {
+            afterHp = maxHp;
+        }
+        
+        if (afterHp == beforeHp) {
+            // already full HP
+            logger.info("[ItemEffect] HEAL: player " + character.getPlayerId()
+                + " already at full HP (" + beforeHp + ")");
+            return false;
+        }
+        
+        character.setCurrentHealthPoints(afterHp);
+        
+        // GameState에 현재 HP 저장 (다음 스테이지로 이어지도록)
+        int playerIndex = character.getPlayerId() - 1;
+        if (playerIndex >= 0 && playerIndex < GameState.NUM_PLAYERS) {
+            gameState.setPlayerHealth(playerIndex, afterHp);
+        }
+        
+        logger.info("[ItemEffect] HEAL applied to player "
+            + character.getPlayerId()
+            + " HP: " + beforeHp + " -> " + afterHp
+            + " (+" + healAmount + ")");
+        
+        return true;
     }
     
     /**

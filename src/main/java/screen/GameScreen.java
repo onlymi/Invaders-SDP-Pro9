@@ -9,6 +9,7 @@ import engine.GameState;
 import engine.SoundManager;
 import engine.gameplay.achievement.AchievementManager;
 import engine.gameplay.item.ActivationType;
+import engine.gameplay.item.ItemEffect;
 import engine.gameplay.item.ItemManager;
 import engine.utils.Cooldown;
 import entity.BossShip;
@@ -209,7 +210,7 @@ public class GameScreen extends Screen {
         
         // --- Character Initialization & Control Setup ---
         this.enemyManager = new EnemyManager(this);
-        if (this.level == 1) {
+        if (this.level == 6) {
             int bossWidth = 480;
             this.bossShip = new BossShip(this.width / 2 - bossWidth / 2, 40);
             this.LOGGER.info("Boss Stage Initialized!");
@@ -514,9 +515,6 @@ public class GameScreen extends Screen {
             drawManager.drawBossHpBar(this.bossShip, this);
         }
         
-        
-        
-        
         // Enemies
         this.enemyManager.draw();
         
@@ -668,7 +666,13 @@ public class GameScreen extends Screen {
         Set<Item> recyclableItems = new HashSet<Item>();
         for (Item item : this.items) {
             item.update();
-            if (item.getPositionY() > this.height) {
+            
+            boolean offScreen =
+                item.getPositionY() > this.height
+                    || item.getPositionY() < SEPARATION_LINE_HEIGHT
+                    || item.getPositionX() < 0
+                    || item.getPositionX() > this.width;
+            if (item.isExpired() || offScreen) {
                 recyclableItems.add(item);
             }
         }
@@ -701,23 +705,44 @@ public class GameScreen extends Screen {
                     
                     ActivationType activationType = item.getActivationType();
                     boolean autoUseOnPickup = item.isAutoUseOnPickup();
+                    String itemType = item.getType();
                     
                     switch (activationType) {
                         case INSTANT_ON_PICKUP:
                         case TEMPORARY_BUFF:
                             if (autoUseOnPickup) {
-                                boolean applied = item.applyEffect(getGameState(),
-                                    character.getPlayerId());
+                                if ("HEAL".equals(itemType)) {
+                                    // CSV에서 회복량 가져오기 (없으면 기본 1)
+                                    int healAmount = 1;
+                                    if (item.getData() != null) {
+                                        healAmount = item.getData().getEffectValue();
+                                    }
+                                    
+                                    ItemEffect.applyHealToCharacter(
+                                        getGameState(),
+                                        character,
+                                        healAmount
+                                    );
+                                } else {
+                                    // 나머지 인스턴트 아이템은 기존 로직 유지
+                                    boolean applied = item.applyEffect(
+                                        getGameState(),
+                                        character.getPlayerId()
+                                    );
+                                }
                             } else {
                                 getGameState().addActiveItem(playerIndex, item.getData());
                             }
                             break;
+                        
                         case ACTIVE_ON_KEY:
                             getGameState().addActiveItem(playerIndex, item.getData());
                             break;
+                        
                         case PASSIVE:
                             getGameState().addPassiveItem(playerIndex, item.getData());
                             break;
+                        
                         default:
                             item.applyEffect(getGameState(), character.getPlayerId());
                             break;
@@ -817,7 +842,9 @@ public class GameScreen extends Screen {
                 
                 // Pet 충돌 로직 (레이저에 펫이 죽게 할지 여부는 선택사항, 여기선 기존 로직 유지하되 레이저 보호)
                 for (Pet pet : pets) {
-                    if (pet.isDead() || pet.isExpired()) continue;
+                    if (pet.isDead() || pet.isExpired()) {
+                        continue;
+                    }
                     
                     if (checkCollision(weapon, pet) && !this.levelFinished) {
                         // 레이저는 펫을 뚫고 지나감 (삭제 안 함)
@@ -923,13 +950,16 @@ public class GameScreen extends Screen {
         if (this.bossShip != null && !this.bossShip.isDestroyed()) {
             for (Weapon bossWeapon : this.bossShip.getProjectiles()) {
                 // 가스터 블래스터(해골)는 충돌 무시
-                if (bossWeapon.getSpriteType() == SpriteType.GasterBlaster) continue;
+                if (bossWeapon.getSpriteType() == SpriteType.GasterBlaster) {
+                    continue;
+                }
                 
                 boolean isLaser = (bossWeapon.getSpriteType() == SpriteType.BigLaserBeam);
                 
                 for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
                     GameCharacter player = this.characters[p];
-                    if (player == null || player.getCurrentHealthPoints() <= 0 || player.isInvincible()) {
+                    if (player == null || player.getCurrentHealthPoints() <= 0
+                        || player.isInvincible()) {
                         continue;
                     }
                     

@@ -159,10 +159,22 @@ public class EntityRenderer {
         Graphics2D g2d = (Graphics2D) g;
         Composite originalComposite = g2d.getComposite();
         
-        if (color != null && color.getAlpha() < 255) {
-            g2d.setComposite(
-                AlphaComposite.getInstance(AlphaComposite.SRC_OVER, color.getAlpha() / 255f));
+        float alpha = entity.getAlpha();
+        if (color != null) {
+            alpha *= (color.getAlpha() / 255f);
         }
+        if (alpha < 0f) {
+            alpha = 0f;
+        } else if (alpha > 1f) {
+            alpha = 1f;
+        }
+        
+        boolean useAlphaComposite = alpha < 0.999f;
+        if (useAlphaComposite) {
+            g2d.setComposite(
+                AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+        }
+        // ────────────────────────────────────────────────────────────────
         
         if (entity instanceof EnemyShip enemy) {
             boolean flip = !enemy.isFacingRight();
@@ -177,7 +189,7 @@ public class EntityRenderer {
                 g.drawImage(image, drawX, drawY, entityWidthByScale, entityHeightByScale, null);
             }
             
-            if (color != null && color.getAlpha() < 255) {
+            if (useAlphaComposite) {
                 g2d.setComposite(originalComposite);
             }
             return;
@@ -185,7 +197,7 @@ public class EntityRenderer {
         
         g.drawImage(image, x, y, entityWidthByScale, entityHeightByScale, null);
         
-        if (color != null && color.getAlpha() < 255) {
+        if (useAlphaComposite) {
             g2d.setComposite(originalComposite);
         }
         
@@ -200,6 +212,20 @@ public class EntityRenderer {
         boolean[][] spriteMap = assetManager.getSpriteMap(entity.getSpriteType());
         if (spriteMap == null) {
             return;
+        }
+        
+        Graphics2D g2d = (Graphics2D) g;
+        Composite originalComposite = g2d.getComposite();
+        
+        float alpha = entity.getAlpha();
+        if (color != null && color.getAlpha() < 255) {
+            alpha *= (color.getAlpha() / 255f);
+        }
+        
+        boolean useAlphaComposite = alpha < 1.0f;
+        if (useAlphaComposite) {
+            g2d.setComposite(
+                AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
         }
         
         g.setColor(color);
@@ -220,6 +246,10 @@ public class EntityRenderer {
                     }
                 }
             }
+        }
+        
+        if (useAlphaComposite) {
+            g2d.setComposite(originalComposite);
         }
     }
     
