@@ -754,15 +754,15 @@ public class GameScreen extends Screen {
                     if (character != null && character.getCurrentHealthPoints() > 0
                         && checkCollision(weapon, character) && !this.levelFinished) {
                         
+                        // 1. 무적 시간 확인
                         if (character.isInvincible()) {
                             continue;
                         }
-                        
-                        // 이미 피격된 플레이어는 레이저 중복 데미지 방지 (Weapon의 hitPlayers 활용)
-                        if (weapon.getDuration() != -1 && weapon.isHitPlayer(p)) {
+                        // 2. 단발성 무기 중복 피격 방지 (레이저는 제외)
+                        if (!isLaser && weapon.getDuration() == -1 && weapon.isHitPlayer(p)) {
                             continue;
                         }
-                        
+                        // 3. 쉴드 효과 확인
                         boolean hasShieldEffect =
                             state != null && state.hasEffect(p,
                                 engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
@@ -770,22 +770,28 @@ public class GameScreen extends Screen {
                         
                         if (hasShieldEffect) {
                             LOGGER.info("[GameScreen] Shield blocked damage for player " + (p + 1));
-                            // 실드가 있어도 레이저는 사라지지 않게 처리 (일반 총알만 제거)
                             if (!isLaser) {
                                 recyclable.add(weapon);
                             }
-                            handled = true;
-                            break;
+                            // 쉴드가 공격을 막았으므로, 더 이상 피해 처리 로직을 진행하지 않고 다음 플레이어로 넘어갑니다.
+                            // 레이저는 파괴되지 않으므로, 이 시점에서 루프를 빠져나갈지 여부를 결정해야 합니다.
+                            // 현재 코드는 `break`가 없으므로 다음 플레이어에게도 쉴드가 있는지 검사합니다.
+                            continue; // 현재 플레이어는 처리 완료.
                         }
                         
-                        // 데미지 처리
+                        // 4. 피해 처리
                         character.takeDamage(weapon.getDamage());
                         
                         if (character.getCurrentHealthPoints() <= 0) {
                             this.state.decLife(p);
                             this.LOGGER.info("Player " + (p + 1) + " died. Lives remaining: "
                                 + state.getLivesRemaining());
+                            
+                            handled = true;
+                            break;
+                            
                         }
+                        
                         this.drawManager.getGameScreenRenderer()
                             .triggerExplosion(
                                 character.getPositionX(),
@@ -797,24 +803,21 @@ public class GameScreen extends Screen {
                         this.tookDamageThisLevel = true;
                         this.basicGameSpace.setLastLife(state.getLivesRemaining() == 1);
                         
-                        // [핵심 수정] 레이저는 충돌 후에도 사라지지 않음 (관통)
-                        // 일반 총알(duration == -1)인 경우에만 삭제 목록에 추가
+                        // 5. 무기 제거 또는 히트 기록
+                        // 단발성 무기 (일반 투사체)는 제거
                         if (!isLaser && weapon.getDuration() == -1) {
                             recyclable.add(weapon);
                         } else {
                             // 레이저나 근접 무기처럼 지속되는 무기는 피격 기록만 추가
                             weapon.addHitPlayer(p);
                         }
-                        handled = true;
-                        break;
+                        // 단발성 무기는 한 번의 충돌로 제거되므로 break
+                        if (!isLaser && weapon.getDuration() == -1) {
+                            break;
+                        }
+                        
                     }
                 }
-                
-                // ... (Pet 충돌 로직은 그대로 두거나 필요시 동일하게 isLaser 체크 추가) ...
-                if (handled) {
-                    continue;
-                }
-                
                 // Pet 충돌 로직 (레이저에 펫이 죽게 할지 여부는 선택사항, 여기선 기존 로직 유지하되 레이저 보호)
                 for (Pet pet : pets) {
                     if (pet.isDead() || pet.isExpired()) continue;
@@ -933,53 +936,53 @@ public class GameScreen extends Screen {
                         continue;
                     }
                     
-                    for (EnemyShip enemy : this.enemyManager.getEnemies()) {
-                        if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
-                            boolean hasShieldEffect =
-                                state != null && state.hasEffect(
-                                    p,
-                                    engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
-                                );
-                            
-                            if (hasShieldEffect) {
-                                state.clearEffect(
-                                    p,
-                                    engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
-                                );
-                                
-                                double dx = enemy.getPositionX() - player.getPositionX();
-                                double dy = enemy.getPositionY() - player.getPositionY();
-                                double dist = Math.sqrt(dx * dx + dy * dy);
-                                
-                                if (dist > 0) {
-                                    enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
-                                }
-                                
-                                this.LOGGER.info(
-                                    "[GameScreen] Shield consumed and knocked back enemy for player "
-                                        + (p + 1));
-                                continue;
+                    // [START: 누락된 보스 무기 피해 로직 복원]
+                    if (checkCollision(bossWeapon, player)) {
+                        
+                        // 단발성 무기 중복 피격 방지 (레이저는 제외)
+                        if (!isLaser && bossWeapon.getDuration() == -1 && bossWeapon.isHitPlayer(p)) {
+                            continue;
+                        }
+                        
+                        // 쉴드 효과 검사 (아이템팀이 이 로직을 여기에 넣지 않고 윗단에만 넣었을 가능성이 있음)
+                        boolean hasShieldEffect =
+                            state != null && state.hasEffect(p,
+                                engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD
+                            );
+                        
+                        if (hasShieldEffect) {
+                            LOGGER.info("[GameScreen] Shield blocked damage for player (Boss Weapon) " + (p + 1));
+                            if (!isLaser) {
+                                bossWeapon.setDuration(0); // 총알 제거
                             }
-                            
-                            player.takeDamage(5);
-                            
-                            // [FIXED] Decrement life on collision death
-                            if (player.getCurrentHealthPoints() <= 0) {
-                                this.state.decLife(p);
+                            continue;
+                        }
+                        
+                        // 1. 데미지 처리
+                        player.takeDamage(bossWeapon.getDamage());
+                        
+                        // 2. 생명력 감소 및 사망 처리
+                        if (player.getCurrentHealthPoints() <= 0) {
+                            this.state.decLife(p);
+                        }
+                        
+                        // 3. 이펙트 및 사운드
+                        this.drawManager.getGameScreenRenderer().triggerExplosion(
+                            player.getPositionX(), player.getPositionY(), false, false);
+                        SoundManager.playOnce("explosion");
+                        
+                        // 4. 무기 제거 또는 히트 기록
+                        if (!isLaser && bossWeapon.getDuration() == -1) {
+                            // 일반 탄막: 즉시 만료 처리하여 BossShip 내부의 updateProjectiles()에서 제거되도록 함
+                            bossWeapon.setDuration(0);
+                        } else {
+                            // 지속형 무기: 히트 기록 (레이저는 연속 타격을 위해 이 로직을 건너뛰어야 함)
+                            if (!isLaser) {
+                                bossWeapon.addHitPlayer(p);
                             }
-                            
-                            double dx = enemy.getPositionX() - player.getPositionX();
-                            double dy = enemy.getPositionY() - player.getPositionY();
-                            double dist = Math.sqrt(dx * dx + dy * dy);
-                            
-                            if (dist > 0) {
-                                enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
-                            }
-                            
-                            this.LOGGER.info(
-                                "Collision! Player " + (p + 1) + " hit by enemy body.");
                         }
                     }
+                    // [END: 누락된 보스 무기 피해 로직 복원]
                 }
             }
         }
