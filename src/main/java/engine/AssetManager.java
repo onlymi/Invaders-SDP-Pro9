@@ -90,7 +90,7 @@ public final class AssetManager {
             49, 64),
         CharacterArcherSecondSkill(SourceCategory.WEAPON,
             "archer/effect_skill2_archer.png",
-            14, 32),
+            55, 64),
         CharacterArcherUltimateSkill(SourceCategory.WEAPON,
             "archer/effect_ultimate_archer.png",
             14, 32),

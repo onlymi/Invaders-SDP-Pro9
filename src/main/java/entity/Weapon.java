@@ -101,12 +101,9 @@ public class Weapon extends Entity {
     
     public final void setCharacter(GameCharacter character) {
         this.character = character;
-        
-        this.velocityX = 0;
-        this.velocityY = 0;
-        this.speedX = 0;
-        
         if (this.character != null) {
+            this.velocityX = 0;
+            this.velocityY = 0;
             
             if (this.character.isFacingLeft()) {
                 this.velocityX = -this.speed;
@@ -264,8 +261,6 @@ public class Weapon extends Entity {
      */
     public final void setSpeed(final int speed) {
         this.speed = speed;
-        this.velocityY = speed;
-        this.velocityX = 0;
     }
     
     public void setSpeedX(int speedX) {
