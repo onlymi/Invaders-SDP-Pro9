@@ -506,7 +506,7 @@ public abstract class GameCharacter extends Entity {
         weapon.setSpriteImage(this.projectileSpriteType);
         weapon.setPlayerId(this.playerId);
         weapon.setRange(this.currentStats.attackRange);
-        
+        weapon.setDamage(this.currentStats.physicalDamage);
         weapons.add(weapon);
         
         return weapon;

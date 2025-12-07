@@ -5,6 +5,7 @@ import engine.utils.Cooldown;
 import entity.EnemyShip;
 import entity.EnemyTypeA;
 import entity.EnemyTypeB;
+import entity.EnemyTypeC;
 import entity.character.GameCharacter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -125,7 +126,7 @@ public class EnemyManager {
                 break;
             case 2:
             default:
-                enemy = new EnemyShip(x, y, SpriteType.EnemyC_move);
+                enemy = new EnemyTypeC(x, y, SpriteType.EnemyC_move);
                 break;
         }
         this.enemies.add(enemy);

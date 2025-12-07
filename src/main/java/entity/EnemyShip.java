@@ -332,4 +332,8 @@ public class EnemyShip extends Entity {
     public boolean isFacingRight() {
         return this.isFacingRight;
     }
+    
+    public int getCollisionDamage() {
+        return 5;
+    }
 }
