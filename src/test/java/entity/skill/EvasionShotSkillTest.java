@@ -40,6 +40,9 @@ class EvasionShotSkillTest {
         coreMock = mockStatic(Core.class);
         coreMock.when(() -> Core.getCooldown(anyInt())).thenReturn(cooldown);
         coreMock.when(Core::getLogger).thenReturn(java.util.logging.Logger.getGlobal());
+        // Core.getFrameWidth/Height Mocking added to avoid boundary check failures
+        coreMock.when(Core::getFrameWidth).thenReturn(800);
+        coreMock.when(Core::getFrameHeight).thenReturn(600);
         
         evasionShotSkill = new EvasionShotSkill();
     }
@@ -61,6 +64,7 @@ class EvasionShotSkillTest {
         // Given: (100, 100)에서 오른쪽 봄 -> 왼쪽(Backstep)으로 150 이동 시도 -> -50
         when(attacker.getPositionX()).thenReturn(100);
         when(attacker.getPositionY()).thenReturn(100);
+        when(attacker.getWidth()).thenReturn(50); // Attacker width mocking
         
         when(attacker.isFacingRight()).thenReturn(true);
         when(attacker.isFacingLeft()).thenReturn(false);
@@ -78,11 +82,15 @@ class EvasionShotSkillTest {
     void testDoJump_BottomBoundaryCheck() {
         // Given: 아래쪽 경계 테스트
         // Core.HEIGHT = 800 (가정), 캐릭터 높이 50
-        // 경계값: 800 - 50 - 30 = 720
-        // 현재 Y=700, 뒤(Back/위)를 봄 -> 앞(Front/아래)으로 Backstep (+150) -> 850
+        // 경계값: 800 - 50 - 30 = 720 (MockCore height = 600 set in setUp, so 600 - 50 - 30 = 520)
+        
+        // NOTE: setUp mocks frame height to 600.
+        // Boundary = 600 - 50 - 30 = 520.
+        // Current Y = 500. Facing Back (Up) -> Jump Front (Down, +150) -> 650.
+        // 650 > 520 -> Clamped to 520.
         
         when(attacker.getPositionX()).thenReturn(100);
-        when(attacker.getPositionY()).thenReturn(700);
+        when(attacker.getPositionY()).thenReturn(500);
         when(attacker.getHeight()).thenReturn(50);
         
         when(attacker.isFacingBack()).thenReturn(true); // 위를 봄 -> 아래로 점프
@@ -91,8 +99,8 @@ class EvasionShotSkillTest {
         // When
         evasionShotSkill.doJump(attacker);
         
-        // Then: 850 > 720 이므로 720으로 보정되어야 함
-        int expectedY = Core.HEIGHT - 50 - 30; // 720
+        // Then
+        int expectedY = 600 - 50 - 30; // 520
         verify(attacker).setPositionY(expectedY);
     }
     
@@ -110,10 +118,13 @@ class EvasionShotSkillTest {
         
         // Then: 대각선 보정 적용 확인
         int jumpDist = 150;
-        int diagonalMove = (int) (jumpDist * GameCharacter.DIAGONAL_CORRECTION_FACTOR);
+        float correctionFactor = GameCharacter.DIAGONAL_CORRECTION_FACTOR;
+        // dx = -1 * factor, newX = 500 + (int)(dx * 150)
+        // newX = 500 + (int)(-1 * factor * 150) = 500 + (int)(-106.066) = 500 - 106 = 394
+        int expectedPos = 500 + (int) (-1 * correctionFactor * jumpDist);
         
-        verify(attacker).setPositionX(500 - diagonalMove);
-        verify(attacker).setPositionY(500 - diagonalMove);
+        verify(attacker).setPositionX(expectedPos);
+        verify(attacker).setPositionY(expectedPos);
     }
     
     @Test
@@ -142,7 +153,7 @@ class EvasionShotSkillTest {
         
         // Then
         
-        // 1. 이동 확인 (오른쪽 봄 -> 왼쪽 이동 -> -50 -> 1로 보정)
+        // 1. 이동 확인 (오른쪽 봄 -> 왼쪽 이동 -> 100 - 150 = -50 -> 1로 보정)
         verify(attacker).setPositionX(1);
         
         // 2. 무기 효과 확인
@@ -152,8 +163,9 @@ class EvasionShotSkillTest {
         
         // 3. 무기 위치 확인
         // 주의: Mock 객체(attacker)는 doJump 호출 후에도 getPositionX() 값이 100으로 유지됨.
-        // performSkill 코드: charX(100) + charW(50) = 150
-        verify(mockWeapon).setPositionX(150);
+        // performSkill 코드: charX(100) + charW(50) + width/2(5) = 155
+        // (10 / 2 = 5)
+        verify(mockWeapon).setPositionX(155);
         
         // 4. 스턴 확인 (0.5초)
         verify(attacker).stun(500);

@@ -37,6 +37,7 @@ public class Weapon extends Entity {
     private static final double HOMING_AGILITY = 4.0;
     private Cooldown homingTimer;
     private Set<Integer> hitPlayers = new HashSet<>();
+    private Set<EnemyShip> hitEnemies = new HashSet<>();
     
     /**
      * Variable for melee weapons that disappear after a certain period of time.
@@ -101,6 +102,7 @@ public class Weapon extends Entity {
     
     public final void setCharacter(GameCharacter character) {
         this.character = character;
+        
         if (this.character != null) {
             this.velocityX = 0;
             this.velocityY = 0;
@@ -392,10 +394,17 @@ public class Weapon extends Entity {
         hitPlayers.add(playerId);
     }
     
+    public boolean isHitEnemy(EnemyShip enemy) {
+        return hitEnemies.contains(enemy);
+    }
+    
+    public void addHitEnemy(EnemyShip enemy) {
+        hitEnemies.add(enemy);
+    }
+    
     public void setExplosive(boolean explosive) {
         this.explosive = explosive;
     }
-    
     
     public void setExplosionRadius(float explosionRadius) {
         this.explosionRadius = explosionRadius;
@@ -431,6 +440,7 @@ public class Weapon extends Entity {
         }
         this.isBossBullet = false;
         this.isBigLaser = false;
+        this.hitEnemies.clear();
         
         this.explosive = false;
         this.explosionRadius = 0f;

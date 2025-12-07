@@ -124,6 +124,7 @@ public class BossShip extends EnemyShip {
         // Initialize Boss-Exclusive Projectile List
         this.bossProjectiles = new ArrayList<>();
     }
+    
     public List<java.awt.Rectangle> getHitboxRectangles() {
         List<java.awt.Rectangle> hitboxes = new ArrayList<>();
         
@@ -158,12 +159,15 @@ public class BossShip extends EnemyShip {
         
         return hitboxes;
     }
+    
     /**
      * Updates attributes for boss movement and phases.
      */
     @Override
     public final void update() {
-        if (this.isDestroyed) return;
+        if (this.isDestroyed) {
+            return;
+        }
         
         updateMovement();
         updateTimers();
@@ -175,10 +179,13 @@ public class BossShip extends EnemyShip {
     private void updateMovement() {
         if (this.positionX + this.width >= screenWidth || this.positionX <= 0) {
             this.movingRight = !this.movingRight;
-            if (this.positionX <= 0) this.positionX = 1;
-            if (this.positionX + this.width >= screenWidth) this.positionX = screenWidth - this.width - 1;
+            if (this.positionX <= 0) {
+                this.positionX = 1;
+            }
+            if (this.positionX + this.width >= screenWidth) {
+                this.positionX = screenWidth - this.width - 1;
+            }
         }
-        
         
         move(0, 0); // Apply internal speed
     }
@@ -199,7 +206,8 @@ public class BossShip extends EnemyShip {
             w.update();
             
             // 화면 밖으로 나갔거나(레이저/해골 제외), 충돌/수명만료로 인해 만료된 경우(duration=0 or expired)
-            boolean isLaserOrSkull = (w.getSpriteType() == SpriteType.GasterBlaster || w.getSpriteType() == SpriteType.BigLaserBeam);
+            boolean isLaserOrSkull = (w.getSpriteType() == SpriteType.GasterBlaster
+                || w.getSpriteType() == SpriteType.BigLaserBeam);
             
             // 화면 밖 삭제 (일반 탄막만 해당)
             boolean offScreen = w.getPositionY() > screenHeight || w.getPositionY() < 0
@@ -222,7 +230,9 @@ public class BossShip extends EnemyShip {
      * Main attack logic loop. Called from GameScreen.
      */
     public final void updateAttackPattern(GameCharacter[] players) {
-        if (this.isDestroyed) return;
+        if (this.isDestroyed) {
+            return;
+        }
         
         int spawnX = this.positionX + this.width / 2;
         int spawnY = this.positionY + this.height;
@@ -265,7 +275,9 @@ public class BossShip extends EnemyShip {
     
     // --- Phase 2: Laser Charge ---
     private void handleLaserChargePhase(int spawnX, int spawnY, GameCharacter target) {
-        if (!this.laserChargeCooldown.checkFinished()) return;
+        if (!this.laserChargeCooldown.checkFinished()) {
+            return;
+        }
         
         int xOffset = 360; // 480 폭에 맞게 조정
         int skullY = spawnY - 100;
@@ -276,18 +288,14 @@ public class BossShip extends EnemyShip {
             spawnSkulls(spawnX, spawnY, xOffset, skullY, target);
             this.hasSpawnedSkulls = true;
             this.laserFireDelayCooldown.reset();
-        }
-        // Step 2: Fire Lasers
-        else if (!this.isFiring) {
+        } else if (!this.isFiring) { // Step 2: Fire Lasers
             if (this.laserFireDelayCooldown.checkFinished()) {
                 // [수정] fireLasers 인자 제거
                 fireLasers();
                 this.isFiring = true;
                 this.laserActiveCooldown.reset();
             }
-        }
-        // Step 3: Cleanup & Transition
-        else {
+        } else { // Step 3: Cleanup & Transition
             if (this.laserActiveCooldown.checkFinished()) {
                 cleanupLaserPhase();
                 
@@ -301,13 +309,16 @@ public class BossShip extends EnemyShip {
         }
     }
     
-    // [수정] 조준 및 발사 위치 보정 로직 통합
-    private void spawnSkulls(int spawnX, int spawnY, int xOffset, int skullY, GameCharacter target) {
+    // 조준 및 발사 위치 보정 로직 통합
+    private void spawnSkulls(int spawnX, int spawnY, int xOffset, int skullY,
+        GameCharacter target) {
         SoundManager.playOnce("laser_big");
         
-        double targetX = (target != null) ? target.getPositionX() + target.getWidth() / 2.0 : spawnX;
+        double targetX =
+            (target != null) ? target.getPositionX() + target.getWidth() / 2.0 : spawnX;
         // [수정] 조준 기준점: 플레이어 중심 (또는 발밑)
-        double targetY = (target != null) ? target.getPositionY() + target.getHeight() / 2.0 : spawnY + 600;
+        double targetY =
+            (target != null) ? target.getPositionY() + target.getHeight() / 2.0 : spawnY + 600;
         
         // --- Left Skull ---
         double leftSkullCenterX = (spawnX - xOffset) + (SKULL_WIDTH / 2.0);
@@ -319,7 +330,8 @@ public class BossShip extends EnemyShip {
         // --- Right Skull ---
         double rightSkullCenterX = (spawnX + xOffset) + (SKULL_WIDTH / 2.0);
         double rightSkullCenterY = skullY + (SKULL_HEIGHT / 2.0);
-        this.lockedAngleRight = Math.atan2(targetY - rightSkullCenterY, targetX - rightSkullCenterX);
+        this.lockedAngleRight = Math.atan2(targetY - rightSkullCenterY,
+            targetX - rightSkullCenterX);
         this.activeRightSkull = createSkull(spawnX + xOffset, skullY, this.lockedAngleRight);
         this.bossProjectiles.add(this.activeRightSkull);
     }
@@ -333,7 +345,7 @@ public class BossShip extends EnemyShip {
         return skull;
     }
     
-    // [수정] 인자 제거 및 발사 위치 보정 로직
+    // 인자 제거 및 발사 위치 보정 로직
     private void fireLasers() {
         int laserLength = 2000;
         
@@ -342,7 +354,8 @@ public class BossShip extends EnemyShip {
             double originX = this.activeLeftSkull.getPositionX() + (SKULL_WIDTH / 2.0);
             double originY = this.activeLeftSkull.getPositionY() + (SKULL_HEIGHT / 2.0);
             
-            createLaserBeam(originX, originY, laserLength, this.lockedAngleLeft, this.activeLeftLasers);
+            createLaserBeam(originX, originY, laserLength, this.lockedAngleLeft,
+                this.activeLeftLasers);
         }
         
         // 오른쪽 레이저 발사
@@ -350,11 +363,13 @@ public class BossShip extends EnemyShip {
             double originX = this.activeRightSkull.getPositionX() + (SKULL_WIDTH / 2.0);
             double originY = this.activeRightSkull.getPositionY() + (SKULL_HEIGHT / 2.0);
             
-            createLaserBeam(originX, originY, laserLength, this.lockedAngleRight, this.activeRightLasers);
+            createLaserBeam(originX, originY, laserLength, this.lockedAngleRight,
+                this.activeRightLasers);
         }
     }
     
-    private void createLaserBeam(double originX, double originY, int length, double angle, List<Weapon> trackList) {
+    private void createLaserBeam(double originX, double originY, int length, double angle,
+        List<Weapon> trackList) {
         int laserWidth = 11 * 4;
         
         // spawnX: 레이저의 X축 중앙이 해골 중심(originX)에 오도록 재설정
@@ -367,7 +382,8 @@ public class BossShip extends EnemyShip {
         double angleOffsetDegrees = -7.0;
         
         for (int i = 0; i < 3; i++) {
-            Weapon laser = WeaponPool.getWeapon(spawnX, spawnY, 0, laserWidth, length, Entity.Team.ENEMY);
+            Weapon laser = WeaponPool.getWeapon(spawnX, spawnY, 0, laserWidth, length,
+                Entity.Team.ENEMY);
             
             laser.setBigLaser(true);
             laser.setBossBullet(false);
@@ -388,8 +404,12 @@ public class BossShip extends EnemyShip {
         recycleWeapons(this.activeLeftLasers);
         recycleWeapons(this.activeRightLasers);
         
-        if (this.activeLeftSkull != null) recycleWeapon(this.activeLeftSkull);
-        if (this.activeRightSkull != null) recycleWeapon(this.activeRightSkull);
+        if (this.activeLeftSkull != null) {
+            recycleWeapon(this.activeLeftSkull);
+        }
+        if (this.activeRightSkull != null) {
+            recycleWeapon(this.activeRightSkull);
+        }
         
         this.activeLeftSkull = null;
         this.activeRightSkull = null;
@@ -429,7 +449,9 @@ public class BossShip extends EnemyShip {
     // --- Helper Methods ---
     
     private void recycleWeapons(List<Weapon> weaponsToRecycle) {
-        if (weaponsToRecycle == null || weaponsToRecycle.isEmpty()) return;
+        if (weaponsToRecycle == null || weaponsToRecycle.isEmpty()) {
+            return;
+        }
         
         this.bossProjectiles.removeAll(weaponsToRecycle);
         WeaponPool.recycle(new HashSet<>(weaponsToRecycle));
@@ -437,7 +459,9 @@ public class BossShip extends EnemyShip {
     }
     
     private void recycleWeapon(Weapon w) {
-        if (w == null) return;
+        if (w == null) {
+            return;
+        }
         this.bossProjectiles.remove(w);
         WeaponPool.recycle(Set.of(w));
     }
@@ -445,7 +469,9 @@ public class BossShip extends EnemyShip {
     private GameCharacter getNearestTarget(GameCharacter[] players, int x, int y) {
         GameCharacter nearest = null;
         double minDist = Double.MAX_VALUE;
-        if (players == null) return null;
+        if (players == null) {
+            return null;
+        }
         for (GameCharacter p : players) {
             if (p != null && !p.isInvincible() && p.getCurrentHealthPoints() > 0) {
                 double dist = Math.pow(p.getPositionX() - x, 2) + Math.pow(p.getPositionY() - y, 2);
@@ -467,7 +493,11 @@ public class BossShip extends EnemyShip {
     
     @Override
     public final void hit() {
-        this.health--;
+        hit(1);
+    }
+    
+    public final void hit(int damage) {
+        this.health -= damage;
         if (this.health <= 0) {
             this.isDestroyed = true;
             this.spriteType = SpriteType.Explosion;
@@ -482,10 +512,27 @@ public class BossShip extends EnemyShip {
     }
     
     @Override
-    public final int getHealth() { return this.health; }
-    public final int getAttackPhase() { return this.attackPhase; }
-    public final boolean isAttackEnabled() { return this.isAttackEnabled; }
-    public final boolean isMovingRight() { return this.movingRight; }
-    public final int getLaserChargeTimer() { return this.laserChargeTimer; }
-    public int readChargeTimer() { return this.spreadChargeTimer; }
+    public final int getHealth() {
+        return this.health;
+    }
+    
+    public final int getAttackPhase() {
+        return this.attackPhase;
+    }
+    
+    public final boolean isAttackEnabled() {
+        return this.isAttackEnabled;
+    }
+    
+    public final boolean isMovingRight() {
+        return this.movingRight;
+    }
+    
+    public final int getLaserChargeTimer() {
+        return this.laserChargeTimer;
+    }
+    
+    public int readChargeTimer() {
+        return this.spreadChargeTimer;
+    }
 }
