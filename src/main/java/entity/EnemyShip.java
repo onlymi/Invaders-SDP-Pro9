@@ -336,4 +336,12 @@ public class EnemyShip extends Entity {
     public int getCollisionDamage() {
         return 5;
     }
+    
+    public double getPreciseX() {
+        return preciseX;
+    }
+    
+    public double getPreciseY() {
+        return preciseY;
+    }
 }

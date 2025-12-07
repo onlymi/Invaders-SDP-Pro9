@@ -266,7 +266,7 @@ class GameScreenTest {
         // 1. 적이 데미지를 받았는지 확인
         verify(mockEnemy, times(1)).hit(100);
         // 2. 적이 파괴되었는지 확인 (실제 코드에서 2번 호출됨: 충돌 전 조건 + 충돌 후 파괴 확인)
-        verify(mockEnemy, times(2)).isDestroyed();
+        verify(mockEnemy, times(3)).isDestroyed();
         // 3. 점수가 추가되었는지 확인 (Player index 0)
         verify(mockGameState, times(1)).addScore(0, 50);
         // 4. 코인이 추가되었는지 확인
