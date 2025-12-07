@@ -840,7 +840,18 @@ public class GameScreen extends Screen {
                 
                 for (EnemyShip enemyShip : this.enemyManager.getEnemies()) {
                     if (!enemyShip.isDestroyed() && checkCollision(weapon, enemyShip)) {
-                        recyclable.add(weapon);
+                        boolean isPiercing = (weapon.getSpriteType()
+                            == SpriteType.CharacterArcherUltimateSkill);
+                        
+                        if (isPiercing) {
+                            if (weapon.isHitEnemy(enemyShip)) {
+                                continue;
+                            }
+                            weapon.addHitEnemy(enemyShip);
+                        } else {
+                            recyclable.add(weapon);
+                        }
+                        
                         enemyShip.hit(weapon.getDamage());
                         
                         if (enemyShip.isDestroyed()) {
@@ -964,7 +975,7 @@ public class GameScreen extends Screen {
                             
                             player.takeDamage(5);
                             
-                            // [FIXED] Decrement life on collision death
+                            // Decrement life on collision death
                             if (player.getCurrentHealthPoints() <= 0) {
                                 this.state.decLife(p);
                             }
