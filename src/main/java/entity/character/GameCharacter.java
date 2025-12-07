@@ -11,9 +11,6 @@ import entity.Entity;
 import entity.Weapon;
 import entity.WeaponPool;
 import entity.buff.Buff;
-import entity.skill.EvasionShotSkill;
-import entity.skill.PiercingArrowSkill;
-import entity.skill.RapidFireSkill;
 import entity.skill.Skill;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -103,9 +100,6 @@ public abstract class GameCharacter extends Entity {
         this.playerId = playerId;
         // Character skills
         this.skills = new ArrayList<>();
-        this.skills.add(new RapidFireSkill());
-        this.skills.add(new EvasionShotSkill());
-        this.skills.add(new PiercingArrowSkill());
         this.activeBuffs = new ArrayList<>();
         // Initial base stats
         this.baseStats = new CharacterStats(type.getBaseStats());
