@@ -93,7 +93,7 @@ public final class AssetManager {
             55, 64),
         CharacterArcherUltimateSkill(SourceCategory.WEAPON,
             "archer/effect_ultimate_archer.png",
-            14, 32),
+            76, 256),
         
         /**
          * Wizard Character.

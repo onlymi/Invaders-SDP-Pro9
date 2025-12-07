@@ -50,14 +50,14 @@ public class EvasionShotSkill extends Skill {
         // 화면 밖으로 나가지 않도록 경계 처리 (Boundary Check)
         if (newX < 1) {
             newX = 1;
-        } else if (newX > Core.WIDTH - attacker.getWidth() - 1) {
-            newX = Core.WIDTH - attacker.getWidth() - 1;
+        } else if (newX > Core.getFrameWidth() - attacker.getWidth() - 1) {
+            newX = Core.getFrameWidth() - attacker.getWidth() - 1;
         }
         
         if (newY < GameScreen.SEPARATION_LINE_HEIGHT + 1) {
             newY = GameScreen.SEPARATION_LINE_HEIGHT + 1;
-        } else if (newY > Core.HEIGHT - attacker.getHeight() - 30) {
-            newY = Core.HEIGHT - attacker.getHeight() - 30;
+        } else if (newY > Core.getFrameHeight() - attacker.getHeight() - 30) {
+            newY = Core.getFrameHeight() - attacker.getHeight() - 30;
         }
         
         attacker.setPositionX(newX);
@@ -79,8 +79,9 @@ public class EvasionShotSkill extends Skill {
             // 데미지 1.5배 적용
             int skillDamage = (int) (attacker.getCurrentStats().physicalDamage * 1.5);
             arrow.setDamage(skillDamage);
-            // 투사체 속도 증가 (선택 사항)
+            System.out.println(arrow.getSpeed());
             arrow.setSpeed(arrow.getSpeed() * 2);
+            System.out.println(arrow.getSpeed());
             // 투사체 이미지 변경
             arrow.setSpriteImage(SpriteType.CharacterArcherSecondSkill);
             int newArrowWidth = arrow.getWidth();
@@ -90,20 +91,21 @@ public class EvasionShotSkill extends Skill {
             int charW = attacker.getWidth();
             int charH = attacker.getHeight();
             
-            if (attacker.isFacingRight()) {
-                arrow.setPositionX(charX + charW);
-            } else if (attacker.isFacingLeft()) {
-                arrow.setPositionX(charX - newArrowWidth);
-            } else {
-                arrow.setPositionX(charX + (charW - newArrowWidth) / 2);
-            }
-            
-            if (attacker.isFacingFront()) {
+            if (attacker.isFacingLeft()) {
+                arrow.setPositionX(charX - arrow.getWidth() / 2);
+                arrow.setPositionY(charX + (charW - newArrowWidth) / 2);
+            } else if (attacker.isFacingRight()) {
+                arrow.setPositionX(charX + charW + newArrowWidth / 2);
+                arrow.setPositionY(charX + (charW - newArrowWidth) / 2);
+            } else if (attacker.isFacingFront()) {
+                arrow.setPositionX(charX + newArrowWidth / 2);
                 arrow.setPositionY(charY + charH);
             } else if (attacker.isFacingBack()) {
+                arrow.setPositionX(charX + newArrowWidth / 2);
                 arrow.setPositionY(charY - newArrowHeight);
             } else {
-                arrow.setPositionY(charY + (charH - newArrowHeight) / 2);
+                arrow.setPositionX(charX + newArrowWidth / 2);
+                arrow.setPositionY(charY - newArrowHeight);
             }
             // 슬로우 버프 탑재 (Weapon에 setOnHitBuff가 구현되어 있다고 가정)
             // arrow.setOnHitBuff(new EvasionShotSkillBuff(3.0f));

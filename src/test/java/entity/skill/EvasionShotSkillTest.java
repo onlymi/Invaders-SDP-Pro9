@@ -92,7 +92,7 @@ class EvasionShotSkillTest {
         evasionShotSkill.doJump(attacker);
         
         // Then: 850 > 720 이므로 720으로 보정되어야 함
-        int expectedY = Core.HEIGHT - 50 - 30; // 720
+        int expectedY = Core.getFrameHeight() - 50 - 30; // 720
         verify(attacker).setPositionY(expectedY);
     }
     
