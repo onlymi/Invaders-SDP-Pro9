@@ -13,6 +13,10 @@ import screen.Screen;
 public class CommonRenderer {
     
     /**
+     * Small-sized font.
+     */
+    private final Font fontSmall;
+    /**
      * Normal-sized font.
      */
     private final Font fontRegular;
@@ -28,8 +32,13 @@ public class CommonRenderer {
     private static final String BACK_LABEL = "< Back";
     
     public CommonRenderer() {
+        fontSmall = AssetManager.getInstance().getFontSmall();
         fontRegular = AssetManager.getInstance().getFontRegular();
         fontBig = AssetManager.getInstance().getFontBig();
+    }
+    
+    public Font getFontSmall() {
+        return this.fontSmall;
     }
     
     public Font getFontRegular() {

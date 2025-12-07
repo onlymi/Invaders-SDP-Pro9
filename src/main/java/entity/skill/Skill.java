@@ -1,5 +1,6 @@
 package entity.skill;
 
+import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.utils.Cooldown;
 import entity.Weapon;
@@ -15,6 +16,8 @@ public abstract class Skill {
     protected int manaCost;
     protected Cooldown coolDown;
     
+    protected SpriteType spriteType;
+    
     /**
      * Constructor of Skill.
      *
@@ -27,6 +30,7 @@ public abstract class Skill {
         this.manaCost = manaCost;
         this.coolDown = Core.getCooldown(coolTime);
         this.logger = Core.getLogger();
+        this.spriteType = SpriteType.CharacterWarriorUltimateSkill;
     }
     
     /**
@@ -94,5 +98,9 @@ public abstract class Skill {
      */
     public int getRemainingCooldown() {
         return this.coolDown.getDuration();
+    }
+    
+    public SpriteType getSpriteType() {
+        return this.spriteType;
     }
 }

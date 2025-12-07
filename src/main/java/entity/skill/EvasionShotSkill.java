@@ -16,6 +16,7 @@ public class EvasionShotSkill extends Skill {
     
     public EvasionShotSkill() {
         super("Evasion Shot", MANA_COST, (int) (COOLDOWN_SECOND * 1000));
+        this.spriteType = SpriteType.CharacterArcherSecondSkill;
     }
     
     public void doJump(GameCharacter attacker) {
@@ -83,7 +84,7 @@ public class EvasionShotSkill extends Skill {
             arrow.setSpeed(arrow.getSpeed() * 2);
             System.out.println(arrow.getSpeed());
             // 투사체 이미지 변경
-            arrow.setSpriteImage(SpriteType.CharacterArcherSecondSkill);
+            arrow.setSpriteImage(this.spriteType);
             int newArrowWidth = arrow.getWidth();
             int newArrowHeight = arrow.getHeight();
             int charX = attacker.getPositionX();

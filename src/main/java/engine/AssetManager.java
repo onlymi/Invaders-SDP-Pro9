@@ -52,8 +52,15 @@ public final class AssetManager {
             characterWidth, characterHeight),
         CharacterWarriorWalk2(SourceCategory.CHARACTER, "warrior/warrior_basic.png",
             characterWidth, characterHeight),
+        // Warrior Weapon
         CharacterWarriorDefaultProjectile(SourceCategory.WEAPON,
             "warrior/default_attack_warrior.png", 32, characterHeight),
+        CharacterWarriorFirstSkill(SourceCategory.WEAPON,
+            "archer/default_attack_warrior.png", 49, 64),
+        CharacterWarriorSecondSkill(SourceCategory.WEAPON,
+            "archer/effect_skill2_archer.png", 55, 64),
+        CharacterWarriorUltimateSkill(SourceCategory.WEAPON,
+            "archer/effect_ultimate_archer.png", 76, 256),
         /**
          * Archer Character.
          */
@@ -314,6 +321,7 @@ public final class AssetManager {
     Map<SpriteType, BufferedImage[]> animationMap;
     HashMap<String, Clip> soundMap;
     HashMap<String, File> csvDataMap;
+    private Font fontSmall;
     private Font fontRegular;
     private Font fontBig;
     
@@ -328,6 +336,7 @@ public final class AssetManager {
             LOGGER.info("Finished loading the sprites.");
             
             // Font loading
+            fontSmall = this.loadFont(12f);
             fontRegular = this.loadFont(14f);
             fontBig = this.loadFont(24f);
             LOGGER.info("Finished loading the fonts.");
@@ -561,6 +570,10 @@ public final class AssetManager {
     private File loadCsv(String filePath) {
         String rootDir = System.getProperty("user.dir");
         return new File(rootDir + File.separator + filePath);
+    }
+    
+    public Font getFontSmall() {
+        return fontSmall;
     }
     
     public Font getFontRegular() {

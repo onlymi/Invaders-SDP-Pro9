@@ -57,7 +57,7 @@ public class GameScreen extends Screen {
     /**
      * Height of the interface separation line.
      */
-    public static final int SEPARATION_LINE_HEIGHT = 68;
+    public static final int SEPARATION_LINE_HEIGHT = 70;
     private static final int HIGH_SCORE_NOTICE_DURATION = 2000;
     private static boolean sessionHighScoreNotified = false;
     
@@ -534,12 +534,12 @@ public class GameScreen extends Screen {
         
         // Aggregate UI
         drawManager.getGameScreenRenderer()
-            .drawScore(drawManager.getBackBufferGraphics(), this, state.getScore());
+            .drawScore(drawManager.getBackBufferGraphics(), this, this.state.getScore());
         // drawManager.getGameScreenRenderer()
         //     .drawLives(drawManager.getBackBufferGraphics(), this, state.getLivesRemaining(),
         //         state.isCoop());
         drawManager.getGameScreenRenderer()
-            .drawCoins(drawManager.getBackBufferGraphics(), this, state.getCoins());
+            .drawCoins(drawManager.getBackBufferGraphics(), this, this.state.getCoins());
         drawManager.getGameScreenRenderer()
             .drawLevel(drawManager.getBackBufferGraphics(), this, this.state.getLevel());
         drawManager.getCommonRenderer()
@@ -547,12 +547,15 @@ public class GameScreen extends Screen {
                 SEPARATION_LINE_HEIGHT - 1);
         
         int remainingKills = Math.max(0, this.killsToWin - this.enemyKillCount);
-        drawManager.getGameScreenRenderer().drawShipCount(drawManager.getBackBufferGraphics(), this,
-            remainingKills);
+        drawManager.getGameScreenRenderer().drawShipCount(drawManager.getBackBufferGraphics(),
+            this, remainingKills);
         drawManager.getGameScreenRenderer()
             .drawItemToast(drawManager.getBackBufferGraphics(), this);
         drawManager.getGameScreenRenderer()
-            .drawActiveItemSlots(drawManager.getBackBufferGraphics(), this, state);
+            .drawActiveItemSlots(drawManager.getBackBufferGraphics(), this, this.state);
+        drawManager.getGameScreenRenderer()
+            .drawCharacterSkillSlots(drawManager.getBackBufferGraphics(), this, this.state,
+                this.characters);
         
         if (!this.inputDelay.checkFinished()) {
             int countdown = (int) ((INPUT_DELAY - (System.currentTimeMillis() - this.gameStartTime))
@@ -993,7 +996,8 @@ public class GameScreen extends Screen {
                     if (checkCollision(bossWeapon, player)) {
                         
                         // 단발성 무기 중복 피격 방지 (레이저는 제외)
-                        if (!isLaser && bossWeapon.getDuration() == -1 && bossWeapon.isHitPlayer(p)) {
+                        if (!isLaser && bossWeapon.getDuration() == -1 && bossWeapon.isHitPlayer(
+                            p)) {
                             continue;
                         }
                         
@@ -1004,7 +1008,9 @@ public class GameScreen extends Screen {
                             );
                         
                         if (hasShieldEffect) {
-                            LOGGER.info("[GameScreen] Shield blocked damage for player (Boss Weapon) " + (p + 1));
+                            LOGGER.info(
+                                "[GameScreen] Shield blocked damage for player (Boss Weapon) " + (p
+                                    + 1));
                             if (!isLaser) {
                                 bossWeapon.setDuration(0); // 총알 제거
                             }
