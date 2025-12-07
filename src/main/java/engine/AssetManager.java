@@ -360,6 +360,7 @@ public final class AssetManager {
             soundMap.put("boss_hit", loadSound("sound/invader_killed.wav"));
             soundMap.put("booster", loadSound("sound/booster.wav"));
             soundMap.put("stabbing", loadSound("sound/stabbing.wav"));
+            soundMap.put("fail", loadSound("sound/fail.wav"));
             
             LOGGER.info("Finished loading the sounds.");
         } catch (Exception e) {

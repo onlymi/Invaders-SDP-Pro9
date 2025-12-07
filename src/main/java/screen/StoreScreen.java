@@ -113,7 +113,7 @@ public class StoreScreen extends Screen {
                 e.printStackTrace();
             }
         } else {
-            this.soundManager.playOnce("lose");
+            this.soundManager.playOnce("fail");
         }
     }
     
