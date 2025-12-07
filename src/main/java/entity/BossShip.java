@@ -493,7 +493,11 @@ public class BossShip extends EnemyShip {
     
     @Override
     public final void hit() {
-        this.health--;
+        hit(1);
+    }
+    
+    public final void hit(int damage) {
+        this.health -= damage;
         if (this.health <= 0) {
             this.isDestroyed = true;
             this.spriteType = SpriteType.Explosion;
