@@ -1040,7 +1040,7 @@ public class GameScreen extends Screen {
             
             for (EnemyShip enemy : this.enemyManager.getEnemies()) {
                 if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
-                    // 실드 아이템 로직 (있다면 유지)
+                    // 실드 아이템 로직
                     boolean hasShieldEffect = state != null && state.hasEffect(p,
                         engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD);
                     if (hasShieldEffect) {
@@ -1055,8 +1055,10 @@ public class GameScreen extends Screen {
                         continue;
                     }
                     
-                    // [핵심 변경] 하드코딩된 5 대신, 적의 메서드 호출
                     player.takeDamage(enemy.getCollisionDamage());
+                    if (enemy instanceof entity.EnemyTypeC && enemy.getCollisionDamage() > 5) {
+                        engine.SoundManager.playOnce("stabbing");
+                    }
                     
                     // 사망 처리
                     if (player.getCurrentHealthPoints() <= 0) {

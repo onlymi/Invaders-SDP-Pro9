@@ -4,6 +4,7 @@ import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.utils.Cooldown;
 import entity.character.GameCharacter;
+import java.util.List;
 
 public class EnemyTypeC extends EnemyShip {
     
@@ -17,7 +18,7 @@ public class EnemyTypeC extends EnemyShip {
     private State state;
     
     private static final double BASE_SPEED = 1.0;
-    private static final double CHARGE_SPEED = 3.0;
+    private static final double CHARGE_SPEED = 10.0;
     private static final double DETECTION_RADIUS = 300.0; // 감지 반경
     
     private static final int PREPARE_TIME = 500;    // 돌진 준비 시간
@@ -65,7 +66,7 @@ public class EnemyTypeC extends EnemyShip {
         return 5;
     }
     
-    public void update(GameCharacter player) {
+    public void update(GameCharacter player, List<EnemyShip> allEnemies) {
         if (this.isDestroyed) {
             return;
         }
@@ -120,6 +121,7 @@ public class EnemyTypeC extends EnemyShip {
         this.state = State.CHARGING;
         this.stateTimer = Core.getCooldown(CHARGE_DURATION);
         this.stateTimer.reset();
+        engine.SoundManager.playOnce("booster");
         
         // 돌진 시작 시점의 플레이어 방향으로 벡터 고정 (도중에 방향 못 바꿈)
         if (player != null) {
@@ -138,7 +140,7 @@ public class EnemyTypeC extends EnemyShip {
     }
     
     private void handleCharging() {
-        // 고정된 방향으로 3배 속도로 이동
+        // 고정된 방향으로 돌진
         this.preciseX += this.chargeDirX * CHARGE_SPEED;
         this.preciseY += this.chargeDirY * CHARGE_SPEED;
         
@@ -146,9 +148,9 @@ public class EnemyTypeC extends EnemyShip {
         if (stateTimer.checkFinished()) {
             this.state = State.COOLDOWN;
             this.stateTimer = Core.getCooldown(COOLDOWN_TIME); // 2초 휴식
+            this.spriteType = SpriteType.EnemyC_move;
             this.stateTimer.reset();
-            // 스프라이트는 공격 상태 유지하거나, 헥헥거리는 모션이 있다면 변경 가능
-            // 여기서는 공격 이미지를 유지
+            
         }
     }
     

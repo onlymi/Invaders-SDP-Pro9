@@ -69,6 +69,8 @@ public class EnemyManager {
             } else if (enemy instanceof EnemyTypeB) {
                 ((EnemyTypeB) enemy).update(target, this.enemies);
                 ((EnemyTypeB) enemy).tryAttack(target, gameScreen.getWeapons());
+            } else if (enemy instanceof EnemyTypeC) {
+                ((EnemyTypeC) enemy).update(target, this.enemies);
             } else {
                 enemy.update(state);
             }
