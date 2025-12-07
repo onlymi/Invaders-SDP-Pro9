@@ -1,6 +1,8 @@
 package entity.skill;
 
+import entity.Weapon;
 import entity.character.GameCharacter;
+import java.util.Set;
 
 public class PiercingArrowSkill extends Skill {
     
@@ -9,7 +11,7 @@ public class PiercingArrowSkill extends Skill {
     }
     
     @Override
-    public void performSkill(GameCharacter attacker) {
+    public void performSkill(GameCharacter attacker, Set<Weapon> weapons) {
     
     }
 }

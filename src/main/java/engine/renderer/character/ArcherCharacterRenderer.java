@@ -57,7 +57,7 @@ public class ArcherCharacterRenderer {
                 }
                 
                 int frameIndex =
-                    (int) (System.currentTimeMillis() / frameSwitchTime) % walkFrames.length;
+                    (int) ((System.currentTimeMillis() / frameSwitchTime) % walkFrames.length);
                 currentSprite = walkFrames[frameIndex];
             }
             

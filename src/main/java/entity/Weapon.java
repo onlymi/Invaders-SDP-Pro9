@@ -261,8 +261,6 @@ public class Weapon extends Entity {
      */
     public final void setSpeed(final int speed) {
         this.speed = speed;
-        this.velocityY = speed;
-        this.velocityX = 0;
     }
     
     public void setSpeedX(int speedX) {
@@ -278,7 +276,6 @@ public class Weapon extends Entity {
     public final int getSpeed() {
         return this.speed;
     }
-    
     
     
     public int getSpeedX() {
