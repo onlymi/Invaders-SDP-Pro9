@@ -36,6 +36,25 @@ public class Item extends Entity {
     private ItemData data;
     
     /**
+     * Spawn time used for hovering animation.
+     */
+    private long spawnTimeMs;
+    
+    /**
+     * Base Y position for hovering animation.
+     */
+    private int baseY;
+    
+    /**
+     * Whether this item has expired and should be removed.
+     */
+    private boolean expired = false;
+    
+    private static final long LIFETIME_MS = 10000L;
+    private static final long BLINK_START_MS = 7000L;
+    private static final long BLINK_INTERVAL_MS = 200L;
+    
+    /**
      * Constructor, establishes the Item's properties.
      *
      * @param itemType  Type of Item being spawned
@@ -54,7 +73,12 @@ public class Item extends Entity {
         this.type = itemType;
         this.itemSpeed = speed;
         
+        this.baseY = positionY;
+        this.spawnTimeMs = System.currentTimeMillis();
+        
         setSprite();
+        
+        resetLifetimeAndHover();
     }
     
     public Item(final ItemData data, final int positionX, final int positionY, final int speed) {
@@ -64,7 +88,12 @@ public class Item extends Entity {
         this.type = (data != null) ? data.getType() : null;
         this.itemSpeed = speed;
         
+        this.baseY = positionY;
+        this.spawnTimeMs = System.currentTimeMillis();
+        
         setSprite();
+        
+        resetLifetimeAndHover();
     }
     
     /**
@@ -131,6 +160,7 @@ public class Item extends Entity {
             case "DASH" -> SpriteType.ItemDash;
             case "PET_GUN" -> SpriteType.ItemPetGun;
             case "SHIELD" -> SpriteType.ItemShield;
+            case "PET_ROCKET" -> SpriteType.ItemPetRocket;
             default -> {
                 logger.warning("[Item]: No sprite mapping for type "
                     + type + ", using default ItemScore sprite.");
@@ -143,7 +173,37 @@ public class Item extends Entity {
      * Updates the Item's position.
      */
     public final void update() {
-        this.positionY += this.itemSpeed;
+        if (this.expired) {
+            return;
+        }
+        
+        if (this.spawnTimeMs == 0L) {
+            this.spawnTimeMs = System.currentTimeMillis();
+            this.baseY = this.positionY;
+        }
+        
+        long elapsed = System.currentTimeMillis() - this.spawnTimeMs;
+        
+        // lifetime and expiration
+        if (elapsed >= LIFETIME_MS) {
+            this.expired = true;
+            this.alpha = 0.0f;
+            return;
+        }
+        
+        // hovering animation
+        double t = elapsed / 300.0;
+        this.positionY = this.baseY + (int) (Math.sin(t) * 4);
+        
+        // blinking effect during the last 2 seconds (5s ~ 7s)
+        if (elapsed >= BLINK_START_MS) {
+            long blinkElapsed = elapsed - BLINK_START_MS;
+            long phase = (blinkElapsed / BLINK_INTERVAL_MS) % 2;
+            boolean visible = (phase == 0);
+            this.alpha = visible ? 1.0f : 0.2f;
+        } else {
+            this.alpha = 1.0f;
+        }
     }
     
     /**
@@ -240,6 +300,7 @@ public class Item extends Entity {
         this.type = (newData != null) ? newData.getType() : null;
         this.itemSpeed = 0;
         setSprite();
+        resetLifetimeAndHover();
     }
     
     /**
@@ -339,5 +400,19 @@ public class Item extends Entity {
                     + " (" + e.getMessage() + ")");
             }
         }
+    }
+    
+    /**
+     * Resets hover/lifetime state based on current position.
+     */
+    public void resetLifetimeAndHover() {
+        this.baseY = this.positionY;
+        this.spawnTimeMs = System.currentTimeMillis();
+        this.expired = false;
+        this.alpha = 1.0f;
+    }
+    
+    public boolean isExpired() {
+        return this.expired;
     }
 }

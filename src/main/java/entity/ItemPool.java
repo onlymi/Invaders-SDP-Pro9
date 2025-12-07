@@ -8,19 +8,19 @@ import java.util.Set;
  * Implements a pool of recyclable items.
  */
 public final class ItemPool {
-
+    
     /**
      * Set of items.
      */
     private static Set<Item> pool = new HashSet<Item>();
-
+    
     /**
      * Constructor, not called.
      */
     private ItemPool() {
-
+    
     }
-
+    
     /**
      * Returns an item from the pool if one is available, a new one if there isn't. Caller should
      * call item.init(...) to set position/type/sprite after obtaining.
@@ -33,24 +33,25 @@ public final class ItemPool {
      * @return Requested item.
      */
     public static Item getItem(ItemData data, int positionX, int positionY, int speed) {
-        String type = data.getType();
         // create new item
         Item item;
         if (!pool.isEmpty()) {
             item = pool.iterator().next();
             pool.remove(item);
-
+            
             item.reset(data);
             item.setPositionX(positionX - item.getWidth() / 2);
             item.setPositionY(positionY);
             item.setItemSpeed(speed);
+            
+            item.resetLifetimeAndHover();
         } else {
             item = new Item(data, positionX - 3, positionY, speed);
         }
-
+        
         return item;
     }
-
+    
     /**
      * Adds one or more items to the list of available ones.
      *

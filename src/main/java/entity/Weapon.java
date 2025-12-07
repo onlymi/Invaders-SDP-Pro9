@@ -61,6 +61,9 @@ public class Weapon extends Entity {
     private boolean isBigLaser = false;
     private boolean isBossSkull = false;
     
+    private boolean explosive = false;
+    private float explosionRadius = 0f;
+    
     /**
      * Constructor, establishes the bullet's properties.
      *
@@ -276,6 +279,7 @@ public class Weapon extends Entity {
         return this.speed;
     }
     
+    
     public int getSpeedX() {
         return this.speedX;
     }
@@ -317,6 +321,7 @@ public class Weapon extends Entity {
         this.velocityY = this.speed;
         this.velocityX = 0;
     }
+    
     
     public void setHoming(GameCharacter target) {
         this.target = target;
@@ -397,6 +402,24 @@ public class Weapon extends Entity {
         hitEnemies.add(enemy);
     }
     
+    public void setExplosive(boolean explosive) {
+        this.explosive = explosive;
+    }
+    
+    public void setExplosionRadius(float explosionRadius) {
+        this.explosionRadius = explosionRadius;
+    }
+    
+    // return isExplosive
+    public boolean isExplosive() {
+        return explosive;
+    }
+    
+    // return explosion range
+    public float getExplosionRadius() {
+        return explosionRadius;
+    }
+    
     public void reset() {
         this.createTime = System.currentTimeMillis();
         this.duration = -1;
@@ -418,5 +441,8 @@ public class Weapon extends Entity {
         this.isBossBullet = false;
         this.isBigLaser = false;
         this.hitEnemies.clear();
+        
+        this.explosive = false;
+        this.explosionRadius = 0f;
     }
 }
