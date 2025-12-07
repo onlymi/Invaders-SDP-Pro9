@@ -869,7 +869,6 @@ public class GameScreen extends Screen {
                 }
                 
             } else {
-                // ... (Player weapon 로직 기존과 동일) ...
                 // Player weapon vs enemies
                 final int ownerId = weapon.getOwnerPlayerId();
                 final int pIdx = (ownerId == 2) ? 1 : 0;
@@ -884,6 +883,18 @@ public class GameScreen extends Screen {
                             // Rocket splash damage
                             applyExplosiveDamage(weapon, pIdx);
                         } else {
+                            boolean isPiercing = (weapon.getSpriteType()
+                                == SpriteType.CharacterArcherUltimateSkill);
+                            
+                            if (isPiercing) {
+                                if (weapon.isHitEnemy(enemyShip)) {
+                                    continue;
+                                }
+                                weapon.addHitEnemy(enemyShip);
+                            } else {
+                                recyclable.add(weapon);
+                            }
+                            
                             enemyShip.hit(weapon.getDamage());
                             
                             if (enemyShip.isDestroyed()) {
@@ -918,7 +929,7 @@ public class GameScreen extends Screen {
                 if (this.bossShip != null
                     && !this.bossShip.isDestroyed()
                     && checkCollision(weapon, this.bossShip)) {
-                    this.bossShip.hit();
+                    this.bossShip.hit(weapon.getDamage());
                     recyclable.add(weapon);
                     
                     if (this.bossShip.isDestroyed()) {
@@ -1025,6 +1036,9 @@ public class GameScreen extends Screen {
                             if (!isLaser) {
                                 bossWeapon.addHitPlayer(p);
                             }
+                            
+                            this.LOGGER.info(
+                                "Collision! Player " + (p + 1) + " hit by enemy body.");
                         }
                     }
                     // [END: 누락된 보스 무기 피해 로직 복원]
