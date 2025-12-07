@@ -121,14 +121,14 @@ public class EnemyManager {
         GameState gameState = gameScreen.getGameState();
         switch (type) {
             case 0:
-                enemy = new EnemyTypeB(x, y, SpriteType.EnemyA_Move);
+                enemy = new EnemyTypeA(x, y, SpriteType.EnemyA_Move);
                 break;
             case 1:
                 enemy = new EnemyTypeB(x, y, SpriteType.EnemyB_Move);
                 break;
             case 2:
             default:
-                enemy = new EnemyTypeB(x, y, SpriteType.EnemyC_move);
+                enemy = new EnemyTypeC(x, y, SpriteType.EnemyC_move);
                 break;
         }
         this.enemies.add(enemy);
