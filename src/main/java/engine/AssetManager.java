@@ -167,7 +167,8 @@ public final class AssetManager {
         
         // pet_gun bullet
         PetGunProjectile(SourceCategory.WEAPON, "pet/pet_gun_bullet.png", 16, 16),
-        
+        // pet_rocket bullet
+        PetRocketProjectile(SourceCategory.WEAPON, "pet/pet_rocket_bullet.png", 16, 16),
         /**
          * Player ship.
          */
@@ -244,7 +245,8 @@ public final class AssetManager {
         ItemTimeSlow(SourceCategory.ITEM_IMAGE, "TIME_SLOW.png", 32, 32),
         ItemDash(SourceCategory.ITEM_IMAGE, "DASH.png", 32, 32),
         ItemShield(SourceCategory.ITEM_IMAGE, "SHIELD.png", 32, 32),
-        ItemPetGun(SourceCategory.ITEM_IMAGE, "PET_GUN.png", 32, 32);
+        ItemPetGun(SourceCategory.ITEM_IMAGE, "PET_GUN.png", 32, 32),
+        ItemPetRocket(SourceCategory.ITEM_IMAGE, "PET_ROCKET.png", 32, 32);
         
         // Enum이 자신의 정보를 저장할 변수들
         private final SourceCategory category;

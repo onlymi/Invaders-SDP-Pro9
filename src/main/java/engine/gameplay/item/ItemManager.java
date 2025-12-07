@@ -36,10 +36,7 @@ public final class ItemManager {
      * Random Roll for item
      */
     private final Random itemRoll = new Random();
-    /**
-     * Counter for pity system, increases when no item is dropped.
-     */
-    private int pityCounter = 0;
+    
     
     /**
      * Item database loaded from CSV.
@@ -59,12 +56,11 @@ public final class ItemManager {
      **/
     public static enum DropTier {
         // DEBUG    (500.0),
-        NONE(33.0),
-        COMMON(30.0),
-        UNCOMMON(20.0),
-        RARE(10.0),
-        EPIC(5.0),
-        LEGENDARY(2.0);
+        COMMON(25.0),
+        UNCOMMON(25.0),
+        RARE(25.0),
+        EPIC(15.0),
+        LEGENDARY(500.0);
         
         
         public final double tierWeight;
@@ -84,9 +80,7 @@ public final class ItemManager {
     static {
         double sum = 0.0;
         for (DropTier t : DropTier.values()) {
-            if (t != DropTier.NONE) {
-                sum += t.tierWeight;
-            }
+            sum += t.tierWeight;
         }
         ITEM_WEIGHT = sum;
     }
@@ -104,24 +98,15 @@ public final class ItemManager {
             return null;
         }
         
-        // Pity Boost
-        double pityBoost = Math.min(pityCounter * 0.05, 0.5);
-        double boostedNoneWeight = DropTier.NONE.tierWeight * (1.0 - pityBoost);
+        // Always drop something: roll among COMMON ~ LEGENDARY.
+        double dropRoll = itemRoll.nextDouble() * ITEM_WEIGHT;
+        this.logger.info(String.format("[ItemManager]: DropRoll %.3f", dropRoll));
         
-        // Roll Item
-        double dropRoll = itemRoll.nextDouble() * (ITEM_WEIGHT + boostedNoneWeight);
-        this.logger.info(String.format("[ItemManager]: DropRoll %.1f", dropRoll));
-        
-        DropTier chosenTier = DropTier.NONE;
+        DropTier chosenTier = DropTier.COMMON;
         double acc = 0.0;
         
         for (DropTier tier : DropTier.values()) {
             double weight = tier.tierWeight;
-            
-            if (tier == DropTier.NONE) {
-                weight = boostedNoneWeight;
-            }
-            
             acc += weight;
             
             if (dropRoll < acc) {
@@ -130,19 +115,10 @@ public final class ItemManager {
             }
         }
         
-        // Calculate Pity
-        if (chosenTier == DropTier.NONE) {
-            pityCounter++;
-            logger.info(String.format("[ItemManager]: Tier=NONE (pity=%d)", pityCounter));
-            return null;
-        }
-        
-        pityCounter = 0;
-        
-        // Load item list from CSV by DropTier
         java.util.List<ItemData> candidates = new java.util.ArrayList<>();
         for (ItemData data : itemDB.getAllItems()) {
-            if (data.getDropTier().equalsIgnoreCase(chosenTier.name())) {
+            if (data.getDropTier() != null
+                && data.getDropTier().equalsIgnoreCase(chosenTier.name())) {
                 candidates.add(data);
             }
         }
@@ -154,12 +130,10 @@ public final class ItemManager {
         
         ItemData chosenData = candidates.get(itemRoll.nextInt(candidates.size()));
         
-        // get spawn position / enemy death position
         int centerX = enemy.getPositionX() + enemy.getWidth() / 2;
         int centerY = enemy.getPositionY() + enemy.getHeight() / 2;
         
-        // Pass ItemData directly to ItemPool
-        int itemSpeed = 2;
+        int itemSpeed = 0;
         Item drop = ItemPool.getItem(chosenData, centerX, centerY, itemSpeed);
         
         if (drop == null) {
@@ -168,12 +142,11 @@ public final class ItemManager {
         }
         
         this.logger.info(
-            "[ItemManager]: created item " + drop.getType() + " at (" + centerX + ", " + centerY
+            "[ItemManager]: created item " + drop.getType() + " at (" + drop.getPositionX()
+                + ", " + drop.getPositionY() + "), enemy center=(" + centerX + ", " + centerY
                 + ")");
         
         return drop;
-        
-        
     }
     
     /**

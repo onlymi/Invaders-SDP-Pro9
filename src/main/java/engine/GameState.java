@@ -666,15 +666,24 @@ public class GameState {
             
             default -> {
                 if (type.startsWith("PET_")) {
+                    ItemEffectType effectType = ItemEffectType.PET_SUPPORT;
+                    
+                    if ("PET_ROCKET".equals(type)) {
+                        effectType = ItemEffectType.PET_ROCKET_SUPPORT;
+                    }
+                    
                     addEffect(
                         playerIndex,
-                        ItemEffectType.PET_SUPPORT,
+                        effectType,
                         data.getEffectValue(),
                         data.getEffectDuration()
                     );
+                    
                     logger.info("[GameState] PET item activated by P" + playerId + ": " + type
+                        + " -> effect=" + effectType
                         + " (value=" + data.getEffectValue()
                         + ", duration=" + data.getEffectDuration() + "s)");
+                    
                     applied = true;
                 } else {
                     logger.info("[GameState] Active item type not handled: " + type);
