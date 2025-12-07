@@ -56,11 +56,11 @@ public final class ItemManager {
      **/
     public static enum DropTier {
         // DEBUG    (500.0),
-        COMMON(20.0),
-        UNCOMMON(20.0),
-        RARE(20.0),
-        EPIC(20.0),
-        LEGENDARY(20.0);
+        COMMON(25.0),
+        UNCOMMON(25.0),
+        RARE(25.0),
+        EPIC(15.0),
+        LEGENDARY(500.0);
         
         
         public final double tierWeight;

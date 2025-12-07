@@ -16,7 +16,8 @@ public class ItemEffect {
         TIME_SLOW,
         DASH,
         SHIELD,
-        PET_SUPPORT
+        PET_SUPPORT,
+        PET_ROCKET_SUPPORT
     }
     
     /**=========================SINGLE USE=================================**/
@@ -297,6 +298,31 @@ public class ItemEffect {
         
         logger.info("[ItemEffect - PET_SUPPORT] Player " + playerId
             + " spawned pet support for " + safeDuration + "s.");
+        
+        return true;
+    }
+    
+    public static boolean applyPetRocketSupport(
+        final GameState gameState,
+        final int playerId,
+        final int duration
+    ) {
+        if (gameState == null) {
+            return false;
+        }
+        
+        int safeDuration = Math.max(1, duration);
+        int playerIndex = getPlayerIndex(playerId);
+        
+        gameState.addEffect(
+            playerIndex,
+            ItemEffectType.PET_ROCKET_SUPPORT,
+            null,
+            safeDuration
+        );
+        
+        logger.info("[ItemEffect - PET_ROCKET_SUPPORT] Player " + playerId
+            + " spawned PET_ROCKET support for " + safeDuration + "s.");
         
         return true;
     }

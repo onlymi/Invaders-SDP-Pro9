@@ -12,11 +12,10 @@ import java.util.Set;
 public class Pet extends Entity {
     
     public enum PetKind {
-        GUN
-        // later: LASER, ROCKET, Buff etc.
+        GUN,
+        ROCKET
     }
     
-    private int hp = 1;
     private boolean dead = false;
     private final int ownerPlayerId;
     private final PetKind kind;
@@ -47,7 +46,7 @@ public class Pet extends Entity {
         PetKind kind,
         GameState gameState,
         long lifetimeMs,
-        long shotIntervalMs,
+        long shotIntervalMsFromCsv,
         int dirX,
         int dirY
     ) {
@@ -57,8 +56,22 @@ public class Pet extends Entity {
         this.gameState = gameState;
         
         this.lifetimeMs = lifetimeMs;
-        this.shotIntervalMs = shotIntervalMs;
         this.spawnedAtMs = System.currentTimeMillis();
+        
+        long defaultInterval;
+        if (kind == PetKind.GUN) {
+            // GUN 기본: 0.4초당 1발 (원하면 여기 값 바꿔도 됨)
+            defaultInterval = 400L;
+        } else {
+            // ROCKET 기본: 0.9초당 1발
+            defaultInterval = 900L;
+        }
+        
+        if (shotIntervalMsFromCsv > 0) {
+            this.shotIntervalMs = shotIntervalMsFromCsv;
+        } else {
+            this.shotIntervalMs = defaultInterval;
+        }
         
         // 기본 방향: 위쪽
         if (dirX == 0 && dirY == 0) {
@@ -69,8 +82,11 @@ public class Pet extends Entity {
             this.dirY = dirY;
         }
         
-        // 펫 자체 스프라이트 (다람쥐)
-        this.spriteType = AssetManager.SpriteType.ItemPetGun;
+        if (kind == PetKind.ROCKET) {
+            this.spriteType = AssetManager.SpriteType.ItemPetRocket;
+        } else {
+            this.spriteType = AssetManager.SpriteType.ItemPetGun;
+        }
         
         // 팀 세팅 (P1 / P2)
         this.setTeam(ownerPlayerId == 2 ? Team.PLAYER2 : Team.PLAYER1);
@@ -84,13 +100,7 @@ public class Pet extends Entity {
     }
     
     public void takeDamage(int damage) {
-        if (dead) {
-            return;
-        }
-        hp -= damage;
-        if (hp <= 0) {
-            dead = true;
-        }
+        // 대기
     }
     
     /**
@@ -107,6 +117,15 @@ public class Pet extends Entity {
         }
         lastShotAtMs = now;
         
+        switch (kind) {
+            case GUN -> fireGunProjectile(weapons, owner);
+            case ROCKET -> fireRocketProjectile(weapons, owner);
+            default -> { /* no-op */ }
+        }
+    }
+    
+    // Pet gun logic
+    private void fireGunProjectile(Set<Weapon> weapons, GameCharacter owner) {
         int centerX = this.positionX + this.width / 2;
         int centerY = this.positionY + this.height / 2;
         
@@ -136,10 +155,54 @@ public class Pet extends Entity {
         weapon.setOwnerPlayerId(this.ownerPlayerId);
         weapon.setPlayerId(this.ownerPlayerId);
         
-        weapon.setDamage(1);
+        weapon.setDamage(19);
         weapon.setRange(bulletRange);
         
         weapon.setDirection(this.dirX, this.dirY);
+        
+        weapons.add(weapon);
+    }
+    
+    // Pet Rocket logic
+    private void fireRocketProjectile(Set<Weapon> weapons, GameCharacter owner) {
+        int centerX = this.positionX + this.width / 2;
+        int centerY = this.positionY + this.height / 2;
+        
+        AssetManager.SpriteType bulletSprite = AssetManager.SpriteType.PetRocketProjectile;
+        
+        int bulletWidth = bulletSprite.getWidth();
+        int bulletHeight = bulletSprite.getHeight();
+        
+        int baseSpeed = owner.getProjectileSpeed();
+        int bulletSpeed = Math.max(1, baseSpeed / 2);
+        
+        int spriteW = bulletSprite.getWidth();
+        int spriteH = bulletSprite.getHeight();
+        
+        float bulletRange = 18.0f;
+        
+        Weapon weapon = WeaponPool.getWeapon(
+            centerX,
+            centerY,
+            bulletSpeed,
+            bulletWidth,
+            bulletHeight,
+            this.getTeam()
+        );
+        
+        weapon.setSize(spriteW * 4, spriteH * 4);
+        weapon.setSpriteImage(bulletSprite);
+        
+        weapon.setOwnerPlayerId(this.ownerPlayerId);
+        weapon.setPlayerId(this.ownerPlayerId);
+        
+        weapon.setDamage(20);
+        weapon.setRange(bulletRange);
+        
+        weapon.setDirection(this.dirX, this.dirY);
+        
+        weapon.setExplosive(true);
+        weapon.setExplosionRadius(48.0f);
         
         weapons.add(weapon);
     }
@@ -153,6 +216,6 @@ public class Pet extends Entity {
     }
     
     public boolean isDead() {
-        return dead;
+        return false;
     }
 }
