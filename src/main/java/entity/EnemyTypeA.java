@@ -49,7 +49,7 @@ public class EnemyTypeA extends EnemyShip {
      */
     public EnemyTypeA(int positionX, int positionY, SpriteType spriteType) {
         super(positionX, positionY, SpriteType.EnemyA_Move);
-        this.health = 19;
+        this.health = 45;
         this.initialHealth = this.health;
         this.pointValue = 30;
         this.coinValue = 10;
