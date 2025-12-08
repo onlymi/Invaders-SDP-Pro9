@@ -155,7 +155,7 @@ public class Pet extends Entity {
         weapon.setOwnerPlayerId(this.ownerPlayerId);
         weapon.setPlayerId(this.ownerPlayerId);
         
-        weapon.setDamage(19);
+        weapon.setDamage(20);
         weapon.setRange(bulletRange);
         
         weapon.setDirection(this.dirX, this.dirY);
@@ -196,7 +196,7 @@ public class Pet extends Entity {
         weapon.setOwnerPlayerId(this.ownerPlayerId);
         weapon.setPlayerId(this.ownerPlayerId);
         
-        weapon.setDamage(20);
+        weapon.setDamage(30);
         weapon.setRange(bulletRange);
         
         weapon.setDirection(this.dirX, this.dirY);
