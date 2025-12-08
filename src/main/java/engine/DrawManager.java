@@ -188,7 +188,7 @@ public final class DrawManager {
         return this.playModeSelectionScreenRenderer;
     }
     
-    public PlayerSelectionScreenRenderer getShipSelectionMenuRenderer() {
+    public PlayerSelectionScreenRenderer getPlayerSelectionScreenRenderer() {
         return this.playerSelectionScreenRenderer;
     }
     
@@ -291,6 +291,7 @@ public final class DrawManager {
         backBufferGraphics.drawLine(0, screen.getHeight() - 1, screen.getWidth() - 1,
             screen.getHeight() - 1);
     }
+    
     /**
      * Draws the Boss HP bar at the top of the screen.
      *
@@ -300,7 +301,7 @@ public final class DrawManager {
         if (boss == null || boss.isDestroyed()) {
             return;
         }
-
+        
         int barWidth = 600;
         int barHeight = 20;
         int x = (screen.getWidth() - barWidth) / 2;
@@ -324,6 +325,7 @@ public final class DrawManager {
         int textWidth = backBufferGraphics.getFontMetrics().stringWidth("BOSS HP");
         backBufferGraphics.drawString("BOSS HP", x + (barWidth - textWidth) / 2, y - 5);
     }
+    
     /**
      * For debugging purposes, draws a grid over the canvas.
      *
