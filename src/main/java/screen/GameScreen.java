@@ -36,6 +36,7 @@ import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
@@ -112,6 +113,7 @@ public class GameScreen extends Screen {
     private int lives;
     private int bulletsShot;
     private int shipsDestroyed;
+    private int boss_stage = 6;
     
     /**
      * checks if player took damage 2025-10-02 add new variable
@@ -197,7 +199,11 @@ public class GameScreen extends Screen {
         super.initialize();
         
         state.clearAllEffects();
-        soundManager.playLoop("game_theme");
+        if (this.level == boss_stage) {
+            soundManager.playLoop("boss");
+        } else {
+            soundManager.playLoop("game_theme");
+        }
         
         // Background
         this.basicGameSpace = new BasicGameSpace(100, this.width, this.height);
@@ -210,7 +216,7 @@ public class GameScreen extends Screen {
         
         // --- Character Initialization & Control Setup ---
         this.enemyManager = new EnemyManager(this);
-        if (this.level == 6) {
+        if (this.level == boss_stage) {
             int bossWidth = 480;
             this.bossShip = new BossShip(this.width / 2 - bossWidth / 2, 40);
             this.LOGGER.info("Boss Stage Initialized!");
@@ -357,7 +363,7 @@ public class GameScreen extends Screen {
                     boolean shotFired = character.isFiring();
                     
                     if (shotFired) {
-                        SoundManager.playOnce("shoot");
+                        SoundManager.playOnce(character.getShootSound());
                         state.incBulletsShot(p);
                     }
                 }
@@ -420,8 +426,15 @@ public class GameScreen extends Screen {
                 }
             }
             
-            // End condition: achieved kill count or TEAM lives exhausted.
-            if ((this.enemyKillCount >= this.killsToWin || (!state.teamAlive() && !teamAlive))
+            boolean isBossStage = (this.level == boss_stage);
+            boolean bossDefeated = (this.bossShip != null && this.bossShip.isDestroyed());
+            
+            // End condition1 : achieved kill count or TEAM lives exhausted.
+            // End condition2 : kill the boss.
+            boolean objectiveMet =
+                (isBossStage) ? bossDefeated : (this.enemyKillCount >= this.killsToWin);
+            
+            if ((objectiveMet || (!state.teamAlive() && !teamAlive))
                 && !this.levelFinished) {
                 
                 WeaponPool.recycle(this.weapons);
@@ -433,7 +446,7 @@ public class GameScreen extends Screen {
                 this.screenFinishedCooldown.reset();
                 
                 // Set levelCleared only if objective met
-                if (this.enemyKillCount >= this.killsToWin) {
+                if (objectiveMet) {
                     this.levelCleared = true;
                     
                     if (this.characters[0] != null) {
@@ -474,6 +487,16 @@ public class GameScreen extends Screen {
      */
     private void draw() {
         drawManager.initDrawing(this);
+        
+        Graphics2D g2d = (Graphics2D) drawManager.getBackBufferGraphics();
+        BufferedImage bgImage = Core.getAssetManager().getSpriteImage(SpriteType.BackgroundInGame);
+        
+        if (bgImage != null) {
+            g2d.drawImage(bgImage, 0, 0, this.width, this.height, null);
+        } else {
+            g2d.setColor(Color.BLACK);
+            g2d.fillRect(0, 0, this.width, this.height);
+        }
         
         drawManager.getGameScreenRenderer()
             .drawExplosions(drawManager.getBackBufferGraphics(), this);
@@ -583,7 +606,7 @@ public class GameScreen extends Screen {
         
         // TIME FREEZE overlay
         if (this.state.areEnemiesFrozen()) {
-            Graphics2D g2d = (Graphics2D) drawManager.getBackBufferGraphics().create();
+            g2d = (Graphics2D) drawManager.getBackBufferGraphics().create();
             try {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);

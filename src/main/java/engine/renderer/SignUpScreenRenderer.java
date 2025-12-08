@@ -1,8 +1,11 @@
 package engine.renderer;
 
+import engine.AssetManager;
+import engine.AssetManager.SpriteType;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import screen.Screen;
 
 /**
@@ -46,8 +49,14 @@ public class SignUpScreenRenderer {
         final String passwordInput, final String message, final boolean isSuccess) {
         
         // Draw background
-        graphics.setColor(Color.BLACK);
-        graphics.fillRect(0, 0, screen.getWidth(), screen.getHeight());
+        BufferedImage bgImage = AssetManager.getInstance()
+            .getSpriteImage(SpriteType.BackgroundLogIn);
+        if (bgImage != null) {
+            graphics.drawImage(bgImage, 0, 0, screen.getWidth(), screen.getHeight(), null);
+        } else {
+            graphics.setColor(Color.BLACK);
+            graphics.fillRect(0, 0, screen.getWidth(), screen.getHeight());
+        }
         
         // Draw Title
         graphics.setFont(commonRenderer.getFontBig());

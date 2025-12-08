@@ -50,7 +50,7 @@ public class AuthScreen extends Screen {
         this.menuSpace = new MenuSpace(50, this.width, this.height);
         
         // Start menu music loop
-        this.soundManager.playLoop("title_sound");
+        this.soundManager.playLoop("main_title");
     }
     
     /**

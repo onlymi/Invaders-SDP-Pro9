@@ -42,6 +42,12 @@ public final class AssetManager {
      */
     public enum SpriteType {
         /**
+         * Background image.
+         */
+        BackgroundTitle(SourceCategory.BACKGROUND, "title.png", 1536, 1024),
+        BackgroundInGame(SourceCategory.BACKGROUND, "in_game.png", 1200, 800),
+        BackgroundLogIn(SourceCategory.BACKGROUND, "login.png", 1200, 800),
+        /**
          * Warrior Character.
          */
         CharacterWarriorBasic(SourceCategory.CHARACTER, "warrior/warrior_basic.png",
@@ -370,6 +376,12 @@ public final class AssetManager {
             soundMap.put("booster", loadSound("sound/booster.wav"));
             soundMap.put("stabbing", loadSound("sound/stabbing.wav"));
             soundMap.put("fail", loadSound("sound/fail.wav"));
+            soundMap.put("main_title", loadSound("sound/main_title.wav"));
+            soundMap.put("boss", loadSound("sound/boss.wav"));
+            soundMap.put("archer_shot", loadSound("sound/archer_shot.wav"));
+            soundMap.put("archer_skill1", loadSound("sound/archer_skill1.wav"));
+            soundMap.put("archer_skill2", loadSound("sound/archer_skill2.wav"));
+            soundMap.put("archer_skill3", loadSound("sound/archer_skill3.wav"));
             
             LOGGER.info("Finished loading the sounds.");
         } catch (Exception e) {

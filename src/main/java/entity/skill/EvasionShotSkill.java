@@ -70,6 +70,7 @@ public class EvasionShotSkill extends Skill {
      */
     @Override
     public void performSkill(GameCharacter attacker, Set<Weapon> weapons) {
+        engine.SoundManager.playOnce("archer_skill2");
         // 이동 수행
         doJump(attacker);
         

@@ -29,4 +29,9 @@ public class ArcherCharacter extends GameCharacter {
         this.skills.add(new EvasionShotSkill()); // Second skill
         this.skills.add(new PiercingArrowSkill()); // Ultimate skill
     }
+    
+    @Override
+    public String getShootSound() {
+        return "archer_shot";
+    }
 }

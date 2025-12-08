@@ -1,6 +1,7 @@
 package engine.renderer;
 
 import engine.AssetManager;
+import engine.AssetManager.SpriteType;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -8,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import screen.Screen;
 
 /**
@@ -47,21 +49,36 @@ public class AuthScreenRenderer {
      * @param screen   Screen to draw on.
      */
     public void drawTitle(Graphics graphics, final Screen screen) {
-        String titleString = "Invaders";
         String authString = "Create an account or log in";
         String instructionsString = "select with w+s / arrows, confirm with space";
         
+        BufferedImage bgImage = assetManager.getSpriteImage(SpriteType.BackgroundTitle);
+        if (bgImage != null) {
+            graphics.drawImage(bgImage, 0, 0, screen.getWidth(), screen.getHeight(), null);
+        } else {
+            // 이미지가 없으면 기존처럼 검은 배경
+            graphics.setColor(Color.BLACK);
+            graphics.fillRect(0, 0, screen.getWidth(), screen.getHeight());
+        }
+        
+        graphics.setColor(new Color(0, 0, 0, 150));
+        
+        int boxWidth = screen.getWidth() * 2 / 5;
+        int boxHeight = screen.getHeight() * 2 / 5;
+        int boxX = (screen.getWidth() - boxWidth) / 2;
+        int boxY = (screen.getHeight() - boxHeight) * 4 / 5;
+        
+        graphics.fillRoundRect(boxX, boxY, boxWidth, boxHeight, 30, 30);
+        
+        int centerY = boxY + boxHeight / 2;
+        
         graphics.setColor(Color.GRAY);
-        commonRenderer.drawCenteredRegularString(graphics, screen,
-            instructionsString, screen.getHeight() / 2);
+        commonRenderer.drawCenteredRegularString(graphics, screen, instructionsString,
+            centerY - 50);
         
         graphics.setColor(Color.GRAY);
         commonRenderer.drawCenteredRegularString(graphics, screen,
-            authString, (int) (screen.getHeight() / 1.7));
-        
-        graphics.setColor(Color.GREEN);
-        commonRenderer.drawCenteredBigString(graphics, screen,
-            titleString, screen.getHeight() / 3);
+            authString, centerY - 100);
     }
     
     /**
