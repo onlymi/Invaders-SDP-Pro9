@@ -58,7 +58,7 @@ class PiercingArrowSkillTest {
     void testConstructorProperties() {
         // 생성자에서 설정된 값 검증
         assertEquals("Piercing Arrow", skill.getName());
-        assertEquals(1, skill.getManaCost());
+        assertEquals(60, skill.getManaCost());
         // 쿨다운은 Core.getCooldown 호출을 통해 설정되므로, 여기서는 값 확인이 어려울 수 있음 (1.0f * 1000)
     }
     

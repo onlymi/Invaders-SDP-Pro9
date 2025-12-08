@@ -17,7 +17,7 @@ public final class ItemManager {
     private static ItemManager instance;
     
     /**
-     * Debug logger init
+     * Debug logger init.
      */
     private Logger logger;
     
@@ -33,10 +33,9 @@ public final class ItemManager {
     }
     
     /**
-     * Random Roll for item
+     * Random Roll for item.
      */
     private final Random itemRoll = new Random();
-    
     
     /**
      * Item database loaded from CSV.
@@ -49,10 +48,11 @@ public final class ItemManager {
     
     // How long the toast should be visible
     private static final long TOAST_DURATION_MS = 3000L;
+    
     /** -------------------------- ITEM DATA -------------------------- **/
     
     /**
-     * ITEM Drop probability, Item Drop particle color
+     * ITEM Drop probability, Item Drop particle color.
      **/
     public static enum DropTier {
         // DEBUG    (500.0),
