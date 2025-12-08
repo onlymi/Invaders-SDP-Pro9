@@ -128,7 +128,7 @@ public class SignUpScreen extends Screen {
         
         // Get typed character
         char typedChar = InputManager.getLastChar();
-        if (typedChar >= ' ' && typedChar <= '~') {
+        if (typedChar > ' ' && typedChar <= '~') {
             // User restarts the input, clear the previous error message
             clearFailureMessage();
             if (this.activeField == 0) {

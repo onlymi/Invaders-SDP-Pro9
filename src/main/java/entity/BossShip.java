@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class BossShip extends EnemyShip {
     
-    private static final int BOSS_INITIAL_HEALTH = 500;
+    private static final int BOSS_INITIAL_HEALTH = 5000;
     private static final int BOSS_POINTS = 5000;
     private static final int BOSS_COINS = 5000;
     

@@ -98,6 +98,8 @@ public final class WeaponPool {
             weapon.setTeam(team); // team setting
         }
         // User's logic applied to weapon (consistency)
+        weapon.reset();
+        weapon.setDamage(damage);
         weapon.setCharacter(null);
         weapon.setSpeedX(0);
         weapon.setBossBullet(false);

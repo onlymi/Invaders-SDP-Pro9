@@ -548,7 +548,7 @@ public abstract class GameCharacter extends Entity {
         weapon.setPlayerId(this.playerId);
         weapon.setDamage(this.currentStats.physicalDamage);
         weapon.setRange(this.currentStats.attackRange);
-        
+        weapon.setDamage(this.currentStats.physicalDamage);
         weapons.add(weapon);
         
         return weapon;

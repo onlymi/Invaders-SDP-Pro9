@@ -1055,6 +1055,52 @@ public class GameScreen extends Screen {
                         }
                     }
                     // [END: 누락된 보스 무기 피해 로직 복원]
+                    
+                }
+            }
+        }
+        for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
+            GameCharacter player = this.characters[p];
+            if (player == null || player.getCurrentHealthPoints() <= 0 || player.isInvincible()) {
+                continue;
+            }
+            
+            for (EnemyShip enemy : this.enemyManager.getEnemies()) {
+                if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
+                    // 실드 아이템 로직
+                    boolean hasShieldEffect = state != null && state.hasEffect(p,
+                        engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD);
+                    if (hasShieldEffect) {
+                        state.clearEffect(p, engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD);
+                        // 넉백 처리
+                        double dx = enemy.getPositionX() - player.getPositionX();
+                        double dy = enemy.getPositionY() - player.getPositionY();
+                        double dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist > 0) {
+                            enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                        }
+                        continue;
+                    }
+                    
+                    player.takeDamage(enemy.getCollisionDamage());
+                    if (enemy instanceof entity.EnemyTypeC && enemy.getCollisionDamage() > 5) {
+                        engine.SoundManager.playOnce("stabbing");
+                    }
+                    
+                    // 사망 처리
+                    if (player.getCurrentHealthPoints() <= 0) {
+                        this.state.decLife(p);
+                    }
+                    
+                    // 충돌 넉백 효과
+                    double dx = enemy.getPositionX() - player.getPositionX();
+                    double dy = enemy.getPositionY() - player.getPositionY();
+                    double dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist > 0) {
+                        enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                    }
+                    
+                    this.LOGGER.info("Collision! Player " + (p + 1) + " hit by enemy body.");
                 }
             }
         }
