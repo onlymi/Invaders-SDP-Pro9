@@ -368,27 +368,59 @@ public abstract class GameCharacter extends Entity {
     }
     
     public void handleMovement(InputManager inputManager, Screen screen, float deltaTime) {
+        // 입력 상태를 한 번에 조회하여 지역 변수에 저장 (타이밍 이슈 및 끊김 방지)
+        boolean left = inputManager.isKeyDown(this.leftKey);
+        boolean right = inputManager.isKeyDown(this.rightKey);
+        boolean up = inputManager.isKeyDown(this.upKey);
+        boolean down = inputManager.isKeyDown(this.downKey);
+        
+        boolean isKeyPressed = left || right || up || down;
+        
+        if (isKeyPressed) {
+            // 좌우 방향 처리
+            if (left) {
+                this.isFacingLeft = true;
+                this.isFacingRight = false;
+            } else if (right) {
+                this.isFacingRight = true;
+                this.isFacingLeft = false;
+            } else {
+                // 좌우 키가 안 눌렸다면 좌우 방향 해제
+                this.isFacingLeft = false;
+                this.isFacingRight = false;
+            }
+            
+            // 상하 방향 처리
+            if (up) {
+                this.isFacingBack = true;
+                this.isFacingFront = false;
+            } else if (down) {
+                this.isFacingFront = true;
+                this.isFacingBack = false;
+            } else {
+                // 상하 키가 안 눌렸다면 상하 방향 해제
+                this.isFacingBack = false;
+                this.isFacingFront = false;
+            }
+        }
+        
         float dx = 0;
         float dy = 0;
         
-        if (inputManager.isKeyDown(this.leftKey)) {
+        if (left) {
             dx -= 1;
-            this.isFacingLeft = true;
             this.lastMoveDirX = -1;
         }
-        if (inputManager.isKeyDown(this.rightKey)) {
+        if (right) {
             dx += 1;
-            this.isFacingRight = true;
             this.lastMoveDirX = 1;
         }
-        if (inputManager.isKeyDown(this.upKey)) {
+        if (up) {
             dy -= 1;
-            this.isFacingBack = true;
             this.lastMoveDirY = -1;
         }
-        if (inputManager.isKeyDown(this.downKey)) {
+        if (down) {
             dy += 1;
-            this.isFacingFront = true;
             this.lastMoveDirY = 1;
         }
         
@@ -481,21 +513,30 @@ public abstract class GameCharacter extends Entity {
         int launchX;
         int launchY;
         
+        // [수정] 대각선 발사 위치 보정을 위해 X축과 Y축 로직 분리
+        
+        // X축 위치 결정
         if (this.isFacingLeft) {
             launchX = this.positionX - (this.projectileWidth / 2);
-            launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
         } else if (this.isFacingRight) {
             launchX = this.positionX + this.width + (this.projectileWidth / 2);
-            launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
-        } else if (this.isFacingFront) {
-            launchX = this.positionX + (this.width / 2);
+        } else {
+            launchX = this.positionX + (this.width / 2); // 좌우 입력 없으면 중앙
+        }
+        
+        // Y축 위치 결정
+        if (this.isFacingFront) { // 아래쪽
             launchY = this.positionY + this.height;
-        } else if (this.isFacingBack) {
-            launchX = this.positionX + (this.width / 2);
+        } else if (this.isFacingBack) { // 위쪽
             launchY = this.positionY - this.projectileHeight;
         } else {
-            launchX = this.positionX + (this.width / 2);
-            launchY = this.positionY - this.projectileHeight;
+            // 상하 입력이 없을 때: 좌우를 보고 있으면 중앙, 아니면 기본값(위쪽)
+            if (this.isFacingLeft || this.isFacingRight) {
+                launchY = this.positionY + (this.height / 2) - (this.projectileHeight / 2);
+            } else {
+                // 아무 방향도 아닐 때(초기 상태 등)는 기본적으로 위로 발사
+                launchY = this.positionY - this.projectileHeight;
+            }
         }
         
         // 투사체 생성
@@ -549,10 +590,11 @@ public abstract class GameCharacter extends Entity {
     public void initializeKeyboardPressing() {
         this.isAttacking = false;
         this.isMoving = false;
-        this.isFacingLeft = false;
-        this.isFacingRight = false;
-        this.isFacingFront = false;
-        this.isFacingBack = false;
+        
+        // this.isFacingLeft = false;
+        // this.isFacingRight = false;
+        // this.isFacingFront = false;
+        // this.isFacingBack = false;
     }
     
     public void setProjectile(int projectileWidth, int projectileHeight, int projectileSpeed) {
