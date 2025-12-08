@@ -1,6 +1,9 @@
 package entity.character;
 
 import engine.AssetManager.SpriteType;
+import entity.skill.BerserkerModeSkill;
+import entity.skill.IronSkinSkill;
+import entity.skill.SeismicSlashSkill;
 
 public class WarriorCharacter extends GameCharacter {
     
@@ -20,5 +23,8 @@ public class WarriorCharacter extends GameCharacter {
         this.projectileSpriteType = SpriteType.CharacterWarriorDefaultProjectile;
         this.projectileWidth = projectileSpriteType.getWidth();
         this.projectileHeight = projectileSpriteType.getHeight();
+        this.skills.add(new SeismicSlashSkill()); // First skill
+        this.skills.add(new IronSkinSkill()); // Second skill
+        this.skills.add(new BerserkerModeSkill()); // Ultimate skill
     }
 }

@@ -54,13 +54,13 @@ public final class AssetManager {
             characterWidth, characterHeight),
         // Warrior Weapon
         CharacterWarriorDefaultProjectile(SourceCategory.WEAPON,
-            "warrior/default_attack_warrior.png", 32, characterHeight),
+            "warrior/default_attack_warrior.png", 61, 64),
         CharacterWarriorFirstSkill(SourceCategory.WEAPON,
-            "archer/default_attack_warrior.png", 49, 64),
+            "warrior/default_attack_warrior.png", 61, 64),
         CharacterWarriorSecondSkill(SourceCategory.WEAPON,
-            "archer/effect_skill2_archer.png", 55, 64),
+            "warrior/effect_skill2_warrior.png", 55, 64),
         CharacterWarriorUltimateSkill(SourceCategory.WEAPON,
-            "archer/effect_ultimate_archer.png", 76, 256),
+            "warrior/effect_ultimate_warrior.png", 63, 64),
         /**
          * Archer Character.
          */
