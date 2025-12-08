@@ -5,7 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import engine.Core;
@@ -210,5 +213,40 @@ class PlayerSelectionScreenTest {
         // Back 버튼 클릭 시 동작 (P1 Back -> 5)
         assertFalse(playerSelectionScreen.getIsRunning());
         assertEquals(5, playerSelectionScreen.getReturnCode());
+    }
+    
+    @Test
+    void testSelection_LockedCharacter_ShowsError() {
+        initializeScreen(1); // Player 1 초기화 (시작: WARRIOR, index 0)
+        
+        // 1. 잠긴 캐릭터(WIZARD, index 2)로 이동
+        // 시나리오: WARRIOR(0) -> ARCHER(1) -> WIZARD(2)
+        // 오른쪽 키를 누른 상태로 update를 두 번 호출하여 인덱스를 2칸 이동
+        when(inputManager.isKeyDown(KeyEvent.VK_RIGHT)).thenReturn(true);
+        playerSelectionScreen.update(); // 0 -> 1 (ARCHER)
+        playerSelectionScreen.update(); // 1 -> 2 (WIZARD)
+        when(inputManager.isKeyDown(KeyEvent.VK_RIGHT)).thenReturn(false); // 키 뗌
+        
+        // [확인] 현재 선택된 캐릭터가 WIZARD이고, 실제로 잠겨있는 상태인지 확인
+        assertEquals(CharacterType.WIZARD, playerSelectionScreen.getSelectedCharacterType());
+        assertFalse(CharacterType.WIZARD.isUnlocked(), "테스트 대상 캐릭터는 잠겨있어야 합니다.");
+        
+        // 2. 선택 시도 (Space 키 입력)
+        when(inputManager.isKeyDown(KeyEvent.VK_SPACE)).thenReturn(true);
+        
+        // update 호출: handleKeyboardInput()에서 잠김을 감지하고 shouldShowError 플래그를 true로 설정함
+        playerSelectionScreen.update();
+        
+        // 3. [검증] 선택이 거부되어 화면이 종료되지 않고 계속 실행 중이어야 함
+        assertTrue(playerSelectionScreen.getIsRunning(), "잠긴 캐릭터 선택 시 화면이 종료되면 안 됩니다.");
+        
+        // 4. [검증] 에러 문구 렌더링 메서드 호출 확인
+        // draw()는 update() 메서드 최상단에서 호출되므로,
+        // 상태(shouldShowError=true)가 변경된 후 반영을 확인하려면 update()를 한 번 더 호출해야 함
+        playerSelectionScreen.update();
+        
+        // PlayerSelectionScreenRenderer의 drawSelectErrorTitle 메서드가 정확히 1번 호출되었는지 검증
+        verify(playerSelectionScreenRenderer, times(1))
+            .drawSelectErrorTitle(any(Graphics.class), eq(playerSelectionScreen));
     }
 }
