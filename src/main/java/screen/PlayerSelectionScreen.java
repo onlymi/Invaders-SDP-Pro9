@@ -12,13 +12,18 @@ import java.awt.event.KeyEvent;
 public class PlayerSelectionScreen extends Screen {
     
     private static final int SELECTION_TIME = 200;
+    private static final int ERROR_DISPLAY_TIME = 1000; // 에러 메시지 표시 시간 (ms)
+    
     private Cooldown selectionCooldown;
+    private Cooldown errorCooldown; // 에러 메시지용 쿨다운
+    
     private int selectedShipIndex = 0;
     private GameCharacter[] characterSamples;
     private final int characterTypeCount = CharacterType.values().length;
     
     private int playerId;
     private boolean backButtonSelected = false;
+    private boolean shouldShowError = false; // 에러 메시지 표시 여부 플래그
     
     public PlayerSelectionScreen(final int width, final int height, final int fps,
         final int playerId) {
@@ -26,6 +31,10 @@ public class PlayerSelectionScreen extends Screen {
         this.playerId = playerId;
         this.selectionCooldown = Core.getCooldown(SELECTION_TIME);
         this.selectionCooldown.reset();
+        
+        // 에러 메시지 타이머 초기화
+        this.errorCooldown = Core.getCooldown(ERROR_DISPLAY_TIME);
+        
         this.characterSamples = new GameCharacter[characterTypeCount];
         int gap = width / (characterTypeCount + 1);
         int startX = gap;
@@ -47,6 +56,11 @@ public class PlayerSelectionScreen extends Screen {
     protected final void update() {
         super.update();
         draw();
+        
+        // 에러 메시지 표시 시간이 끝나면 메시지 숨김 처리
+        if (this.shouldShowError && this.errorCooldown.checkFinished()) {
+            this.shouldShowError = false;
+        }
         
         // 1. 쿨타임 체크 (준비되지 않았으면 업데이트 중단)
         if (!this.selectionCooldown.checkFinished() || !this.inputDelay.checkFinished()) {
@@ -75,12 +89,18 @@ public class PlayerSelectionScreen extends Screen {
         
         // 선택 확정 (Space)
         if (inputManager.isKeyDown(KeyEvent.VK_SPACE)) {
-            confirmSelection(backButtonSelected); // 키보드는 현재 포커스 상태에 따라 결정
+            if (CharacterType.values()[selectedShipIndex].isUnlocked()) {
+                confirmSelection(backButtonSelected);
+            } else {
+                // 잠긴 캐릭터 선택 시 에러 메시지 플래그 활성화 및 타이머 리셋
+                this.shouldShowError = true;
+                this.errorCooldown.reset();
+            }
         }
     }
     
     /**
-     * 캐릭터 선택 인덱스 변경 (좌/우)
+     * 캐릭터 선택 인덱스 변경 (좌/우).
      */
     private void handleCharacterRotation() {
         if (inputManager.isKeyDown(KeyEvent.VK_LEFT) || inputManager.isKeyDown(KeyEvent.VK_A)) {
@@ -139,7 +159,7 @@ public class PlayerSelectionScreen extends Screen {
     private void draw() {
         drawManager.initDrawing(this);
         
-        drawManager.getShipSelectionMenuRenderer()
+        drawManager.getPlayerSelectionScreenRenderer()
             .drawPlayerSelectionMenu(drawManager.getBackBufferGraphics(), this,
                 this.characterSamples, this.selectedShipIndex, this.playerId);
         
@@ -152,6 +172,12 @@ public class PlayerSelectionScreen extends Screen {
         drawManager.getCommonRenderer()
             .drawBackButton(drawManager.getBackBufferGraphics(), this,
                 backHover || backButtonSelected);
+        
+        // 에러 메시지 렌더링 (플래그가 true일 때만)
+        if (this.shouldShowError) {
+            drawManager.getPlayerSelectionScreenRenderer().drawSelectErrorTitle(
+                drawManager.getBackBufferGraphics(), this);
+        }
         
         drawManager.completeDrawing(this);
     }

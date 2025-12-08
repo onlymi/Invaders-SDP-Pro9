@@ -539,6 +539,9 @@ public class GameScreenRenderer {
                 }
                 
                 skills = character.getSkills();
+                if (skills == null || skills.isEmpty()) {
+                    return;
+                }
                 
                 keyLabels = new String[skills.size()];
                 

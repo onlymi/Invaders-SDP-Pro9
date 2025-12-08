@@ -80,7 +80,8 @@ class PlayerSelectionScreenTest {
         soundManagerMock.when(SoundManager::getInstance).thenReturn(soundManager);
         
         // Renderer Mocks
-        when(drawManager.getShipSelectionMenuRenderer()).thenReturn(playerSelectionScreenRenderer);
+        when(drawManager.getPlayerSelectionScreenRenderer()).thenReturn(
+            playerSelectionScreenRenderer);
         when(drawManager.getCommonRenderer()).thenReturn(commonRenderer);
         when(drawManager.getBackBufferGraphics()).thenReturn(mockGraphics);
         
