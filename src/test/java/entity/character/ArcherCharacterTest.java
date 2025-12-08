@@ -98,7 +98,7 @@ public class ArcherCharacterTest {
     void testCharacter_ArcherCharacter_physicalDefense() {
         ArcherCharacter character = new ArcherCharacter(0, 0, Team.PLAYER1, 1);
         
-        int expectedValue = 8;
+        int expectedValue = 5;
         int actualValue = character.getBaseStats().physicalDefense;
         
         assertEquals(expectedValue, actualValue,

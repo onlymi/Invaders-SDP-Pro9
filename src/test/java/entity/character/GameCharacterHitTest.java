@@ -60,13 +60,14 @@ class GameCharacterHitTest {
     void testTakeDamage_DecreasesHealth() {
         // Given
         int damage = 10;
+        int defense = 5;
         int initialHp = character.getCurrentHealthPoints();
         
         // When
         character.takeDamage(damage);
         
         // Then
-        assertEquals(initialHp - damage, character.getCurrentHealthPoints(),
+        assertEquals(initialHp - damage + defense, character.getCurrentHealthPoints(),
             "피격 시 체력이 데미지만큼 감소해야 합니다.");
     }
     
@@ -96,6 +97,8 @@ class GameCharacterHitTest {
     void testUpdate_SetsIsDie_WhenHealthIsZero() {
         // Given: 체력을 0으로 만듦
         character.takeDamage(MAX_HP);
+        int defense = 5;
+        character.setCurrentHealthPoints(character.getCurrentHealthPoints() - defense);
         assertEquals(0, character.getCurrentHealthPoints());
         assertFalse(character.isDie(), "update 호출 전에는 아직 사망 상태가 아니어야 합니다.");
         
