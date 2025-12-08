@@ -869,7 +869,6 @@ public class GameScreen extends Screen {
                 }
                 
             } else {
-                // ... (Player weapon 로직 기존과 동일) ...
                 // Player weapon vs enemies
                 final int ownerId = weapon.getOwnerPlayerId();
                 final int pIdx = (ownerId == 2) ? 1 : 0;
@@ -884,6 +883,18 @@ public class GameScreen extends Screen {
                             // Rocket splash damage
                             applyExplosiveDamage(weapon, pIdx);
                         } else {
+                            boolean isPiercing = (weapon.getSpriteType()
+                                == SpriteType.CharacterArcherUltimateSkill);
+                            
+                            if (isPiercing) {
+                                if (weapon.isHitEnemy(enemyShip)) {
+                                    continue;
+                                }
+                                weapon.addHitEnemy(enemyShip);
+                            } else {
+                                recyclable.add(weapon);
+                            }
+                            
                             enemyShip.hit(weapon.getDamage());
                             
                             if (enemyShip.isDestroyed()) {
@@ -918,7 +929,7 @@ public class GameScreen extends Screen {
                 if (this.bossShip != null
                     && !this.bossShip.isDestroyed()
                     && checkCollision(weapon, this.bossShip)) {
-                    this.bossShip.hit();
+                    this.bossShip.hit(weapon.getDamage());
                     recyclable.add(weapon);
                     
                     if (this.bossShip.isDestroyed()) {
@@ -982,7 +993,8 @@ public class GameScreen extends Screen {
                     if (checkCollision(bossWeapon, player)) {
                         
                         // 단발성 무기 중복 피격 방지 (레이저는 제외)
-                        if (!isLaser && bossWeapon.getDuration() == -1 && bossWeapon.isHitPlayer(p)) {
+                        if (!isLaser && bossWeapon.getDuration() == -1 && bossWeapon.isHitPlayer(
+                            p)) {
                             continue;
                         }
                         
@@ -993,7 +1005,9 @@ public class GameScreen extends Screen {
                             );
                         
                         if (hasShieldEffect) {
-                            LOGGER.info("[GameScreen] Shield blocked damage for player (Boss Weapon) " + (p + 1));
+                            LOGGER.info(
+                                "[GameScreen] Shield blocked damage for player (Boss Weapon) " + (p
+                                    + 1));
                             if (!isLaser) {
                                 bossWeapon.setDuration(0); // 총알 제거
                             }
@@ -1022,9 +1036,58 @@ public class GameScreen extends Screen {
                             if (!isLaser) {
                                 bossWeapon.addHitPlayer(p);
                             }
+                            
+                            this.LOGGER.info(
+                                "Collision! Player " + (p + 1) + " hit by enemy body.");
                         }
                     }
                     // [END: 누락된 보스 무기 피해 로직 복원]
+                    
+                }
+            }
+        }
+        for (int p = 0; p < GameState.NUM_PLAYERS; p++) {
+            GameCharacter player = this.characters[p];
+            if (player == null || player.getCurrentHealthPoints() <= 0 || player.isInvincible()) {
+                continue;
+            }
+            
+            for (EnemyShip enemy : this.enemyManager.getEnemies()) {
+                if (!enemy.isDestroyed() && checkCollision(player, enemy)) {
+                    // 실드 아이템 로직
+                    boolean hasShieldEffect = state != null && state.hasEffect(p,
+                        engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD);
+                    if (hasShieldEffect) {
+                        state.clearEffect(p, engine.gameplay.item.ItemEffect.ItemEffectType.SHIELD);
+                        // 넉백 처리
+                        double dx = enemy.getPositionX() - player.getPositionX();
+                        double dy = enemy.getPositionY() - player.getPositionY();
+                        double dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist > 0) {
+                            enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                        }
+                        continue;
+                    }
+                    
+                    player.takeDamage(enemy.getCollisionDamage());
+                    if (enemy instanceof entity.EnemyTypeC && enemy.getCollisionDamage() > 5) {
+                        engine.SoundManager.playOnce("stabbing");
+                    }
+                    
+                    // 사망 처리
+                    if (player.getCurrentHealthPoints() <= 0) {
+                        this.state.decLife(p);
+                    }
+                    
+                    // 충돌 넉백 효과
+                    double dx = enemy.getPositionX() - player.getPositionX();
+                    double dy = enemy.getPositionY() - player.getPositionY();
+                    double dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist > 0) {
+                        enemy.pushBack((dx / dist) * 10.0, (dy / dist) * 10.0);
+                    }
+                    
+                    this.LOGGER.info("Collision! Player " + (p + 1) + " hit by enemy body.");
                 }
             }
         }
