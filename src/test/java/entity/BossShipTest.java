@@ -37,7 +37,7 @@ public class BossShipTest {
     
     private BossShip boss;
     
-    private static final int BOSS_INITIAL_HEALTH = 500;
+    private static final int BOSS_INITIAL_HEALTH = 5000;
     private static final int SCREEN_WIDTH = 1200;
     private static final int INITIAL_POS_Y = 80;
     private static final int VISUAL_WIDTH = 360;
@@ -200,16 +200,16 @@ public class BossShipTest {
     
     @Test
     void hit() {
-        // Given: 보스 체력 500
+        // Given: 보스 체력 5000
         // When: 100 데미지 피격
         boss.hit(100);
         
         // Then: 체력 감소 및 파괴 아님
-        assertEquals(400, boss.getHealth());
+        assertEquals(4900, boss.getHealth());
         assertFalse(boss.isDestroyed());
         
         // When: 마지막 피격
-        boss.hit(400);
+        boss.hit(4900);
         
         // Then: 파괴 상태 전환 및 스프라이트 변경
         assertEquals(0, boss.getHealth());
