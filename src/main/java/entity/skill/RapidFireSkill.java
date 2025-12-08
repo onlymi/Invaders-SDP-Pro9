@@ -24,6 +24,7 @@ public class RapidFireSkill extends Skill {
     
     @Override
     public void performSkill(GameCharacter attacker, Set<Weapon> weapons) {
+        engine.SoundManager.playOnce("archer_skill1");
         RapidFireSkillBuff buff = new RapidFireSkillBuff((int) (ACTIVE_DURATION_SECOND));
         attacker.addBuff(buff);
     }

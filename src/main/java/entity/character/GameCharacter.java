@@ -687,6 +687,10 @@ public abstract class GameCharacter extends Entity {
         return this.projectileSpeed;
     }
     
+    public String getShootSound() {
+        return "shoot";
+    }
+    
     /**
      * 특정 타입의 버프를 가지고 있는지 확인합니다.
      *

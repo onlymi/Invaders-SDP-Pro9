@@ -365,6 +365,10 @@ public final class Core {
         CharacterType characterTypeP1, CharacterType characterTypeP2) throws IOException {
         SystemData systemData = new SystemData(0, coopSelected, characterTypeP1, characterTypeP2);
         GameState gameState = new GameState(1, MAX_LIVES, coopSelected, 0);
+        gameState.setPlayerHealth(0, characterTypeP1.getBaseStats().maxHealthPoints);
+        if (coopSelected) {
+            gameState.setPlayerHealth(1, characterTypeP2.getBaseStats().maxHealthPoints);
+        }
         AchievementManager achievementManager = new AchievementManager(); // 1p, 2p achievement manager
         
         int maxLevel = gameSettings.size();

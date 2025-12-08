@@ -57,7 +57,7 @@ public class TitleScreen extends Screen {
         this.selectionCooldown.reset();
         this.menuSpace = new MenuSpace(50, this.width, this.height);
         // Start menu music loop when the title screen is created
-        Core.getSoundManager().playLoop("title_sound");
+        Core.getSoundManager().playLoop("main_title");
     }
     
     /**
@@ -172,10 +172,6 @@ public class TitleScreen extends Screen {
      */
     private void draw() {
         drawManager.initDrawing(this);
-        
-        // Main menu space animation
-        drawManager.getTitleScreenRenderer()
-            .updateMenuSpace(drawManager.getBackBufferGraphics(), this.menuSpace);
         
         int mx = inputManager.getMouseX();
         int my = inputManager.getMouseY();

@@ -19,6 +19,7 @@ public class PiercingArrowSkill extends Skill {
     @Override
     public void performSkill(GameCharacter attacker, Set<Weapon> weapons) {
         Weapon arrow = attacker.createWeapon(weapons);
+        engine.SoundManager.playOnce("archer_skill3");
         
         if (arrow != null) {
             int skillDamage = (int) (attacker.getCurrentStats().physicalDamage * 4.0);
