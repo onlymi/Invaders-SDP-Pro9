@@ -1,0 +1,120 @@
+package entity.skill;
+
+import engine.AssetManager.SpriteType;
+import engine.Core;
+import entity.Weapon;
+import entity.character.GameCharacter;
+import java.util.Set;
+import screen.GameScreen;
+
+public class EvasionShotSkill extends Skill {
+    
+    private static final int MANA_COST = 25;
+    private static final float COOLDOWN_SECOND = 10.0f;
+    private static final int JUMP_DISTANCE = 150;
+    private static final float STUN_DURATION = 0.5f;
+    
+    public EvasionShotSkill() {
+        super("Evasion Shot", MANA_COST, (int) (COOLDOWN_SECOND * 1000));
+        this.spriteType = SpriteType.CharacterArcherSecondSkill;
+    }
+    
+    public void doJump(GameCharacter attacker) {
+        // 이동 방향 벡터 계산 (dx, dy)
+        float dx = 0;
+        float dy = 0;
+        
+        if (attacker.isFacingRight()) {
+            dx -= 1;
+        } else if (attacker.isFacingLeft()) {
+            dx += 1;
+        }
+        
+        if (attacker.isFacingFront()) {
+            dy -= 1;
+        } else if (attacker.isFacingBack()) {
+            dy += 1;
+        }
+        
+        if (dx != 0 && dy != 0) {
+            float correctionFactor = GameCharacter.DIAGONAL_CORRECTION_FACTOR;
+            dx *= correctionFactor;
+            dy *= correctionFactor;
+        }
+        
+        int currentX = attacker.getPositionX();
+        int currentY = attacker.getPositionY();
+        
+        int newX = currentX + (int) (dx * JUMP_DISTANCE);
+        int newY = currentY + (int) (dy * JUMP_DISTANCE);
+        
+        // 화면 밖으로 나가지 않도록 경계 처리 (Boundary Check)
+        if (newX < 1) {
+            newX = 1;
+        } else if (newX > Core.getFrameWidth() - attacker.getWidth() - 1) {
+            newX = Core.getFrameWidth() - attacker.getWidth() - 1;
+        }
+        
+        if (newY < GameScreen.SEPARATION_LINE_HEIGHT + 1) {
+            newY = GameScreen.SEPARATION_LINE_HEIGHT + 1;
+        } else if (newY > Core.getFrameHeight() - attacker.getHeight() - 30) {
+            newY = Core.getFrameHeight() - attacker.getHeight() - 30;
+        }
+        
+        attacker.setPositionX(newX);
+        attacker.setPositionY(newY);
+    }
+    
+    /**
+     * 투사체 발사를 포함한 스킬 수행 메서드입니다.
+     */
+    @Override
+    public void performSkill(GameCharacter attacker, Set<Weapon> weapons) {
+        engine.SoundManager.playOnce("archer_skill2");
+        // 이동 수행
+        doJump(attacker);
+        
+        Weapon arrow = attacker.createWeapon(weapons);
+        
+        // 스킬 전용 효과 적용
+        if (arrow != null) {
+            // 데미지 1.5배 적용
+            int skillDamage = (int) (attacker.getCurrentStats().physicalDamage * 1.5);
+            arrow.setDamage(skillDamage);
+            arrow.setSpeed(arrow.getSpeed() * 2);
+            // 투사체 이미지 변경
+            arrow.setSpriteImage(this.spriteType);
+            int newArrowWidth = arrow.getWidth();
+            int newArrowHeight = arrow.getHeight();
+            int charX = attacker.getPositionX();
+            int charY = attacker.getPositionY();
+            int charW = attacker.getWidth();
+            int charH = attacker.getHeight();
+            
+            if (attacker.isFacingLeft()) {
+                // 왼쪽 발사: 캐릭터 왼쪽 끝에서 발사, 세로(Y)는 캐릭터 중앙 정렬
+                arrow.setPositionX(charX - newArrowWidth);
+                arrow.setPositionY(charY + (charH - newArrowHeight) / 2);
+            } else if (attacker.isFacingRight()) {
+                // 오른쪽 발사: 캐릭터 오른쪽 끝에서 발사, 세로(Y)는 캐릭터 중앙 정렬
+                arrow.setPositionX(charX + charW);
+                arrow.setPositionY(charY + (charH - newArrowHeight) / 2);
+            } else if (attacker.isFacingFront()) {
+                // 아래쪽 발사: 가로(X)는 캐릭터 중앙 정렬, 세로(Y)는 캐릭터 아래 끝
+                arrow.setPositionX(charX + (charW - newArrowWidth) / 2);
+                arrow.setPositionY(charY + charH);
+            } else if (attacker.isFacingBack()) {
+                // 위쪽 발사: 가로(X)는 캐릭터 중앙 정렬, 세로(Y)는 캐릭터 위쪽 끝
+                arrow.setPositionX(charX + (charW - newArrowWidth) / 2);
+                arrow.setPositionY(charY - newArrowHeight);
+            } else {
+                // 기본값 (위쪽 발사로 처리)
+                arrow.setPositionX(charX + (charW - newArrowWidth) / 2);
+                arrow.setPositionY(charY - newArrowHeight);
+            }
+            // 슬로우 버프 탑재 (Weapon에 setOnHitBuff가 구현되어 있다고 가정)
+            // arrow.setOnHitBuff(new EvasionShotSkillBuff(3.0f));
+        }
+        attacker.stun((int) (STUN_DURATION * 1000));
+    }
+}
