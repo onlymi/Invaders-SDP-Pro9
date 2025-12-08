@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import engine.AssetManager.SpriteType;
 import engine.Core;
+import engine.SoundManager;
 import engine.utils.Cooldown;
 import entity.Weapon;
 import entity.character.CharacterStats;
@@ -33,6 +34,8 @@ class PiercingArrowSkillTest {
     
     private MockedStatic<Core> coreMock;
     private PiercingArrowSkill skill;
+    private MockedStatic<SoundManager> soundManagerMock;
+    
     
     @BeforeEach
     void setUp() {
@@ -45,6 +48,7 @@ class PiercingArrowSkillTest {
         // 화면 크기 Mocking (사거리 계산용)
         coreMock.when(Core::getFrameWidth).thenReturn(800);
         coreMock.when(Core::getFrameHeight).thenReturn(600);
+        soundManagerMock = mockStatic(SoundManager.class);
         
         skill = new PiercingArrowSkill();
     }
@@ -52,6 +56,7 @@ class PiercingArrowSkillTest {
     @AfterEach
     void tearDown() {
         coreMock.close();
+        soundManagerMock.close();
     }
     
     @Test

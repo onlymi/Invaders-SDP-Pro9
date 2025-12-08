@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import engine.AssetManager.SpriteType;
 import engine.Core;
+import engine.SoundManager;
 import engine.utils.Cooldown;
 import entity.Weapon;
 import entity.character.CharacterStats;
@@ -33,6 +34,7 @@ class EvasionShotSkillTest {
     
     private MockedStatic<Core> coreMock;
     private EvasionShotSkill evasionShotSkill;
+    private MockedStatic<SoundManager> soundManagerMock;
     
     @BeforeEach
     void setUp() {
@@ -43,6 +45,7 @@ class EvasionShotSkillTest {
         // Core.getFrameWidth/Height Mocking added to avoid boundary check failures
         coreMock.when(Core::getFrameWidth).thenReturn(800);
         coreMock.when(Core::getFrameHeight).thenReturn(600);
+        soundManagerMock = mockStatic(SoundManager.class);
         
         evasionShotSkill = new EvasionShotSkill();
     }
@@ -50,6 +53,7 @@ class EvasionShotSkillTest {
     @AfterEach
     void tearDown() {
         coreMock.close();
+        soundManagerMock.close();
     }
     
     @Test

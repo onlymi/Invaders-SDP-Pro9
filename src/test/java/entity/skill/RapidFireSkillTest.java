@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 
 import engine.Core;
+import engine.SoundManager;
 import engine.utils.Cooldown;
 import entity.buff.RapidFireSkillBuff;
 import entity.character.GameCharacter;
@@ -27,6 +28,7 @@ class RapidFireSkillTest {
     
     private MockedStatic<Core> coreMock;
     private RapidFireSkill rapidFireSkill;
+    private MockedStatic<SoundManager> soundManagerMock;
     
     @BeforeEach
     void setUp() {
@@ -36,6 +38,7 @@ class RapidFireSkillTest {
         coreMock = mockStatic(Core.class);
         coreMock.when(() -> Core.getCooldown(anyInt())).thenReturn(cooldown);
         coreMock.when(Core::getLogger).thenReturn(java.util.logging.Logger.getGlobal());
+        soundManagerMock = mockStatic(SoundManager.class);
         
         // RapidFireSkill 인스턴스 생성
         rapidFireSkill = new RapidFireSkill();
@@ -44,6 +47,7 @@ class RapidFireSkillTest {
     @AfterEach
     void tearDown() {
         coreMock.close();
+        soundManagerMock.close();
     }
     
     @Test
