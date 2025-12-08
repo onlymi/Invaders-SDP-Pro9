@@ -314,7 +314,7 @@ public class ScoreScreen extends Screen {
             } else {
                 y = this.getHeight() / 2 + 80; // Position if new record is False
             }
-             */
+            */
             y = this.getHeight() / 2 - 40;
             drawManager.getCommonRenderer()
                 .drawCenteredRegularString(drawManager.getBackBufferGraphics(), this, p1, y);

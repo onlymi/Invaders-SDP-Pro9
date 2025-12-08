@@ -80,9 +80,7 @@ public class EvasionShotSkill extends Skill {
             // 데미지 1.5배 적용
             int skillDamage = (int) (attacker.getCurrentStats().physicalDamage * 1.5);
             arrow.setDamage(skillDamage);
-            System.out.println(arrow.getSpeed());
             arrow.setSpeed(arrow.getSpeed() * 2);
-            System.out.println(arrow.getSpeed());
             // 투사체 이미지 변경
             arrow.setSpriteImage(this.spriteType);
             int newArrowWidth = arrow.getWidth();
@@ -93,19 +91,24 @@ public class EvasionShotSkill extends Skill {
             int charH = attacker.getHeight();
             
             if (attacker.isFacingLeft()) {
-                arrow.setPositionX(charX - arrow.getWidth() / 2);
-                arrow.setPositionY(charX + (charW - newArrowWidth) / 2);
+                // 왼쪽 발사: 캐릭터 왼쪽 끝에서 발사, 세로(Y)는 캐릭터 중앙 정렬
+                arrow.setPositionX(charX - newArrowWidth);
+                arrow.setPositionY(charY + (charH - newArrowHeight) / 2);
             } else if (attacker.isFacingRight()) {
-                arrow.setPositionX(charX + charW + newArrowWidth / 2);
-                arrow.setPositionY(charX + (charW - newArrowWidth) / 2);
+                // 오른쪽 발사: 캐릭터 오른쪽 끝에서 발사, 세로(Y)는 캐릭터 중앙 정렬
+                arrow.setPositionX(charX + charW);
+                arrow.setPositionY(charY + (charH - newArrowHeight) / 2);
             } else if (attacker.isFacingFront()) {
-                arrow.setPositionX(charX + newArrowWidth / 2);
+                // 아래쪽 발사: 가로(X)는 캐릭터 중앙 정렬, 세로(Y)는 캐릭터 아래 끝
+                arrow.setPositionX(charX + (charW - newArrowWidth) / 2);
                 arrow.setPositionY(charY + charH);
             } else if (attacker.isFacingBack()) {
-                arrow.setPositionX(charX + newArrowWidth / 2);
+                // 위쪽 발사: 가로(X)는 캐릭터 중앙 정렬, 세로(Y)는 캐릭터 위쪽 끝
+                arrow.setPositionX(charX + (charW - newArrowWidth) / 2);
                 arrow.setPositionY(charY - newArrowHeight);
             } else {
-                arrow.setPositionX(charX + newArrowWidth / 2);
+                // 기본값 (위쪽 발사로 처리)
+                arrow.setPositionX(charX + (charW - newArrowWidth) / 2);
                 arrow.setPositionY(charY - newArrowHeight);
             }
             // 슬로우 버프 탑재 (Weapon에 setOnHitBuff가 구현되어 있다고 가정)
