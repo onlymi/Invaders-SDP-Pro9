@@ -15,7 +15,6 @@ public class RapidFireSkill extends Skill {
     private static final int MANA_COST = 30;
     private static final float COOLDOWN_SECOND = 12.0f;
     private static final float ACTIVE_DURATION_SECOND = 5.0f;
-    private final SpriteType spriteType;
     
     public RapidFireSkill() {
         super("Rapid Fire", MANA_COST, (int) (COOLDOWN_SECOND * 1000));
@@ -26,9 +25,5 @@ public class RapidFireSkill extends Skill {
     public void performSkill(GameCharacter attacker, Set<Weapon> weapons) {
         RapidFireSkillBuff buff = new RapidFireSkillBuff((int) (ACTIVE_DURATION_SECOND));
         attacker.addBuff(buff);
-    }
-    
-    public SpriteType getSpriteType() {
-        return this.spriteType;
     }
 }

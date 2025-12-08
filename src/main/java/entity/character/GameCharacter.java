@@ -513,7 +513,7 @@ public abstract class GameCharacter extends Entity {
         int launchX;
         int launchY;
         
-        // [수정] 대각선 발사 위치 보정을 위해 X축과 Y축 로직 분리
+        // 대각선 발사 위치 보정을 위해 X축과 Y축 로직 분리
         
         // X축 위치 결정
         if (this.isFacingLeft) {
@@ -574,7 +574,11 @@ public abstract class GameCharacter extends Entity {
      * Switches the ship to its destroyed state.
      */
     public final void takeDamage(int damage) {
-        currentHealthPoints -= damage;
+        int actualDamage = damage - this.currentStats.physicalDefense;
+        if (actualDamage < 1) {
+            actualDamage = 1;
+        }
+        currentHealthPoints -= actualDamage;
         this.destructionCooldown.reset();
     }
     
