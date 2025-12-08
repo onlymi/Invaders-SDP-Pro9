@@ -44,7 +44,7 @@ public class SettingScreen extends Screen {
         this.soundManager.playLoop("title_sound");
     }
     
-    private void setVolumeFromX(java.awt.Rectangle barBox, int mouseX) {
+    private void setVolumeFromX(Rectangle barBox, int mouseX) {
         double ratio = (double) (mouseX - barBox.x) / (double) barBox.width;
         ratio = Math.max(0.0, Math.min(1.0, ratio));
         this.volumelevel = (int) Math.round(ratio * 100.0);

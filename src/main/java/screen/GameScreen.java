@@ -57,7 +57,7 @@ public class GameScreen extends Screen {
     /**
      * Height of the interface separation line.
      */
-    public static final int SEPARATION_LINE_HEIGHT = 68;
+    public static final int SEPARATION_LINE_HEIGHT = 70;
     private static final int HIGH_SCORE_NOTICE_DURATION = 2000;
     private static boolean sessionHighScoreNotified = false;
     
@@ -534,12 +534,12 @@ public class GameScreen extends Screen {
         
         // Aggregate UI
         drawManager.getGameScreenRenderer()
-            .drawScore(drawManager.getBackBufferGraphics(), this, state.getScore());
+            .drawScore(drawManager.getBackBufferGraphics(), this, this.state.getScore());
         // drawManager.getGameScreenRenderer()
         //     .drawLives(drawManager.getBackBufferGraphics(), this, state.getLivesRemaining(),
         //         state.isCoop());
         drawManager.getGameScreenRenderer()
-            .drawCoins(drawManager.getBackBufferGraphics(), this, state.getCoins());
+            .drawCoins(drawManager.getBackBufferGraphics(), this, this.state.getCoins());
         drawManager.getGameScreenRenderer()
             .drawLevel(drawManager.getBackBufferGraphics(), this, this.state.getLevel());
         drawManager.getCommonRenderer()
@@ -547,12 +547,15 @@ public class GameScreen extends Screen {
                 SEPARATION_LINE_HEIGHT - 1);
         
         int remainingKills = Math.max(0, this.killsToWin - this.enemyKillCount);
-        drawManager.getGameScreenRenderer().drawShipCount(drawManager.getBackBufferGraphics(), this,
-            remainingKills);
+        drawManager.getGameScreenRenderer().drawShipCount(drawManager.getBackBufferGraphics(),
+            this, remainingKills);
         drawManager.getGameScreenRenderer()
             .drawItemToast(drawManager.getBackBufferGraphics(), this);
         drawManager.getGameScreenRenderer()
-            .drawActiveItemSlots(drawManager.getBackBufferGraphics(), this, state);
+            .drawActiveItemSlots(drawManager.getBackBufferGraphics(), this, this.state);
+        drawManager.getGameScreenRenderer()
+            .drawCharacterSkillSlots(drawManager.getBackBufferGraphics(), this, this.state,
+                this.characters);
         
         if (!this.inputDelay.checkFinished()) {
             int countdown = (int) ((INPUT_DELAY - (System.currentTimeMillis() - this.gameStartTime))
@@ -639,12 +642,23 @@ public class GameScreen extends Screen {
         for (Weapon weapon : this.weapons) {
             weapon.update();
             
-            // [수정] 보스 패턴 무기(해골, 레이저)는 화면 밖으로 나가도 삭제하지 않음
+            // 보스 패턴 무기(해골, 레이저)는 화면 밖으로 나가도 삭제하지 않음
             boolean isBossPatternWeapon = (weapon.getSpriteType() == SpriteType.GasterBlaster
                 || weapon.getSpriteType() == SpriteType.BigLaserBeam);
             
-            boolean isOffScreenY = weapon.getPositionY() < SEPARATION_LINE_HEIGHT
-                || weapon.getPositionY() > this.height;
+            boolean isPiercingArrow
+                = (weapon.getSpriteType() == SpriteType.CharacterArcherUltimateSkill);
+            
+            boolean isOffScreenY;
+            if (isPiercingArrow) {
+                // 궁극기 화살은 꼬리까지 완전히 화면 밖으로 나갔을 때 삭제 (Y + 높이가 0보다 작을 때)
+                isOffScreenY = (weapon.getPositionY() + weapon.getHeight() < 0)
+                    || weapon.getPositionY() > this.height;
+            } else {
+                isOffScreenY = weapon.getPositionY() < SEPARATION_LINE_HEIGHT
+                    || weapon.getPositionY() > this.height;
+            }
+            
             boolean isOffScreenX = weapon.getPositionX() < 0
                 || weapon.getPositionX() > this.width;
             
@@ -878,7 +892,6 @@ public class GameScreen extends Screen {
                 
                 for (EnemyShip enemyShip : this.enemyManager.getEnemies()) {
                     if (!enemyShip.isDestroyed() && checkCollision(weapon, enemyShip)) {
-                        recyclable.add(weapon);
                         if (isExplosiveWeapon) {
                             // Rocket splash damage
                             applyExplosiveDamage(weapon, pIdx);

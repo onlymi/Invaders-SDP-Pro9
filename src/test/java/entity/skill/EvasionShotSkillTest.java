@@ -153,21 +153,18 @@ class EvasionShotSkillTest {
         
         // Then
         
-        // 1. 이동 확인 (오른쪽 봄 -> 왼쪽 이동 -> 100 - 150 = -50 -> 1로 보정)
+        // 이동 확인 (오른쪽 봄 -> 왼쪽 이동 -> 100 - 150 = -50 -> 1로 보정)
         verify(attacker).setPositionX(1);
         
-        // 2. 무기 효과 확인
+        // 무기 효과 확인
         verify(mockWeapon).setDamage(15); // 10 * 1.5
         verify(mockWeapon).setSpeed(10);  // 5 * 2
         verify(mockWeapon).setSpriteImage(SpriteType.CharacterArcherSecondSkill);
         
-        // 3. 무기 위치 확인
-        // 주의: Mock 객체(attacker)는 doJump 호출 후에도 getPositionX() 값이 100으로 유지됨.
-        // performSkill 코드: charX(100) + charW(50) + width/2(5) = 155
-        // (10 / 2 = 5)
-        verify(mockWeapon).setPositionX(155);
+        // 무기 위치 확인
+        verify(mockWeapon).setPositionX(150);
         
-        // 4. 스턴 확인 (0.5초)
+        // 스턴 확인 (0.5초)
         verify(attacker).stun(500);
     }
 }

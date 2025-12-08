@@ -4,6 +4,7 @@ import engine.AssetManager;
 import engine.AssetManager.SpriteType;
 import entity.buff.RapidFireSkillBuff;
 import entity.character.ArcherCharacter;
+import entity.skill.RapidFireSkill;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
@@ -90,8 +91,8 @@ public class ArcherCharacterRenderer {
         }
         
         if (!character.isDie() && character.hasBuff(RapidFireSkillBuff.class)) {
-            BufferedImage skillEffect = assetManager.getSpriteImage(
-                SpriteType.CharacterArcherFirstSkill);
+            RapidFireSkill rapidFireSkill = new RapidFireSkill();
+            BufferedImage skillEffect = assetManager.getSpriteImage(rapidFireSkill.getSpriteType());
             
             if (skillEffect != null) {
                 Graphics2D g2d = (Graphics2D) g;

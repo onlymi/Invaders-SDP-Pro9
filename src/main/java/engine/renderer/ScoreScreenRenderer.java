@@ -135,5 +135,4 @@ public class ScoreScreenRenderer {
                 screen.getHeight() / height + fontMetrics.getHeight() * 8);
         }
     }
-    
 }

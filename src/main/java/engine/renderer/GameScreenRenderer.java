@@ -2,12 +2,15 @@ package engine.renderer;
 
 import animations.Explosion;
 import engine.AssetManager;
+import engine.AssetManager.SpriteType;
 import engine.Core;
 import engine.GameState;
 import engine.gameplay.achievement.Achievement;
 import engine.gameplay.item.ItemData;
 import engine.gameplay.item.ItemManager;
 import entity.Entity;
+import entity.character.GameCharacter;
+import entity.skill.Skill;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -18,6 +21,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -25,6 +29,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
+import screen.GameScreen;
 import screen.Screen;
 
 public class GameScreenRenderer {
@@ -32,6 +37,7 @@ public class GameScreenRenderer {
     private static Logger LOGGER = null;
     private CommonRenderer commonRenderer;
     private EntityRenderer entityRenderer;
+    private AssetManager assetManager;
     
     // to query last picked item for toast
     private final ItemManager itemManager;
@@ -48,6 +54,7 @@ public class GameScreenRenderer {
         this.commonRenderer = commonRenderer;
         this.entityRenderer = new EntityRenderer(commonRenderer);
         this.itemManager = itemManager;
+        this.assetManager = Core.getAssetManager();
     }
     
     /**
@@ -416,8 +423,8 @@ public class GameScreenRenderer {
         g2d.drawString(s, x, y);
     }
     
-    private java.util.List<String> wrapText(String text, FontMetrics fm, int maxWidth) {
-        java.util.List<String> lines = new java.util.ArrayList<>();
+    private List<String> wrapText(String text, FontMetrics fm, int maxWidth) {
+        List<String> lines = new ArrayList<>();
         if (text == null || text.isEmpty()) {
             lines.add("");
             return lines;
@@ -446,8 +453,8 @@ public class GameScreenRenderer {
         return lines;
     }
     
-    private java.util.List<String> hardWrapWord(String word, FontMetrics fm, int maxWidth) {
-        java.util.List<String> out = new java.util.ArrayList<>();
+    private List<String> hardWrapWord(String word, FontMetrics fm, int maxWidth) {
+        List<String> out = new ArrayList<>();
         StringBuilder buf = new StringBuilder();
         for (char c : word.toCharArray()) {
             if (fm.stringWidth(buf.toString() + c) > maxWidth) {
@@ -462,7 +469,7 @@ public class GameScreenRenderer {
         return out;
     }
     
-    private int measureMaxWidth(java.util.List<String> lines, FontMetrics fm) {
+    private int measureMaxWidth(List<String> lines, FontMetrics fm) {
         int w = 0;
         for (String ln : lines) {
             w = Math.max(w, fm.stringWidth(ln));
@@ -470,8 +477,193 @@ public class GameScreenRenderer {
         return w;
     }
     
-    public void triggerEffect(int x, int y, engine.AssetManager.SpriteType sprite, int duration) {
+    public void triggerEffect(int x, int y, AssetManager.SpriteType sprite, int duration) {
         explosions.add(new Explosion(x, y, sprite, duration));
+    }
+    
+    public void drawCharacterSkillSlots(Graphics g, final Screen screen,
+        final GameState gameState, GameCharacter[] characters) {
+        GameScreen gameScreen = (GameScreen) screen;
+        if (gameState == null) {
+            return;
+        }
+        
+        Graphics2D g2d = (Graphics2D) g.create();
+        try {
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            int leftMargin = 3;
+            
+            String player1Label = "P1";
+            
+            int labelPositionX = leftMargin;
+            int labelPositionY = 15;
+            
+            g2d.setColor(Color.GREEN);
+            g2d.drawString(player1Label, labelPositionX, labelPositionY);
+            g2d.setColor(Color.WHITE);
+            
+            GameCharacter character = gameScreen.getCharacters()[0];
+            if (character == null) {
+                return;
+            }
+            
+            List<Skill> skills = character.getSkills();
+            if (skills == null || skills.isEmpty()) {
+                return;
+            }
+            
+            String[] keyLabels = new String[skills.size()];
+            
+            keyLabels[0] = Core.getInputManager().getKeyString(character.firstSkillKey);
+            keyLabels[1] = Core.getInputManager().getKeyString(character.secondSkillKey);
+            keyLabels[2] = Core.getInputManager().getKeyString(character.ultimateSkillKey);
+            
+            int slotPositionX = 2 * leftMargin + g2d.getFontMetrics().stringWidth(player1Label);
+            int slotPositionY = 4;
+            
+            int slotSize = 60;
+            // fist skill, second skill, ultimate skill
+            for (int i = 0; i < skills.size(); i++) {
+                drawOneCharacterSkillSlot(g2d, slotPositionX, slotPositionY,
+                    slotSize, skills.get(i), keyLabels[i], character);
+                slotPositionX += (slotSize + leftMargin);
+            }
+            
+            // --- P2 slot: Right ---
+            if (gameState.isCoop()) {
+                character = characters[1];
+                if (character == null) {
+                    return;
+                }
+                
+                skills = character.getSkills();
+                
+                keyLabels = new String[skills.size()];
+                
+                keyLabels[0] = Core.getInputManager().getKeyString(character.firstSkillKey);
+                keyLabels[1] = Core.getInputManager().getKeyString(character.secondSkillKey);
+                keyLabels[2] = Core.getInputManager().getKeyString(character.ultimateSkillKey);
+                
+                int gapBySlot = 10;
+                String player2Label = "P2";
+                labelPositionX = (gapBySlot + slotPositionX);
+                
+                g2d.setColor(Color.RED);
+                g2d.drawString(player2Label, labelPositionX, labelPositionY);
+                g2d.setColor(Color.WHITE);
+                
+                slotPositionX += (gapBySlot + leftMargin
+                    + g2d.getFontMetrics().stringWidth(player2Label));
+                
+                // fist skill, second skill, ultimate skill
+                for (int i = 0; i < skills.size(); i++) {
+                    drawOneCharacterSkillSlot(g2d, slotPositionX, slotPositionY,
+                        slotSize, skills.get(i), keyLabels[i], character);
+                    slotPositionX += (slotSize + leftMargin);
+                }
+            }
+        } finally {
+            g2d.dispose();
+        }
+    }
+    
+    private void drawOneCharacterSkillSlot(Graphics2D g2d, int x, int y, int size, Skill skill,
+        String skillKeyLabel, GameCharacter character) {
+        // 박스 배경 (반투명 검정)
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.55f));
+        g2d.setColor(Color.BLACK);
+        g2d.fillRoundRect(x, y, size, size, 8, 8);
+        
+        // 스킬 이미지 그리기
+        SpriteType spriteType = skill.getSpriteType();
+        BufferedImage img = AssetManager.getInstance().getSpriteImage(spriteType);
+        if (img != null) {
+            g2d.setComposite(AlphaComposite.SrcOver); // 이미지 그릴 때는 불투명하게
+            drawImageFitBox(g2d, img, x + 2, y + 2, size - 4);
+        } else {
+            boolean[][] spriteMap = assetManager.getSpriteMap(spriteType);
+            if (spriteMap != null) {
+                // [Case 2] 이미지는 없지만 픽셀 맵이 있는 경우
+                drawSpriteFitBox(g2d, spriteMap, x + 2, y + 2, size - 4, Color.WHITE);
+            } else {
+                // [Case 3] 이미지와 픽셀 맵 둘 다 없는 경우 (Fallback)
+                // 회색 박스를 채우고 가운데에 '?' 표시
+                g2d.setColor(Color.DARK_GRAY);
+                g2d.fillRect(x + 4, y + 4, size - 8, size - 8);
+                
+                g2d.setColor(Color.WHITE);
+                String qMark = "?";
+                // 폰트 크기 조정 (박스 크기에 맞게)
+                Font fallbackFont = commonRenderer.getFontRegular().deriveFont(Font.BOLD, 20f);
+                g2d.setFont(fallbackFont);
+                
+                FontMetrics fm = g2d.getFontMetrics();
+                int qX = x + (size - fm.stringWidth(qMark)) / 2;
+                int qY = y + (size - fm.getHeight()) / 2 + fm.getAscent();
+                
+                g2d.drawString(qMark, qX, qY);
+            }
+        }
+        
+        // 쿨타임 및 마나 상태 표시 (오버레이)
+        g2d.setComposite(AlphaComposite.SrcOver);
+        int remainingCd = skill.getRemainingCooldown();
+        
+        // 폰트 설정 (작은 글씨)
+        Font originalFont = g2d.getFont();
+        Font smallFont = commonRenderer.getFontRegular().deriveFont(10f); // 10pt 크기
+        g2d.setFont(smallFont);
+        
+        if (remainingCd > 0) {
+            // 쿨타임 중: 어두운 오버레이 + 남은 시간 표시
+            g2d.setColor(new Color(0, 0, 0, 180));
+            g2d.fillRoundRect(x, y, size, size, 8, 8);
+            
+            g2d.setColor(Color.YELLOW);
+            // 초 단위로 변환하여 표시
+            String cdText = String.valueOf((remainingCd / 1000) + 1);
+            FontMetrics fm = g2d.getFontMetrics();
+            int textX = x + (size - fm.stringWidth(cdText)) / 2;
+            int textY = y + (size - fm.getHeight()) / 2 + fm.getAscent();
+            g2d.drawString(cdText, textX, textY);
+            
+        } else if (character.getCurrentManaPoints() < skill.getManaCost()) {
+            // 마나 부족: 파란색 틴트 오버레이
+            g2d.setColor(new Color(200, 0, 0, 100));
+            g2d.fillRoundRect(x, y, size, size, 8, 8);
+        }
+        
+        // 박스 테두리
+        g2d.setColor(Color.WHITE);
+        g2d.setStroke(new BasicStroke(1.5f));
+        g2d.drawRoundRect(x, y, size, size, 8, 8);
+        
+        // 키 라벨 (좌상단)
+        g2d.setColor(Color.WHITE);
+        g2d.drawString(skillKeyLabel, x + 4, y + 11);
+        
+        // 마나 소모량 (우하단)
+        g2d.setColor(Color.CYAN);
+        String manaText = String.valueOf(skill.getManaCost());
+        FontMetrics fm = g2d.getFontMetrics();
+        g2d.drawString(manaText, x + size - fm.stringWidth(manaText) - 2, y + size - 2);
+        
+        /*
+        // 스킬 이름 (박스 하단 바깥쪽)
+        g2d.setColor(Color.WHITE);
+        String name = skill.getName();
+        // 이름이 너무 길면 잘라서 표시 (선택사항)
+        if (name.length() > 8) {
+            name = name.substring(0, 8) + "..";
+        }
+        int nameX = x + (size - fm.stringWidth(name)) / 2;
+        g2d.drawString(name, nameX, y + size + 12);
+        */
+        
+        // 폰트 복구
+        g2d.setFont(originalFont);
     }
     
     public void drawActiveItemSlots(Graphics g, final Screen screen, final GameState gameState) {
@@ -532,14 +724,14 @@ public class GameScreenRenderer {
         
         ItemData active = actives.get(0);
         
-        AssetManager.SpriteType st = parseSpriteType(active.getSpriteType());
+        SpriteType st = parseSpriteType(active.getSpriteType());
         if (st == null) {
             return;
         }
         
         AssetManager am = AssetManager.getInstance();
         
-        java.awt.image.BufferedImage img = am.getSpriteImage(st);
+        BufferedImage img = am.getSpriteImage(st);
         if (img != null) {
             drawImageFitBox(g2d, img, x, y, size);
             return;
@@ -583,7 +775,7 @@ public class GameScreenRenderer {
         }
     }
     
-    private AssetManager.SpriteType parseSpriteType(String raw) {
+    private SpriteType parseSpriteType(String raw) {
         if (raw == null) {
             return null;
         }
@@ -595,7 +787,7 @@ public class GameScreenRenderer {
         }
         
         try {
-            return AssetManager.SpriteType.valueOf(raw);
+            return SpriteType.valueOf(raw);
         } catch (IllegalArgumentException e) {
             
             // Print the error only once to avoid spamming logs every frame.
@@ -646,10 +838,7 @@ public class GameScreenRenderer {
         explosions.add(new Explosion(x, y, color));
     }
     
-    private void drawImageFitBox(Graphics2D g2d,
-        java.awt.image.BufferedImage img,
-        int x, int y,
-        int boxSize) {
+    public void drawImageFitBox(Graphics2D g2d, BufferedImage img, int x, int y, int boxSize) {
         int w = img.getWidth();
         int h = img.getHeight();
         

@@ -174,7 +174,7 @@ public class ScoreScreen extends Screen {
                 this.isRunning = false;
                 if (this.isNewRecord) {
                     saveScore();
-                    saveAchievement(); //2025-10-03 call method for save achievement released
+                    saveAchievement(); // 2025-10-03 call method for save achievement released
                 }
             } else if (inputManager.isKeyDown(KeyEvent.VK_SPACE)) {
                 // name too short -> return
@@ -308,11 +308,14 @@ public class ScoreScreen extends Screen {
                 p2Acc * 100f);
             
             int y;  // tweak these if you want
+            /*
             if (this.isNewRecord) {
                 y = this.getHeight() / 2 + 40; // Position if new record is True
             } else {
                 y = this.getHeight() / 2 + 80; // Position if new record is False
             }
+            */
+            y = this.getHeight() / 2 - 40;
             drawManager.getCommonRenderer()
                 .drawCenteredRegularString(drawManager.getBackBufferGraphics(), this, p1, y);
             drawManager.getCommonRenderer()
